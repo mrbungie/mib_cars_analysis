@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Build/cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
