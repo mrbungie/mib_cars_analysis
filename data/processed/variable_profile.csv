@@ -1,0 +1,20 @@
+variable,dtype,missing_pct,n_unique,sample_values,mean,std,p01,p50,p99,outlier_pct_iqr
+Competitor Type,str,11.86,2,"Unknown, Unknown, Unknown",,,,,,
+Opportunity Number,int64,0.0,77829,"1641984, 1658010, 1674737",7653428.734341557,1054847.7631345186,5650940.8,7545569.0,9952303.76,0.18
+Ratio Days Validated To Total Days,float64,0.0,13992,"0.113985, 1.0, 0.0",0.48831394451778276,0.44807706388226926,0.0,0.448,1.0,0.0
+Ratio Days Qualified To Total Days,float64,0.0,10106,"0.154215, 0.0, 0.0",0.18504779169496954,0.3402830631673798,0.0,0.0,1.0,19.16
+Opportunity Amount USD,int64,0.0,9879,"0, 0, 7750",91637.26074975969,133161.02915649512,0.0,49000.0,700000.0,9.32
+Ratio Days Identified To Total Days,float64,0.0,9786,"0.69636, 0.0, 1.0",0.20306313889138097,0.3649845190227726,0.0,0.0,1.0,19.2
+Total Days Identified Through Closing,int64,0.0,156,"104, 163, 82",16.728356296058955,16.72959315979642,0.0,12.0,74.0,3.47
+Total Days Identified Through Qualified,int64,0.0,156,"101, 163, 82",16.314347965395708,16.56259661486816,0.0,12.0,73.0,3.29
+Elapsed Days In Sales Stage,int64,0.0,138,"76, 63, 24",43.59534764498558,26.585600462335425,0.0,43.0,91.0,0.01
+Sales Stage Change Count,int64,0.0,22,"13, 2, 7",2.9557321371355334,1.497242324784208,1.0,3.0,8.0,11.97
+Supplies Subgroup,str,0.0,11,"Exterior Accessories, Exterior Accessories, Motorcycle Parts",,,,,,
+Region,str,0.0,7,"Northwest, Pacific, Pacific",,,,,,
+Deal Size Category (USD),str,0.0,7,"10K or less, 10K or less, 10K or less",,,,,,
+Route To Market,str,0.0,5,"Fields Sales, Reseller, Reseller",,,,,,
+Client Size By Revenue (USD),str,0.0,5,"More than 1M, 250K to 500K, 100K or less",,,,,,
+Client Size By Employee Count,str,0.0,5,"More than 25K, More than 25K, 1K or less",,,,,,
+Revenue From Client Past Two Years (USD),str,0.0,5,"0 (No business), 0 (No business), 0 (No business)",,,,,,
+Supplies Group,str,0.0,4,"Car Accessories, Car Accessories, Performance & Non-auto",,,,,,
+Opportunity Result,str,0.0,2,"Won, Loss, Won",,,,,,
