@@ -726,7 +726,7 @@ clean.head(2)
     invalid target labels: 0
 
 
-    /tmp/ipykernel_2595379/159904022.py:4: Pandas4Warning: For backward compatibility, 'str' dtypes are included by select_dtypes when 'object' dtype is specified. This behavior is deprecated and will be removed in a future version. Explicitly pass 'str' to `include` to select them, or to `exclude` to remove them and silence this warning.
+    /tmp/ipykernel_2595642/159904022.py:4: Pandas4Warning: For backward compatibility, 'str' dtypes are included by select_dtypes when 'object' dtype is specified. This behavior is deprecated and will be removed in a future version. Explicitly pass 'str' to `include` to select them, or to `exclude` to remove them and silence this warning.
     See https://pandas.pydata.org/docs/user_guide/migration-3-strings.html#string-migration-select-dtypes for details on how to write code that works with pandas 2 and 3.
       obj_cols = clean.select_dtypes(include='object').columns
 
@@ -831,6 +831,94 @@ clean.head(2)
 
 
 ## 5) Outlier checks and treatment
+
+## 6) Correlation analysis
+
+Examine pairwise correlations among numeric features to spot multicollinearity and promising predictors.
+
+
+```python
+numeric_cols = df.select_dtypes(include="number").columns.tolist()
+corr = df[numeric_cols].corr()
+plt.figure(figsize=(12,10))
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", square=True)
+plt.title("Correlation heatmap of numeric variables")
+plt.tight_layout()
+
+```
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_18_0.png)
+    
+
+
+## 7) Numeric feature distributions
+
+Visualize distributions and spot skewness/outliers for important metrics.
+
+
+```python
+for col in ["Opportunity Amount USD", "Elapsed Days In Sales Stage", "Sales Stage Change Count", "Total Days Identified Through Closing", "Total Days Identified Through Qualified"]:
+    plt.figure(figsize=(8,4))
+    sns.histplot(df[col].dropna(), kde=True, bins=50)
+    plt.title(f"Distribution of {col}")
+    plt.xlabel(col)
+    plt.tight_layout()
+    plt.show()
+
+```
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_20_0.png)
+    
+
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_20_1.png)
+    
+
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_20_2.png)
+    
+
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_20_3.png)
+    
+
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_20_4.png)
+    
+
+
+## 8) Deal amount by client segment
+
+Boxplots to compare deal sizes across revenue segments.
+
+
+```python
+plt.figure(figsize=(10,6))
+sns.boxplot(data=df, x='Client Size By Revenue (USD)', y='Opportunity Amount USD')
+plt.yscale('log')
+plt.xticks(rotation=45, ha='right')
+plt.title('Deal Amount by Client Revenue Size')
+plt.tight_layout()
+
+```
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_22_0.png)
+    
+
 
 
 ```python
