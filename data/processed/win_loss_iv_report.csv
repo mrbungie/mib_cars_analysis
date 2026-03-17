@@ -1,0 +1,18 @@
+variable,dtype,status,iv,js,iv_band
+Total Days Identified Through Qualified,numerical,OPTIMAL,0.8014251717222527,0.09494980608877795,Suspicious/Very strong
+Total Days Identified Through Closing,numerical,OPTIMAL,0.6927867638619639,0.08276821517034584,Suspicious/Very strong
+Revenue From Client Past Two Years (USD),categorical,OPTIMAL,0.5707358191791954,0.06424996189860041,Suspicious/Very strong
+Ratio Days Identified To Total Days,numerical,OPTIMAL,0.39748919860111864,0.0447440840386306,Strong
+Opportunity Amount USD,numerical,OPTIMAL,0.33239587280962024,0.03967880893954233,Strong
+Ratio Days Qualified To Total Days,numerical,OPTIMAL,0.315554280663668,0.03872306434745916,Strong
+Deal Size Category (USD),categorical,OPTIMAL,0.27483982711644567,0.033554216220407856,Medium
+Ratio Days Validated To Total Days,numerical,OPTIMAL,0.22991251812896615,0.028174338875409908,Medium
+Sales Stage Change Count,numerical,OPTIMAL,0.11907412334105974,0.014760778065448923,Medium
+Supplies Subgroup,categorical,OPTIMAL,0.06570576305762657,0.008161583586251058,Weak
+Route To Market,categorical,OPTIMAL,0.0648772442445541,0.008087546625796648,Weak
+Elapsed Days In Sales Stage,numerical,OPTIMAL,0.06445585669152676,0.007833242834831179,Weak
+Competitor Type,categorical,OPTIMAL,0.035146499268346384,0.0043611730427187126,Weak
+Region,categorical,OPTIMAL,0.01282729180362288,0.0016012542240031909,Not useful
+Supplies Group,categorical,OPTIMAL,0.003530834987913649,0.0004412638146031496,Not useful
+Client Size By Employee Count,categorical,OPTIMAL,0.0032462196663654223,0.0004050559656947125,Not useful
+Client Size By Revenue (USD),categorical,OPTIMAL,0.002744223629758465,0.00034250949032001014,Not useful
