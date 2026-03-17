@@ -357,6 +357,190 @@ plt.tight_layout()
     
 
 
+### Deal size category as additional target
+
+To cover the second task from a categorical perspective, we also profile `Deal Size Category (USD)` as a target-like variable (classification framing).
+
+
+```python
+deal_size_dist = (df['Deal Size Category (USD)']
+    .value_counts(dropna=False)
+    .rename('count')
+    .to_frame())
+deal_size_dist['pct'] = (deal_size_dist['count'] / len(df) * 100).round(2)
+print('Deal Size Category (USD) distribution:')
+display(deal_size_dist)
+
+print('\nDeal Size Category x Opportunity Result:')
+deal_size_vs_result = pd.crosstab(
+    df['Deal Size Category (USD)'],
+    df['Opportunity Result'],
+    normalize='index'
+).round(4)
+display(deal_size_vs_result)
+```
+
+    Deal Size Category (USD) distribution:
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>pct</th>
+    </tr>
+    <tr>
+      <th>Deal Size Category (USD)</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>40K to 50K</th>
+      <td>18074</td>
+      <td>23.16</td>
+    </tr>
+    <tr>
+      <th>10K to 20K</th>
+      <td>15123</td>
+      <td>19.38</td>
+    </tr>
+    <tr>
+      <th>30K to 40K</th>
+      <td>13628</td>
+      <td>17.47</td>
+    </tr>
+    <tr>
+      <th>10K or less</th>
+      <td>12095</td>
+      <td>15.50</td>
+    </tr>
+    <tr>
+      <th>20K to 30K</th>
+      <td>11968</td>
+      <td>15.34</td>
+    </tr>
+    <tr>
+      <th>50K to 60K</th>
+      <td>4934</td>
+      <td>6.32</td>
+    </tr>
+    <tr>
+      <th>More than 60K</th>
+      <td>2203</td>
+      <td>2.82</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+    
+    Deal Size Category x Opportunity Result:
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Opportunity Result</th>
+      <th>Loss</th>
+      <th>Won</th>
+    </tr>
+    <tr>
+      <th>Deal Size Category (USD)</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10K or less</th>
+      <td>0.6006</td>
+      <td>0.3994</td>
+    </tr>
+    <tr>
+      <th>10K to 20K</th>
+      <td>0.7326</td>
+      <td>0.2674</td>
+    </tr>
+    <tr>
+      <th>20K to 30K</th>
+      <td>0.7533</td>
+      <td>0.2467</td>
+    </tr>
+    <tr>
+      <th>30K to 40K</th>
+      <td>0.8264</td>
+      <td>0.1736</td>
+    </tr>
+    <tr>
+      <th>40K to 50K</th>
+      <td>0.8827</td>
+      <td>0.1173</td>
+    </tr>
+    <tr>
+      <th>50K to 60K</th>
+      <td>0.8273</td>
+      <td>0.1727</td>
+    </tr>
+    <tr>
+      <th>More than 60K</th>
+      <td>0.7903</td>
+      <td>0.2097</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+plt.figure(figsize=(10, 4))
+order = df['Deal Size Category (USD)'].value_counts().index
+sns.countplot(data=df, x='Deal Size Category (USD)', order=order)
+plt.xticks(rotation=25, ha='right')
+plt.title('Deal Size Category Distribution')
+plt.tight_layout()
+```
+
+
+    
+![png](01_eda_cleansing_files/01_eda_cleansing_10_0.png)
+    
+
+
 ## 3) Funnel x segment insights
 
 
@@ -542,7 +726,7 @@ clean.head(2)
     invalid target labels: 0
 
 
-    /tmp/ipykernel_2594604/159904022.py:4: Pandas4Warning: For backward compatibility, 'str' dtypes are included by select_dtypes when 'object' dtype is specified. This behavior is deprecated and will be removed in a future version. Explicitly pass 'str' to `include` to select them, or to `exclude` to remove them and silence this warning.
+    /tmp/ipykernel_2595379/159904022.py:4: Pandas4Warning: For backward compatibility, 'str' dtypes are included by select_dtypes when 'object' dtype is specified. This behavior is deprecated and will be removed in a future version. Explicitly pass 'str' to `include` to select them, or to `exclude` to remove them and silence this warning.
     See https://pandas.pydata.org/docs/user_guide/migration-3-strings.html#string-migration-select-dtypes for details on how to write code that works with pandas 2 and 3.
       obj_cols = clean.select_dtypes(include='object').columns
 
