@@ -35,3 +35,11 @@ Project workspace for sales funnel analytics and predictive modeling on `cars.xl
 
 - Render notebooks regularly after meaningful progress.
 - Commit and push in incremental checkpoints (EDA baseline, cleansing pass, modeling baseline, simulations/proposal updates).
+
+## Notebook sequence
+
+1. `notebooks/01_eda_cleansing.ipynb` - baseline EDA + cleansing
+2. `notebooks/02_variable_eda.ipynb` - variable-by-variable deep profile
+3. `notebooks/03_monotonicity_targets.ipynb` - monotonicity checks vs win/loss and binned amount targets
+4. `notebooks/03_woe_iv_winloss.ipynb` - WoE/IV analysis for win/loss target
+5. `notebooks/04_optbinning_amount.ipynb` - continuous optbinning and explained variance for amount target
