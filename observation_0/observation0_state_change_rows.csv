@@ -1,0 +1,284 @@
+Opportunity Number,Supplies Group,Supplies Subgroup,Region,Route To Market,Elapsed Days In Sales Stage,Opportunity Result,Sales Stage Change Count,Total Days Identified Through Closing,Total Days Identified Through Qualified,Opportunity Amount USD,Client Size By Revenue (USD),Client Size By Employee Count,Revenue From Client Past Two Years (USD),Competitor Type,Ratio Days Identified To Total Days,Ratio Days Validated To Total Days,Ratio Days Qualified To Total Days,Deal Size Category (USD)
+4787647,Car Accessories,Interior Accessories,Southeast,Fields Sales,26,Won,6,49,46,6000,100K or less,15K to 25K,0 (No business),Unknown,0.431174,0.293522,0.210526,10K or less
+4787647,Car Accessories,Batteries & Accessories,Southeast,Fields Sales,26,Won,6,49,46,0,100K or less,15K to 25K,0 (No business),Unknown,0.431174,0.293522,0.210526,10K or less
+4787647,Performance & Non-auto,Shelters & RV,Southeast,Fields Sales,26,Won,6,49,46,0,100K or less,15K to 25K,0 (No business),Unknown,0.431174,0.293522,0.210526,10K or less
+4947042,Car Accessories,Exterior Accessories,Midwest,Fields Sales,88,Loss,4,81,81,600000,250K to 500K,More than 25K,"50,000 - 100,000",Known,0.170972,0.03075,0.798278,More than 60K
+4947042,Car Accessories,Towing & Hitches,Midwest,Fields Sales,88,Loss,4,81,81,200000,250K to 500K,More than 25K,"50,000 - 100,000",Known,0.170972,0.03075,0.798278,40K to 50K
+5210752,Performance & Non-auto,Motorcycle Parts,Northeast,Fields Sales,74,Loss,7,70,70,125000,500K to 1M,1K to 5K,0 (No business),Known,0.058488,0.848787,0.092725,40K to 50K
+5210752,Performance & Non-auto,Motorcycle Parts,Northeast,Fields Sales,74,Loss,7,70,70,50000,500K to 1M,1K to 5K,0 (No business),Known,0.058488,0.848787,0.092725,30K to 40K
+5629727,Performance & Non-auto,Shelters & RV,Northwest,Fields Sales,89,Loss,2,51,51,200000,100K or less,More than 25K,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+5629727,Performance & Non-auto,Shelters & RV,Northwest,Fields Sales,89,Loss,2,51,51,0,100K or less,More than 25K,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+5743311,Car Accessories,Replacement Parts,Northeast,Reseller,89,Loss,5,46,46,20000,More than 1M,1K to 5K,0 (No business),Unknown,0.0,0.598684,0.401316,10K to 20K
+5743311,Car Accessories,Replacement Parts,Northeast,Reseller,89,Loss,5,46,46,40000,More than 1M,1K to 5K,0 (No business),Unknown,0.0,0.598684,0.401316,20K to 30K
+5799657,Car Accessories,Interior Accessories,Pacific,Fields Sales,83,Loss,3,49,49,250000,500K to 1M,1K or less,0 (No business),Unknown,0.556911,0.443089,0.0,50K to 60K
+5799657,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,83,Loss,3,49,49,350000,500K to 1M,1K or less,0 (No business),Unknown,0.556911,0.443089,0.0,50K to 60K
+5822310,Car Accessories,Batteries & Accessories,Southwest,Fields Sales,90,Loss,5,42,42,150000,100K or less,1K or less,0 (No business),Unknown,0.940191,0.043062,0.016746,40K to 50K
+5822310,Performance & Non-auto,Performance Parts,Southwest,Fields Sales,90,Loss,5,42,42,200000,100K or less,1K or less,0 (No business),Unknown,0.940191,0.043062,0.016746,40K to 50K
+5839656,Car Accessories,Towing & Hitches,Northeast,Reseller,79,Loss,5,52,52,40000,250K to 500K,1K to 5K,0 (No business),Unknown,0.023301,0.0,0.976699,20K to 30K
+5839656,Car Accessories,Exterior Accessories,Northeast,Reseller,79,Loss,5,52,52,150000,250K to 500K,1K to 5K,0 (No business),Unknown,0.023301,0.0,0.976699,40K to 50K
+5872991,Car Accessories,Garage & Car Care,Mid-Atlantic,Reseller,23,Won,3,21,21,35000,250K to 500K,5K to 15K,0 (No business),Unknown,0.0,1.0,0.0,20K to 30K
+5872991,Car Accessories,Garage & Car Care,Mid-Atlantic,Reseller,23,Won,3,21,21,10000,250K to 500K,5K to 15K,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+5885433,Car Accessories,Garage & Car Care,Northeast,Reseller,78,Loss,4,50,50,210000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+5885433,Car Accessories,Batteries & Accessories,Northeast,Reseller,78,Loss,4,50,50,0,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+5929750,Car Accessories,Replacement Parts,Southeast,Fields Sales,91,Loss,3,35,35,117000,100K to 250K,1K to 5K,0 (No business),Unknown,0.0,0.060172,0.939828,40K to 50K
+5929750,Car Accessories,Exterior Accessories,Southeast,Fields Sales,91,Loss,3,35,35,106000,100K to 250K,1K to 5K,0 (No business),Unknown,0.0,0.060172,0.939828,40K to 50K
+5934206,Car Accessories,Garage & Car Care,Pacific,Fields Sales,89,Loss,4,37,37,25000,100K or less,1K or less,0 (No business),Unknown,0.597297,0.402703,0.0,20K to 30K
+5934206,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,89,Loss,4,37,37,26000,100K or less,1K or less,0 (No business),Unknown,0.597297,0.402703,0.0,20K to 30K
+5943944,Car Accessories,Batteries & Accessories,Midwest,Fields Sales,86,Loss,4,40,40,30000,100K or less,5K to 15K,0 (No business),Known,0.02,0.235,0.745,20K to 30K
+5943944,Car Accessories,Batteries & Accessories,Midwest,Fields Sales,86,Loss,4,40,40,5000,100K or less,5K to 15K,0 (No business),Known,0.02,0.235,0.745,10K or less
+5984513,Car Accessories,Batteries & Accessories,Northeast,Fields Sales,89,Loss,2,35,35,0,More than 1M,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+5984513,Car Accessories,Batteries & Accessories,Northeast,Fields Sales,89,Loss,2,35,35,50000,More than 1M,1K or less,0 (No business),Unknown,0.0,1.0,0.0,30K to 40K
+5984525,Car Accessories,Batteries & Accessories,Northeast,Fields Sales,89,Loss,2,35,35,35000,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,1.0,20K to 30K
+5984525,Car Accessories,Batteries & Accessories,Northeast,Fields Sales,89,Loss,2,35,35,25000,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,1.0,20K to 30K
+5984533,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,46,Won,4,12,12,479641,500K to 1M,More than 25K,0 (No business),Unknown,0.0,0.0,0.991803,50K to 60K
+5984533,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,46,Won,4,12,12,0,500K to 1M,More than 25K,0 (No business),Unknown,0.0,0.0,0.991803,10K or less
+5989005,Car Accessories,Batteries & Accessories,Midwest,Reseller,64,Loss,7,40,40,22000,100K to 250K,15K to 25K,0 (No business),Unknown,0.5425,0.4575,0.0,10K to 20K
+5989005,Car Accessories,Interior Accessories,Midwest,Reseller,64,Loss,7,40,40,50000,100K to 250K,15K to 25K,0 (No business),Unknown,0.5425,0.4575,0.0,30K to 40K
+6003266,Car Electronics,Car Electronics,Midwest,Reseller,89,Loss,2,34,34,78100,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,30K to 40K
+6003266,Car Accessories,Garage & Car Care,Midwest,Reseller,89,Loss,2,34,34,4000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+6034864,Car Accessories,Garage & Car Care,Northwest,Fields Sales,91,Loss,3,32,32,50000,More than 1M,1K to 5K,0 (No business),Unknown,0.802508,0.197492,0.0,30K to 40K
+6034864,Car Accessories,Garage & Car Care,Northwest,Fields Sales,91,Loss,3,32,32,40000,More than 1M,1K to 5K,0 (No business),Unknown,0.802508,0.197492,0.0,20K to 30K
+6055026,Performance & Non-auto,Motorcycle Parts,Midwest,Reseller,28,Loss,13,44,30,0,100K or less,1K to 5K,0 (No business),Unknown,0.034483,0.151724,0.503448,10K or less
+6055026,Performance & Non-auto,Motorcycle Parts,Midwest,Reseller,28,Loss,13,44,30,64500,100K or less,1K to 5K,0 (No business),Unknown,0.034483,0.151724,0.503448,30K to 40K
+6084951,Car Accessories,Garage & Car Care,Southeast,Reseller,54,Loss,7,65,65,3500,250K to 500K,5K to 15K,0 (No business),Unknown,0.582181,0.351767,0.066052,10K or less
+6084951,Car Accessories,Garage & Car Care,Southeast,Reseller,54,Loss,7,65,65,50000,250K to 500K,5K to 15K,0 (No business),Unknown,0.582181,0.351767,0.066052,30K to 40K
+6092009,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Won,5,29,29,301500,100K or less,1K or less,"More than 100,000",Known,0.682927,0.020906,0.296167,50K to 60K
+6092009,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,90,Won,5,29,29,42000,100K or less,1K or less,"More than 100,000",Known,0.682927,0.020906,0.296167,20K to 30K
+6141506,Car Accessories,Towing & Hitches,Northwest,Fields Sales,73,Loss,3,45,45,200000,More than 1M,1K or less,0 (No business),Unknown,0.352423,0.647577,0.0,40K to 50K
+6141506,Car Accessories,Towing & Hitches,Northwest,Fields Sales,73,Loss,3,45,45,70000,More than 1M,1K or less,0 (No business),Unknown,0.352423,0.647577,0.0,30K to 40K
+6165786,Car Accessories,Towing & Hitches,Northwest,Fields Sales,38,Loss,4,80,80,300000,More than 1M,1K or less,0 (No business),Unknown,0.189698,0.415829,0.394472,50K to 60K
+6165786,Car Accessories,Towing & Hitches,Northwest,Fields Sales,38,Loss,4,80,80,500000,More than 1M,1K or less,0 (No business),Unknown,0.189698,0.415829,0.394472,More than 60K
+6221010,Car Accessories,Batteries & Accessories,Southeast,Fields Sales,88,Loss,9,26,20,166000,100K to 250K,1K or less,"50,000 - 100,000",Known,0.0,0.557692,0.226923,40K to 50K
+6221010,Car Accessories,Exterior Accessories,Southeast,Fields Sales,88,Loss,9,26,20,800000,100K to 250K,1K or less,"50,000 - 100,000",Known,0.0,0.557692,0.226923,More than 60K
+6266750,Car Accessories,Replacement Parts,Northeast,Fields Sales,78,Loss,7,26,26,316941,100K or less,1K or less,0 (No business),Unknown,0.0,0.708171,0.291829,50K to 60K
+6266750,Car Accessories,Replacement Parts,Northeast,Fields Sales,78,Loss,7,26,26,225576,100K or less,1K or less,0 (No business),Unknown,0.0,0.708171,0.291829,40K to 50K
+6321928,Car Accessories,Replacement Parts,Pacific,Fields Sales,111,Won,1,0,0,8140,100K or less,1K or less,0 (No business),,0.0,0.0,0.0,10K or less
+6321928,Car Accessories,Replacement Parts,Pacific,Fields Sales,111,Won,1,0,0,8187,100K or less,1K or less,0 (No business),,0.0,0.0,0.0,10K or less
+6335215,Performance & Non-auto,Motorcycle Parts,Southeast,Fields Sales,90,Loss,4,19,18,0,100K or less,1K or less,0 (No business),,0.0,0.0,0.927835,10K or less
+6335215,Performance & Non-auto,Shelters & RV,Southeast,Fields Sales,90,Loss,4,19,18,0,100K or less,1K or less,0 (No business),,0.0,0.0,0.927835,10K or less
+6360969,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,89,Loss,2,20,20,30000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,20K to 30K
+6360969,Car Accessories,Garage & Car Care,Pacific,Fields Sales,89,Loss,2,20,20,280000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,50K to 60K
+6384089,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Loss,4,0,0,0,More than 1M,15K to 25K,0 (No business),,0.0,0.0,0.0,10K or less
+6384089,Car Accessories,Towing & Hitches,Pacific,Fields Sales,90,Loss,4,0,0,0,More than 1M,15K to 25K,0 (No business),,0.0,0.0,0.0,10K or less
+6422720,Car Accessories,Replacement Parts,Southwest,Reseller,74,Loss,4,33,25,9000,100K to 250K,15K to 25K,0 (No business),Unknown,0.0,0.00303,0.766667,10K or less
+6422720,Car Accessories,Replacement Parts,Southwest,Reseller,74,Loss,4,33,25,0,100K to 250K,15K to 25K,0 (No business),Unknown,0.0,0.00303,0.766667,10K or less
+6447908,Car Accessories,Exterior Accessories,Pacific,Fields Sales,89,Loss,2,17,17,0,100K or less,More than 25K,0 (No business),,0.0,1.0,0.0,10K or less
+6447908,Car Accessories,Exterior Accessories,Pacific,Fields Sales,89,Loss,2,17,17,100000,100K or less,More than 25K,0 (No business),,0.0,1.0,0.0,40K to 50K
+6495559,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,89,Loss,2,14,14,50000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,30K to 40K
+6495559,Performance & Non-auto,Shelters & RV,Pacific,Fields Sales,89,Loss,2,14,14,250000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,50K to 60K
+6498008,Car Accessories,Exterior Accessories,Southeast,Fields Sales,34,Loss,5,66,66,120000,More than 1M,1K or less,0 (No business),Known,0.0,0.550681,0.449319,40K to 50K
+6498008,Car Accessories,Exterior Accessories,Southeast,Fields Sales,34,Loss,5,66,66,0,More than 1M,1K or less,0 (No business),Known,0.0,0.550681,0.449319,10K or less
+6504421,Car Accessories,Exterior Accessories,Northeast,Fields Sales,50,Loss,8,53,53,8000,More than 1M,More than 25K,0 (No business),Unknown,0.181648,0.522472,0.29588,10K or less
+6504421,Car Accessories,Interior Accessories,Northeast,Fields Sales,50,Loss,8,53,53,434000,More than 1M,More than 25K,0 (No business),Unknown,0.181648,0.522472,0.29588,50K to 60K
+6545510,Performance & Non-auto,Shelters & RV,Northeast,Fields Sales,83,Loss,4,19,19,305000,500K to 1M,1K or less,0 (No business),,0.0,0.193717,0.806283,50K to 60K
+6545510,Car Accessories,Interior Accessories,Northeast,Fields Sales,83,Loss,4,19,19,80000,500K to 1M,1K or less,0 (No business),,0.0,0.193717,0.806283,30K to 40K
+6584418,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,68,Loss,3,32,32,40000,More than 1M,1K or less,0 (No business),Unknown,0.453704,0.546296,0.0,20K to 30K
+6584418,Tires & Wheels,Tires & Wheels,Midwest,Fields Sales,68,Loss,3,32,32,60000,More than 1M,1K or less,0 (No business),Unknown,0.453704,0.546296,0.0,30K to 40K
+6600541,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,93,Won,2,6,6,5000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+6600541,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,93,Won,2,6,6,8600,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+6604360,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,65,Loss,2,35,35,8000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+6604360,Car Accessories,Towing & Hitches,Mid-Atlantic,Reseller,65,Loss,2,35,35,22000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6653518,Car Accessories,Exterior Accessories,Southeast,Reseller,82,Won,7,3,3,0,250K to 500K,5K to 15K,0 (No business),Unknown,0.038462,0.730769,0.230769,10K or less
+6653518,Performance & Non-auto,Motorcycle Parts,Southeast,Reseller,82,Won,7,3,3,10000,250K to 500K,5K to 15K,0 (No business),Unknown,0.038462,0.730769,0.230769,10K to 20K
+6693964,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,65,Loss,2,31,31,10000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6693964,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,65,Loss,2,31,31,20000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6696753,Performance & Non-auto,Motorcycle Parts,Mid-Atlantic,Fields Sales,45,Won,5,14,10,59000,250K to 500K,More than 25K,0 (No business),,0.0,0.733333,0.0,30K to 40K
+6696753,Performance & Non-auto,Motorcycle Parts,Mid-Atlantic,Fields Sales,45,Won,5,14,10,0,250K to 500K,More than 25K,0 (No business),,0.0,0.733333,0.0,10K or less
+6708822,Performance & Non-auto,Motorcycle Parts,Pacific,Fields Sales,79,Loss,3,16,16,5000,100K or less,1K or less,0 (No business),Unknown,0.0,0.69375,0.30625,10K or less
+6708822,Performance & Non-auto,Motorcycle Parts,Pacific,Fields Sales,79,Loss,3,16,16,100,100K or less,1K or less,0 (No business),Unknown,0.0,0.69375,0.30625,10K or less
+6725791,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,71,Loss,5,24,24,100000,500K to 1M,More than 25K,0 (No business),Unknown,0.0,0.53617,0.46383,40K to 50K
+6725791,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,71,Loss,5,24,24,80000,500K to 1M,More than 25K,0 (No business),Unknown,0.0,0.53617,0.46383,30K to 40K
+6759661,Car Accessories,Exterior Accessories,Southeast,Reseller,53,Loss,4,38,38,1500,100K or less,15K to 25K,0 (No business),,0.0,0.0,1.0,10K or less
+6759661,Car Accessories,Exterior Accessories,Southeast,Reseller,53,Loss,4,38,38,3500,100K or less,15K to 25K,0 (No business),,0.0,0.0,1.0,10K or less
+6782620,Car Accessories,Batteries & Accessories,Midwest,Fields Sales,55,Loss,4,38,38,105530,100K or less,1K or less,0 (No business),Unknown,0.119048,0.074074,0.806878,40K to 50K
+6782620,Car Accessories,Batteries & Accessories,Midwest,Fields Sales,55,Loss,4,38,38,110208,100K or less,1K or less,0 (No business),Unknown,0.119048,0.074074,0.806878,40K to 50K
+6813515,Car Accessories,Interior Accessories,Northwest,Reseller,86,Won,4,4,0,155000,100K or less,1K or less,"50,000 - 100,000",Unknown,0.0,0.022727,0.0,40K to 50K
+6813515,Car Accessories,Interior Accessories,Northwest,Reseller,86,Won,4,4,0,0,100K or less,1K or less,"50,000 - 100,000",Unknown,0.0,0.022727,0.0,10K or less
+6825049,Performance & Non-auto,Shelters & RV,Mid-Atlantic,Fields Sales,89,Loss,4,0,0,415000,100K or less,1K or less,0 (No business),Unknown,0.5,0.0,0.5,50K to 60K
+6825049,Performance & Non-auto,Shelters & RV,Mid-Atlantic,Fields Sales,89,Loss,4,0,0,85000,100K or less,1K or less,0 (No business),Unknown,0.5,0.0,0.5,30K to 40K
+6831434,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Won,1,0,0,240060,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,40K to 50K
+6831434,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Won,1,0,0,240963,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,40K to 50K
+6835459,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Won,1,0,0,56073,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,30K to 40K
+6835459,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Won,1,0,0,41964,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,20K to 30K
+6835459,Car Accessories,Replacement Parts,Pacific,Fields Sales,90,Won,1,0,0,9281,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,10K or less
+6851136,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,63,Loss,2,26,26,10000,500K to 1M,5K to 15K,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6851136,Car Accessories,Exterior Accessories,Mid-Atlantic,Reseller,63,Loss,2,26,26,20000,500K to 1M,5K to 15K,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6862185,Car Accessories,Garage & Car Care,Northwest,Reseller,74,Won,5,6,2,105000,100K or less,1K or less,0 (No business),Unknown,0.0,0.017544,0.333333,40K to 50K
+6862185,Car Accessories,Garage & Car Care,Northwest,Reseller,74,Won,5,6,2,0,100K or less,1K or less,0 (No business),Unknown,0.0,0.017544,0.333333,10K or less
+6875233,Car Accessories,Exterior Accessories,Midwest,Fields Sales,82,Loss,2,6,6,343558,250K to 500K,1K or less,0 (No business),Known,1.0,0.0,0.0,50K to 60K
+6875233,Car Accessories,Exterior Accessories,Midwest,Fields Sales,82,Loss,2,6,6,6134,250K to 500K,1K or less,0 (No business),Known,1.0,0.0,0.0,10K or less
+6887783,Car Electronics,Car Electronics,Northwest,Fields Sales,83,Won,3,5,5,9692,100K or less,1K or less,0 (No business),Unknown,0.0,0.843137,0.156863,10K or less
+6887783,Car Accessories,Exterior Accessories,Northwest,Fields Sales,83,Won,3,5,5,19078,100K or less,1K or less,0 (No business),Unknown,0.0,0.843137,0.156863,10K to 20K
+6927696,Car Accessories,Garage & Car Care,Midwest,Reseller,7,Loss,5,53,53,10000,500K to 1M,15K to 25K,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6927696,Car Accessories,Garage & Car Care,Midwest,Reseller,7,Loss,5,53,53,15000,500K to 1M,15K to 25K,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+6978331,Car Accessories,Replacement Parts,Southwest,Reseller,47,Loss,5,38,38,20000,100K or less,1K or less,0 (No business),Unknown,0.066138,0.933862,0.0,10K to 20K
+6978331,Car Accessories,Replacement Parts,Southwest,Reseller,47,Loss,5,38,38,0,100K or less,1K or less,0 (No business),Unknown,0.066138,0.933862,0.0,10K or less
+7016652,Car Accessories,Exterior Accessories,Northeast,Fields Sales,64,Loss,2,19,19,2000,500K to 1M,More than 25K,0 (No business),Unknown,1.0,0.0,0.0,10K or less
+7016652,Car Accessories,Interior Accessories,Northeast,Fields Sales,64,Loss,2,19,19,50000,500K to 1M,More than 25K,0 (No business),Unknown,1.0,0.0,0.0,30K to 40K
+7028747,Car Accessories,Towing & Hitches,Southeast,Fields Sales,83,Loss,2,0,0,51000,100K or less,15K to 25K,0 (No business),Unknown,0.0,1.0,0.0,30K to 40K
+7028747,Car Accessories,Towing & Hitches,Southeast,Fields Sales,83,Loss,2,0,0,150000,100K or less,15K to 25K,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7054914,Performance & Non-auto,Performance Parts,Southeast,Reseller,80,Won,4,1,0,1919,250K to 500K,1K or less,0 (No business),Unknown,0.0,0.142857,0.0,10K or less
+7054914,Performance & Non-auto,Performance Parts,Southeast,Reseller,80,Won,4,1,0,11200,250K to 500K,1K or less,0 (No business),Unknown,0.0,0.142857,0.0,10K to 20K
+7081717,Car Accessories,Exterior Accessories,Mid-Atlantic,Fields Sales,55,Loss,9,11,10,60000,250K to 500K,1K to 5K,0 (No business),Known,0.230088,0.053097,0.628319,30K to 40K
+7081717,Car Accessories,Batteries & Accessories,Mid-Atlantic,Fields Sales,55,Loss,9,11,10,0,250K to 500K,1K to 5K,0 (No business),Known,0.230088,0.053097,0.628319,10K or less
+7120070,Car Accessories,Garage & Car Care,Midwest,Reseller,54,Loss,5,17,17,220000,500K to 1M,15K to 25K,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7120070,Car Accessories,Garage & Car Care,Midwest,Reseller,54,Loss,5,17,17,20000,500K to 1M,15K to 25K,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+7129100,Car Accessories,Replacement Parts,Northeast,Reseller,45,Loss,3,34,0,8000,100K or less,1K to 5K,0 (No business),Unknown,0.0,0.002933,0.0,10K or less
+7129100,Car Accessories,Replacement Parts,Northeast,Reseller,45,Loss,3,34,0,66000,100K or less,1K to 5K,0 (No business),Unknown,0.0,0.002933,0.0,30K to 40K
+7144393,Performance & Non-auto,Shelters & RV,Southeast,Fields Sales,55,Loss,5,24,24,0,250K to 500K,More than 25K,0 (No business),Unknown,0.0,0.679325,0.320675,10K or less
+7144393,Performance & Non-auto,Shelters & RV,Southeast,Fields Sales,55,Loss,5,24,24,300000,250K to 500K,More than 25K,0 (No business),Unknown,0.0,0.679325,0.320675,50K to 60K
+7169763,Performance & Non-auto,Performance Parts,Southwest,Reseller,36,Loss,2,42,42,50000,More than 1M,1K or less,0 (No business),Unknown,0.0,1.0,0.0,30K to 40K
+7169763,Car Accessories,Exterior Accessories,Southwest,Reseller,36,Loss,2,42,42,25000,More than 1M,1K or less,0 (No business),Unknown,0.0,1.0,0.0,20K to 30K
+7239544,Performance & Non-auto,Motorcycle Parts,Southeast,Fields Sales,54,Won,3,1,0,12000,100K to 250K,1K or less,"25,000 - 50,000",Unknown,0.0,0.0,0.0,10K to 20K
+7239544,Performance & Non-auto,Motorcycle Parts,Southeast,Fields Sales,54,Won,3,1,0,23000,100K to 250K,1K or less,"25,000 - 50,000",Unknown,0.0,0.0,0.0,10K to 20K
+7239544,Performance & Non-auto,Motorcycle Parts,Southeast,Fields Sales,54,Won,3,1,0,14000,100K to 250K,1K or less,"25,000 - 50,000",Unknown,0.0,0.0,0.0,10K to 20K
+7247062,Performance & Non-auto,Shelters & RV,Pacific,Fields Sales,57,Won,3,18,18,108510,100K to 250K,5K to 15K,"0 - 25,000",Known,0.0,0.683616,0.316384,40K to 50K
+7247062,Performance & Non-auto,Shelters & RV,Pacific,Fields Sales,57,Won,3,18,18,426290,100K to 250K,5K to 15K,"0 - 25,000",Known,0.0,0.683616,0.316384,50K to 60K
+7254786,Car Accessories,Interior Accessories,Southwest,Fields Sales,72,Loss,2,3,3,40000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,20K to 30K
+7254786,Car Accessories,Interior Accessories,Southwest,Fields Sales,72,Loss,2,3,3,260000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,50K to 60K
+7281765,Car Accessories,Batteries & Accessories,Pacific,Reseller,66,Won,4,8,5,45000,More than 1M,1K or less,0 (No business),Known,0.0,0.32,0.333333,20K to 30K
+7281765,Car Accessories,Batteries & Accessories,Pacific,Reseller,66,Won,4,8,5,45000,More than 1M,1K or less,0 (No business),Known,0.0,0.32,0.333333,20K to 30K
+7281765,Car Accessories,Batteries & Accessories,Pacific,Reseller,66,Won,4,8,5,60000,More than 1M,1K or less,0 (No business),Known,0.0,0.32,0.333333,30K to 40K
+7281765,Car Accessories,Batteries & Accessories,Pacific,Reseller,66,Won,4,8,5,15000,More than 1M,1K or less,0 (No business),Known,0.0,0.32,0.333333,10K to 20K
+7292688,Car Accessories,Interior Accessories,Southwest,Fields Sales,47,Loss,2,26,26,50000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,30K to 40K
+7292688,Car Accessories,Interior Accessories,Southwest,Fields Sales,47,Loss,2,26,26,350000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,50K to 60K
+7305882,Car Accessories,Replacement Parts,Southwest,Reseller,63,Loss,4,9,9,15000,100K or less,1K or less,0 (No business),Unknown,0.010638,0.989362,0.0,10K to 20K
+7305882,Car Accessories,Batteries & Accessories,Southwest,Reseller,63,Loss,4,9,9,0,100K or less,1K or less,0 (No business),Unknown,0.010638,0.989362,0.0,10K or less
+7312879,Car Accessories,Exterior Accessories,Midwest,Reseller,46,Won,2,27,27,14000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+7312879,Car Accessories,Exterior Accessories,Midwest,Reseller,46,Won,2,27,27,20000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+7316314,Performance & Non-auto,Shelters & RV,Mid-Atlantic,Reseller,16,Loss,4,56,56,30000,100K or less,1K or less,0 (No business),Unknown,0.0,0.344704,0.655296,20K to 30K
+7316314,Performance & Non-auto,Shelters & RV,Mid-Atlantic,Reseller,16,Loss,4,56,56,0,100K or less,1K or less,0 (No business),Unknown,0.0,0.344704,0.655296,10K or less
+7322354,Car Accessories,Interior Accessories,Southeast,Fields Sales,56,Loss,4,9,9,28000,More than 1M,More than 25K,0 (No business),Known,0.0,0.968085,0.031915,20K to 30K
+7322354,Performance & Non-auto,Shelters & RV,Southeast,Fields Sales,56,Loss,4,9,9,400000,More than 1M,More than 25K,0 (No business),Known,0.0,0.968085,0.031915,50K to 60K
+7343631,Performance & Non-auto,Motorcycle Parts,Northeast,Fields Sales,55,Won,3,16,16,239000,100K or less,1K or less,"More than 100,000",Known,0.0,0.852564,0.147436,40K to 50K
+7343631,Performance & Non-auto,Shelters & RV,Northeast,Fields Sales,55,Won,3,16,16,0,100K or less,1K or less,"More than 100,000",Known,0.0,0.852564,0.147436,10K or less
+7360582,Car Accessories,Batteries & Accessories,Southwest,Reseller,44,Loss,2,27,27,50000,250K to 500K,5K to 15K,0 (No business),Unknown,0.0,1.0,0.0,30K to 40K
+7360582,Car Accessories,Batteries & Accessories,Southwest,Reseller,44,Loss,2,27,27,100000,250K to 500K,5K to 15K,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7367921,Car Accessories,Replacement Parts,Mid-Atlantic,Reseller,59,Loss,2,11,11,10000,100K or less,1K or less,0 (No business),Known,0.0,1.0,0.0,10K to 20K
+7367921,Car Accessories,Replacement Parts,Mid-Atlantic,Reseller,59,Loss,2,11,11,15000,100K or less,1K or less,0 (No business),Known,0.0,1.0,0.0,10K to 20K
+7373659,Performance & Non-auto,Motorcycle Parts,Midwest,Reseller,60,Won,4,6,6,235000,More than 1M,15K to 25K,0 (No business),Unknown,0.0,0.017857,0.982143,40K to 50K
+7373659,Performance & Non-auto,Motorcycle Parts,Midwest,Reseller,60,Won,4,6,6,7500,More than 1M,15K to 25K,0 (No business),Unknown,0.0,0.017857,0.982143,10K or less
+7405822,Car Accessories,Replacement Parts,Pacific,Fields Sales,68,Won,1,0,0,158860,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,40K to 50K
+7405822,Car Accessories,Replacement Parts,Pacific,Fields Sales,68,Won,1,0,0,226950,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,40K to 50K
+7463337,Car Accessories,Interior Accessories,Pacific,Reseller,15,Loss,5,37,37,4998,100K or less,1K or less,0 (No business),,0.978142,0.021858,0.0,10K or less
+7463337,Car Accessories,Interior Accessories,Pacific,Reseller,15,Loss,5,37,37,4998,100K or less,1K or less,0 (No business),,0.978142,0.021858,0.0,10K or less
+7463337,Car Accessories,Interior Accessories,Pacific,Reseller,15,Loss,5,37,37,1666,100K or less,1K or less,0 (No business),,0.978142,0.021858,0.0,10K or less
+7466175,Car Accessories,Exterior Accessories,Southeast,Reseller,64,Won,3,2,2,31000,100K or less,1K or less,"25,000 - 50,000",Unknown,0.0,0.166667,0.833333,20K to 30K
+7466175,Car Accessories,Exterior Accessories,Southeast,Reseller,64,Won,3,2,2,22000,100K or less,1K or less,"25,000 - 50,000",Unknown,0.0,0.166667,0.833333,10K to 20K
+7478784,Performance & Non-auto,Shelters & RV,Pacific,Telecoverage,23,Won,9,11,11,0,100K or less,1K or less,0 (No business),,0.027027,0.513514,0.459459,10K or less
+7478784,Performance & Non-auto,Motorcycle Parts,Pacific,Telecoverage,23,Won,9,11,11,193759,100K or less,1K or less,0 (No business),,0.027027,0.513514,0.459459,40K to 50K
+7521574,Performance & Non-auto,Motorcycle Parts,Pacific,Fields Sales,52,Loss,4,12,12,120000,100K or less,1K or less,0 (No business),,0.278689,0.721311,0.0,40K to 50K
+7521574,Tires & Wheels,Tires & Wheels,Pacific,Fields Sales,52,Loss,4,12,12,120010,100K or less,1K or less,0 (No business),,0.278689,0.721311,0.0,40K to 50K
+7530934,Car Accessories,Exterior Accessories,Midwest,Reseller,54,Won,8,9,8,375941,250K to 500K,5K to 15K,"50,000 - 100,000",Unknown,0.0,0.086957,0.826087,50K to 60K
+7530934,Car Accessories,Garage & Car Care,Midwest,Reseller,54,Won,8,9,8,0,250K to 500K,5K to 15K,"50,000 - 100,000",Unknown,0.0,0.086957,0.826087,10K or less
+7542338,Car Accessories,Batteries & Accessories,Northwest,Fields Sales,53,Loss,2,10,10,0,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+7542338,Car Accessories,Batteries & Accessories,Northwest,Fields Sales,53,Loss,2,10,10,113000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7597895,Car Accessories,Garage & Car Care,Northwest,Reseller,50,Loss,3,7,7,232558,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7597895,Car Accessories,Garage & Car Care,Northwest,Reseller,50,Loss,3,7,7,214720,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7612130,Car Accessories,Replacement Parts,Northwest,Reseller,16,Loss,7,44,44,116279,100K or less,1K or less,0 (No business),Unknown,0.0,0.3918,0.6082,40K to 50K
+7612130,Car Accessories,Replacement Parts,Northwest,Reseller,16,Loss,7,44,44,116860,100K or less,1K or less,0 (No business),Unknown,0.0,0.3918,0.6082,40K to 50K
+7619305,Car Accessories,Batteries & Accessories,Southwest,Fields Sales,40,Won,4,16,16,150000,100K or less,1K or less,"50,000 - 100,000",Known,0.534161,0.0,0.465839,40K to 50K
+7619305,Performance & Non-auto,Shelters & RV,Southwest,Fields Sales,40,Won,4,16,16,300000,100K or less,1K or less,"50,000 - 100,000",Known,0.534161,0.0,0.465839,50K to 60K
+7619322,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,56,Loss,2,4,4,199000,100K or less,1K or less,"More than 100,000",,0.0,1.0,0.0,40K to 50K
+7619322,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,56,Loss,2,4,4,755000,100K or less,1K or less,"More than 100,000",,0.0,1.0,0.0,More than 60K
+7682469,Performance & Non-auto,Performance Parts,Northwest,Fields Sales,41,Won,5,13,13,16867,100K or less,1K or less,0 (No business),,0.315789,0.473684,0.210526,10K to 20K
+7682469,Performance & Non-auto,Performance Parts,Northwest,Fields Sales,41,Won,5,13,13,32530,100K or less,1K or less,0 (No business),,0.315789,0.473684,0.210526,20K to 30K
+7683045,Performance & Non-auto,Performance Parts,Midwest,Fields Sales,4,Loss,3,54,54,5000,100K or less,1K or less,0 (No business),Unknown,0.988848,0.011152,0.0,10K or less
+7683045,Tires & Wheels,Tires & Wheels,Midwest,Fields Sales,4,Loss,3,54,54,131000,100K or less,1K or less,0 (No business),Unknown,0.988848,0.011152,0.0,40K to 50K
+7753406,Car Accessories,Batteries & Accessories,Pacific,Other,51,Loss,2,4,4,80000,100K or less,1K or less,0 (No business),Known,1.0,0.0,0.0,30K to 40K
+7753406,Car Accessories,Batteries & Accessories,Pacific,Other,51,Loss,2,4,4,50000,100K or less,1K or less,0 (No business),Known,1.0,0.0,0.0,30K to 40K
+7774423,Car Accessories,Towing & Hitches,Mid-Atlantic,Other,34,Loss,3,17,17,10000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,10K to 20K
+7774423,Car Accessories,Towing & Hitches,Mid-Atlantic,Other,34,Loss,3,17,17,50000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,30K to 40K
+7805130,Car Accessories,Replacement Parts,Midwest,Reseller,49,Won,3,1,1,3664,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+7805130,Car Accessories,Replacement Parts,Midwest,Reseller,49,Won,3,1,1,0,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+7812028,Performance & Non-auto,Motorcycle Parts,Southwest,Reseller,28,Loss,6,24,24,0,100K or less,1K or less,0 (No business),Unknown,0.0,0.648536,0.351464,10K or less
+7812028,Performance & Non-auto,Motorcycle Parts,Southwest,Reseller,28,Loss,6,24,24,20000,100K or less,1K or less,0 (No business),Unknown,0.0,0.648536,0.351464,10K to 20K
+7835914,Car Accessories,Replacement Parts,Northeast,Fields Sales,27,Won,3,25,25,80000,100K or less,1K or less,"25,000 - 50,000",Unknown,0.914286,0.0,0.085714,30K to 40K
+7835914,Car Accessories,Replacement Parts,Northeast,Fields Sales,27,Won,3,25,25,0,100K or less,1K or less,"25,000 - 50,000",Unknown,0.914286,0.0,0.085714,10K or less
+7860306,Car Accessories,Replacement Parts,Pacific,Fields Sales,51,Won,1,0,0,25014,100K or less,1K or less,"25,000 - 50,000",Unknown,0.0,0.0,0.0,20K to 30K
+7860306,Car Accessories,Replacement Parts,Pacific,Fields Sales,51,Won,1,0,0,36153,100K or less,1K or less,"25,000 - 50,000",Unknown,0.0,0.0,0.0,20K to 30K
+7860475,Car Accessories,Replacement Parts,Pacific,Fields Sales,51,Won,1,0,0,20250,100K or less,1K or less,"50,000 - 100,000",Unknown,0.0,0.0,0.0,10K to 20K
+7860475,Car Accessories,Replacement Parts,Pacific,Fields Sales,51,Won,1,0,0,243072,100K or less,1K or less,"50,000 - 100,000",Unknown,0.0,0.0,0.0,40K to 50K
+7864387,Performance & Non-auto,Performance Parts,Southeast,Fields Sales,45,Won,6,4,4,105000,100K or less,1K or less,"50,000 - 100,000",Known,0.181818,0.295455,0.522727,40K to 50K
+7864387,Performance & Non-auto,Performance Parts,Southeast,Fields Sales,45,Won,6,4,4,28000,100K or less,1K or less,"50,000 - 100,000",Known,0.181818,0.295455,0.522727,20K to 30K
+7906072,Car Accessories,Garage & Car Care,Northwest,Reseller,16,Loss,3,33,33,10000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+7906072,Car Accessories,Interior Accessories,Northwest,Reseller,16,Loss,3,33,33,125000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+7973674,Car Accessories,Interior Accessories,Northwest,Fields Sales,44,Loss,2,3,3,602409,100K or less,1K or less,0 (No business),Known,0.0,1.0,0.0,More than 60K
+7973674,Car Accessories,Interior Accessories,Northwest,Fields Sales,44,Loss,2,3,3,240963,100K or less,1K or less,0 (No business),Known,0.0,1.0,0.0,40K to 50K
+7992716,Car Accessories,Exterior Accessories,Pacific,Fields Sales,36,Won,3,11,11,48243,100K or less,1K or less,"More than 100,000",Known,0.0,0.292453,0.707547,20K to 30K
+7992716,Car Accessories,Exterior Accessories,Pacific,Fields Sales,36,Won,3,11,11,50000,100K or less,1K or less,"More than 100,000",Known,0.0,0.292453,0.707547,30K to 40K
+8003017,Car Accessories,Replacement Parts,Mid-Atlantic,Fields Sales,37,Won,2,10,10,0,100K or less,1K or less,"50,000 - 100,000",Unknown,0.0,0.0,1.0,10K or less
+8003017,Car Accessories,Exterior Accessories,Mid-Atlantic,Fields Sales,37,Won,2,10,10,275000,100K or less,1K or less,"50,000 - 100,000",Unknown,0.0,0.0,1.0,50K to 60K
+8050982,Car Accessories,Interior Accessories,Southeast,Fields Sales,19,Loss,3,26,26,150000,100K or less,1K or less,0 (No business),Unknown,0.043137,0.956863,0.0,40K to 50K
+8050982,Car Accessories,Interior Accessories,Southeast,Fields Sales,19,Loss,3,26,26,50000,100K or less,1K or less,0 (No business),Unknown,0.043137,0.956863,0.0,30K to 40K
+8051427,Car Accessories,Replacement Parts,Pacific,Fields Sales,24,Loss,3,21,21,2083,100K or less,1K or less,0 (No business),Unknown,0.314554,0.685446,0.0,10K or less
+8051427,Car Accessories,Replacement Parts,Pacific,Fields Sales,24,Loss,3,21,21,22000,100K or less,1K or less,0 (No business),Unknown,0.314554,0.685446,0.0,10K to 20K
+8071650,Car Accessories,Garage & Car Care,Pacific,Fields Sales,42,Won,4,3,3,108510,100K or less,1K or less,0 (No business),,0.0,0.0,0.961538,40K to 50K
+8071650,Performance & Non-auto,Motorcycle Parts,Pacific,Fields Sales,42,Won,4,3,3,201519,100K or less,1K or less,0 (No business),,0.0,0.0,0.961538,40K to 50K
+8072128,Car Accessories,Towing & Hitches,Midwest,Fields Sales,38,Loss,2,6,6,16000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,10K to 20K
+8072128,Car Accessories,Towing & Hitches,Midwest,Fields Sales,38,Loss,2,6,6,180000,100K or less,1K or less,0 (No business),Known,0.0,0.0,1.0,40K to 50K
+8089697,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,40,Won,3,4,4,140000,100K or less,1K or less,"25,000 - 50,000",,0.0,0.333333,0.666667,40K to 50K
+8089697,Car Accessories,Interior Accessories,Pacific,Fields Sales,40,Won,3,4,4,530000,100K or less,1K or less,"25,000 - 50,000",,0.0,0.333333,0.666667,More than 60K
+8092917,Performance & Non-auto,Motorcycle Parts,Midwest,Reseller,20,Won,2,24,24,159105,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+8092917,Performance & Non-auto,Motorcycle Parts,Midwest,Reseller,20,Won,2,24,24,0,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+8117719,Car Accessories,Exterior Accessories,Northwest,Reseller,42,Loss,1,0,0,29069,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,20K to 30K
+8117719,Car Accessories,Exterior Accessories,Northwest,Reseller,42,Loss,1,0,0,11627,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,10K to 20K
+8118253,Performance & Non-auto,Motorcycle Parts,Northwest,Reseller,26,Won,3,16,4,3681,100K or less,1K or less,0 (No business),Unknown,0.0,0.275,0.0,10K or less
+8118253,Performance & Non-auto,Motorcycle Parts,Northwest,Reseller,26,Won,3,16,4,15028,100K or less,1K or less,0 (No business),Unknown,0.0,0.275,0.0,10K to 20K
+8227179,Car Accessories,Exterior Accessories,Midwest,Reseller,33,Won,5,4,4,11000,100K or less,1K or less,"25,000 - 50,000",Known,0.0,0.363636,0.636364,10K to 20K
+8227179,Car Accessories,Garage & Car Care,Midwest,Reseller,33,Won,5,4,4,20000,100K or less,1K or less,"25,000 - 50,000",Known,0.0,0.363636,0.636364,10K to 20K
+8281066,Performance & Non-auto,Motorcycle Parts,Pacific,Fields Sales,27,Won,5,7,7,8125,100K or less,1K or less,0 (No business),,0.0,0.185714,0.814286,10K or less
+8281066,Performance & Non-auto,Motorcycle Parts,Pacific,Fields Sales,27,Won,5,7,7,10000,100K or less,1K or less,0 (No business),,0.0,0.185714,0.814286,10K to 20K
+8327218,Car Accessories,Interior Accessories,Pacific,Reseller,30,Loss,4,2,1,2711,100K or less,1K or less,0 (No business),,0.0,0.304348,0.0,10K or less
+8327218,Car Accessories,Interior Accessories,Pacific,Reseller,30,Loss,4,2,1,4196,100K or less,1K or less,0 (No business),,0.0,0.304348,0.0,10K or less
+8378725,Performance & Non-auto,Shelters & RV,Midwest,Telecoverage,15,Loss,3,18,18,200000,100K or less,1K or less,0 (No business),Known,0.082873,0.917127,0.0,40K to 50K
+8378725,Performance & Non-auto,Motorcycle Parts,Midwest,Telecoverage,15,Loss,3,18,18,50000,100K or less,1K or less,0 (No business),Known,0.082873,0.917127,0.0,30K to 40K
+8382109,Car Accessories,Replacement Parts,Southeast,Reseller,20,Loss,3,13,13,10000,100K or less,1K or less,0 (No business),Unknown,0.104478,0.895522,0.0,10K to 20K
+8382109,Car Accessories,Replacement Parts,Southeast,Reseller,20,Loss,3,13,13,20000,100K or less,1K or less,0 (No business),Unknown,0.104478,0.895522,0.0,10K to 20K
+8388041,Car Accessories,Replacement Parts,Pacific,Reseller,19,Won,5,14,14,0,100K or less,1K or less,"0 - 25,000",,0.236111,0.611111,0.097222,10K or less
+8388041,Car Accessories,Replacement Parts,Pacific,Reseller,19,Won,5,14,14,20597,100K or less,1K or less,"0 - 25,000",,0.236111,0.611111,0.097222,10K to 20K
+8439657,Car Accessories,Exterior Accessories,Northwest,Reseller,28,Won,2,3,3,0,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+8439657,Performance & Non-auto,Shelters & RV,Northwest,Reseller,28,Won,2,3,3,13157,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+8445253,Car Accessories,Replacement Parts,Mid-Atlantic,Reseller,25,Loss,3,6,6,58332,100K or less,1K or less,0 (No business),,0.018182,0.981818,0.0,30K to 40K
+8445253,Car Accessories,Replacement Parts,Mid-Atlantic,Reseller,25,Loss,3,6,6,24996,100K or less,1K or less,0 (No business),,0.018182,0.981818,0.0,10K to 20K
+8445253,Car Accessories,Replacement Parts,Mid-Atlantic,Reseller,25,Loss,3,6,6,24996,100K or less,1K or less,0 (No business),,0.018182,0.981818,0.0,10K to 20K
+8469045,Performance & Non-auto,Shelters & RV,Northwest,Reseller,7,Loss,3,22,22,11627,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+8469045,Performance & Non-auto,Shelters & RV,Northwest,Reseller,7,Loss,3,22,22,23255,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K to 20K
+8476177,Performance & Non-auto,Motorcycle Parts,Northeast,Reseller,26,Won,3,3,0,20000,100K or less,1K or less,0 (No business),Unknown,0.0,0.032258,0.0,10K to 20K
+8476177,Performance & Non-auto,Motorcycle Parts,Northeast,Reseller,26,Won,3,3,0,21000,100K or less,1K or less,0 (No business),Unknown,0.0,0.032258,0.0,10K to 20K
+8515211,Car Accessories,Interior Accessories,Southeast,Fields Sales,11,Loss,3,10,10,50000,100K or less,1K or less,0 (No business),Unknown,1.0,0.0,0.0,30K to 40K
+8515211,Performance & Non-auto,Shelters & RV,Southeast,Fields Sales,11,Loss,3,10,10,100000,100K or less,1K or less,0 (No business),Unknown,1.0,0.0,0.0,40K to 50K
+8555599,Car Accessories,Interior Accessories,Southwest,Fields Sales,12,Won,5,13,7,663000,100K or less,1K or less,0 (No business),Unknown,0.0,0.456,0.088,More than 60K
+8555599,Car Accessories,Interior Accessories,Southwest,Fields Sales,12,Won,5,13,7,1,100K or less,1K or less,0 (No business),Unknown,0.0,0.456,0.088,10K or less
+9384517,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,13,Loss,2,12,12,150000,100K or less,1K or less,0 (No business),Unknown,1.0,0.0,0.0,40K to 50K
+9384517,Car Accessories,Batteries & Accessories,Pacific,Fields Sales,13,Loss,2,12,12,30000,100K or less,1K or less,0 (No business),Unknown,1.0,0.0,0.0,20K to 30K
+9389467,Car Accessories,Exterior Accessories,Mid-Atlantic,Fields Sales,18,Won,4,8,5,1000000,100K or less,1K or less,"More than 100,000",Unknown,0.0,0.333333,0.386667,More than 60K
+9389467,Car Accessories,Replacement Parts,Mid-Atlantic,Fields Sales,18,Won,4,8,5,200000,100K or less,1K or less,"More than 100,000",Unknown,0.0,0.333333,0.386667,40K to 50K
+9408878,Car Accessories,Garage & Car Care,Pacific,Telesales,23,Loss,3,2,2,500,100K or less,1K or less,0 (No business),Unknown,0.0,0.333333,0.666667,10K or less
+9408878,Car Accessories,Garage & Car Care,Pacific,Telesales,23,Loss,3,2,2,1200,100K or less,1K or less,0 (No business),Unknown,0.0,0.333333,0.666667,10K or less
+9410109,Car Accessories,Exterior Accessories,Pacific,Reseller,17,Won,2,7,7,15501,100K or less,1K or less,"0 - 25,000",Unknown,0.0,1.0,0.0,10K to 20K
+9410109,Car Accessories,Exterior Accessories,Pacific,Reseller,17,Won,2,7,7,8952,100K or less,1K or less,"0 - 25,000",Unknown,0.0,1.0,0.0,10K or less
+9557249,Performance & Non-auto,Shelters & RV,Midwest,Fields Sales,18,Loss,2,1,0,90000,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,30K to 40K
+9557249,Car Accessories,Replacement Parts,Midwest,Fields Sales,18,Loss,2,1,0,180000,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,0.0,40K to 50K
+9649176,Car Accessories,Interior Accessories,Midwest,Fields Sales,7,Loss,3,9,9,19348,100K or less,1K or less,0 (No business),Known,0.0,0.538462,0.461538,10K to 20K
+9649176,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,7,Loss,3,9,9,47291,100K or less,1K or less,0 (No business),Known,0.0,0.538462,0.461538,20K to 30K
+9682532,Performance & Non-auto,Shelters & RV,Northeast,Fields Sales,12,Loss,3,2,2,20000,100K or less,1K or less,0 (No business),Unknown,0.047619,0.0,0.952381,10K to 20K
+9682532,Performance & Non-auto,Shelters & RV,Northeast,Fields Sales,12,Loss,3,2,2,60000,100K or less,1K or less,0 (No business),Unknown,0.047619,0.0,0.952381,30K to 40K
+9743892,Car Accessories,Garage & Car Care,Midwest,Reseller,9,Won,2,4,4,6748,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+9743892,Car Accessories,Garage & Car Care,Midwest,Reseller,9,Won,2,4,4,7361,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+9774974,Performance & Non-auto,Shelters & RV,Northwest,Fields Sales,11,Loss,2,0,0,60050,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,1.0,30K to 40K
+9774974,Car Accessories,Garage & Car Care,Northwest,Fields Sales,11,Loss,2,0,0,934000,100K or less,1K or less,0 (No business),Unknown,0.0,0.0,1.0,More than 60K
+9782603,Car Accessories,Exterior Accessories,Southwest,Reseller,3,Loss,2,9,9,1250,100K or less,1K or less,0 (No business),,0.0,1.0,0.0,10K or less
+9782603,Car Accessories,Exterior Accessories,Southwest,Reseller,3,Loss,2,9,9,3750,100K or less,1K or less,0 (No business),,0.0,1.0,0.0,10K or less
+9782603,Car Accessories,Exterior Accessories,Southwest,Reseller,3,Loss,2,9,9,3750,100K or less,1K or less,0 (No business),,0.0,1.0,0.0,10K or less
+9782603,Car Accessories,Exterior Accessories,Southwest,Reseller,3,Loss,2,9,9,3750,100K or less,1K or less,0 (No business),,0.0,1.0,0.0,10K or less
+9800649,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,9,Won,2,2,2,3700,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+9800649,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,9,Won,2,2,2,3728,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,10K or less
+9913584,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,0,Loss,3,7,7,50000,100K or less,1K or less,0 (No business),Unknown,0.2,0.8,0.0,30K to 40K
+9913584,Performance & Non-auto,Motorcycle Parts,Midwest,Fields Sales,0,Loss,3,7,7,60000,100K or less,1K or less,0 (No business),Unknown,0.2,0.8,0.0,30K to 40K
+9916456,Performance & Non-auto,Motorcycle Parts,Southeast,Reseller,5,Loss,3,0,0,573,100K or less,1K or less,0 (No business),,0.0,1.0,0.0,10K or less
+9916456,Performance & Non-auto,Motorcycle Parts,Southeast,Reseller,5,Loss,3,0,0,2382,100K or less,1K or less,0 (No business),,0.0,1.0,0.0,10K or less
+9966812,Performance & Non-auto,Shelters & RV,Midwest,Fields Sales,2,Loss,2,3,3,250000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,50K to 60K
+9966812,Car Accessories,Exterior Accessories,Midwest,Fields Sales,2,Loss,2,3,3,500000,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,More than 60K
+9986350,Performance & Non-auto,Shelters & RV,Northwest,Reseller,0,Won,2,4,4,127906,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,40K to 50K
+9986350,Performance & Non-auto,Shelters & RV,Northwest,Reseller,0,Won,2,4,4,381395,100K or less,1K or less,0 (No business),Unknown,0.0,1.0,0.0,50K to 60K

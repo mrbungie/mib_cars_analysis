@@ -1,0 +1,4 @@
+method,threshold
+Method 1 (R2 plateau),61-75
+Method 2 (round-number baseline),121+
+Method 3 (CV by P(win)),No clear threshold
