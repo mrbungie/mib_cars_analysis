@@ -41,5 +41,13 @@ Project workspace for sales funnel analytics and predictive modeling on `cars.xl
 1. `notebooks/01_eda_cleansing.ipynb` - baseline EDA + cleansing
 2. `notebooks/02_variable_eda.ipynb` - variable-by-variable deep profile
 3. `notebooks/03_monotonicity_targets.ipynb` - monotonicity checks vs win/loss and binned amount targets
-4. `notebooks/03_woe_iv_winloss.ipynb` - WoE/IV analysis for win/loss target
-5. `notebooks/04_optbinning_amount.ipynb` - continuous optbinning and explained variance for amount target
+4. `notebooks/04_woe_iv_winloss.ipynb` - WoE/IV analysis for win/loss target
+5. `notebooks/05_optbinning_amount.ipynb` - continuous optbinning and explained variance for amount target
+
+
+## Observation zero
+
+- Notebook: `../observation_0/00_observation0_basic_validation.ipynb`
+- Markdown summary: `../observation_0/00_observation0_basic_validation.md`
+- Amount maturity notebook: `../observation_0/01_amount_maturity_thresholds.ipynb`
+- Amount maturity report: `../observation_0/01_amount_maturity_thresholds.md`
