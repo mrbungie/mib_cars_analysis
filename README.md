@@ -1,53 +1,29 @@
 # MIB Cars Analysis
 
-Project workspace for sales funnel analytics and predictive modeling on `cars.xlsx`.
+The goal of the sales process is to identify and communicate with potential leads, and explore opportunities to convert them into customers. For this project, the database contains records of every sales opportunity with information about the client, product, and process status which focuses on 3 key stages:-
 
-## Slides structure
+Identified/Qualifying
+Qualified/Validating
+Validated/Gaining Agreement
 
-- Proposal outline: [`SLIDES_PROPOSAL.md`](SLIDES_PROPOSAL.md)
+This dataset consists of 78,025 rows and 19 columns (9 numerical, 10 categorical). The columns include the following:-
 
-## Core tasks to do
-
-1. **Classification task (win/loss):**
-   - Predict `Opportunity Result` (win vs loss).
-   - Focus on funnel, client segmentation, and process variables.
-
-2. **Amount prediction task (deal amount):**
-   - Predict the deal amount target (amount/deal-size perspective).
-   - Primary numeric target: `Opportunity Amount USD`.
-   - Secondary business view: `Deal Size Category (USD)`.
-
-## Delivery format and workflow
-
-- Deliver analysis in **Jupyter notebooks** (`notebooks/`) plus **Markdown summaries** (`reports/`).
-- Start with **Exploratory Data Analysis (EDA)**:
-  - Funnel phase x client segment insights
-  - Target exploration for both tasks
-  - Variable distributions and relationship checks
-- Continue with **data cleansing based on common sense** after reviewing columns:
-  - Missing values
-  - Category normalization
-  - Type conversion and invalid values
-  - Outlier detection and treatment rationale
-- End each cycle with an updated **proposal/recommendation** in Markdown.
-
-## Working cadence
-
-- Render notebooks regularly after meaningful progress.
-- Commit and push in incremental checkpoints (EDA baseline, cleansing pass, modeling baseline, simulations/proposal updates).
-
-## Notebook sequence
-
-1. `notebooks/01_eda_cleansing.ipynb` - baseline EDA + cleansing
-2. `notebooks/02_variable_eda.ipynb` - variable-by-variable deep profile
-3. `notebooks/03_monotonicity_targets.ipynb` - monotonicity checks vs win/loss and binned amount targets
-4. `notebooks/04_woe_iv_winloss.ipynb` - WoE/IV analysis for win/loss target
-5. `notebooks/05_optbinning_amount.ipynb` - continuous optbinning and explained variance for amount target
-
-
-## Observation zero
-
-- Notebook: `../observation_0/00_observation0_basic_validation.ipynb`
-- Markdown summary: `../observation_0/00_observation0_basic_validation.md`
-- Amount maturity notebook: `../observation_0/01_amount_maturity_thresholds.ipynb`
-- Amount maturity report: `../observation_0/01_amount_maturity_thresholds.md`
+Amount - Estimated total revenue of opportunities in USD. (Goal 1)
+Result - Outcome of opportunity. (Goal 2)
+Id - A uniquely generated number assigned to the opportunity.
+Supplies - Category for each supplies group.
+Supplies_Sub - Sub group of each supplies group.
+Region - Name of the region.
+Market - The opportunities' route to market.
+Client_Revenue - Client size based on annual revenue.
+Client_Employee - Client size by number of employees.
+Client_Past - Revenue identified from this client in the past two years.
+Competitor - An indicator if a competitor has been identified.
+Size - Categorical grouping of the opportunity amount.
+Elapsed_Days - The number of days between the change in sales stages. Each change resets the counter.
+Stage_Change - The number of times an opportunity changes sales stage. Includes backward and forward changes.
+Total_Days - Total days spent in Sales Stages from Identified/Validating to Gained Agreement/Closing.
+Total_Siebel - Total days spent in Siebel Stages from Identified/Validating to Qualified/Gaining Agreement.
+Ratio_Identify - Ratio of total days spent in the Identified/Validating stage over total days in sales process.
+Ratio_Validate - Ratio of total days spent in the Validated/Qualifying stage over total days in sales process.
+Ratio_Qualify - Ratio of total days spent in Qualified/Gaining Agreement stage over total days in sales process.
