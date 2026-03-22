@@ -57,7 +57,7 @@ This dataset consists of 78,025 rows and 19 columns (9 numerical, 10 categorical
 4. **Modelling**  
    1. **Model estimation:** Details about the Actual predictive modelling  
    2. **Model results:** Metrics + feature importance  
-5. **Application simulation:** Show one or two examples of the detected opportunities being applied for decisions (i.e. a simulation of the application.  
+5. **Application simulation:** Show one or two examples of the detected opportunities being applied for decisions (i.e. a simulation of the application.)
    1. **Process prioritization**  
    2. **Channel optimization**  
 6. **Conclusions**
