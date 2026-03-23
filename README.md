@@ -35,7 +35,7 @@ This dataset consists of 78,025 rows and 19 columns (9 numerical, 10 categorical
 The notebooks are organized in the following way:
 | Group | Notebook | Description | Link |
 | --- | --- | --- | --- |
-| 1_data_validation | 00_basic_validation.ipynb | Basic data validation and cleaning. | [Link](notebooks/1_data_validation/00_basic_validation.ipynb) |
+| 1_data_validation | 00_basic_validation.ipynb | Basic data validation and cleaning. | [Link](notebooks/1_data_validation/01_basic_validation.ipynb) |
 | 2_eda | 01_variable_eda.ipynb | Exploratory data analysis of the variables. (NOTE: Not applied to filtered data yet) | [Link](notebooks/2_eda/01_variable_eda.ipynb) |
 | 3_discretization_and_bivariate_analysis | 00_train_test_split.ipynb | Train-test split of the dataset. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/00_train_test_split.ipynb) |
 | 3_discretization_and_bivariate_analysis | 01_monotonicity_targets.ipynb | Analysis of monotonic relationships between features and targets. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/01_monotonicity_targets.ipynb) |
