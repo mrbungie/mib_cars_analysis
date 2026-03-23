@@ -69,7 +69,7 @@ Right now we have identified the following opportunities for applying predictive
 4. **Secondary market segmentations** over predicted insights  
 5. **Others:** Early warning systems, budget allocation (over sales processes or product category/lines).  
 
-More information about these opportunities and their potential applications can be found in the Annex section below in ![Annex - Map between business opportunities and modelling approaches](#annex---map-between-business-opportunities-and-modelling-approaches).
+More information about these opportunities and their potential applications can be found in the Annex section below in ![Map between business opportunities and modelling approaches](#map-between-business-opportunities-and-modelling-approaches).
 
 ## Modelling approaches and concerns
 
@@ -86,7 +86,7 @@ A stage-aware approach that updates predictions using information available as t
    - **Limitations**: Same data constraint, lack of full stage transition history leads to biased estimates.
    - **Data to be used**: Same as above, plus all process related information.
 
-More information about the modelling approaches and their business applications can be found in the Annex section below in ![Annex - Map between business opportunities and modelling approaches](#annex---map-between-business-opportunities-and-modelling-approaches).
+More information about the modelling approaches and their business applications can be found in the Annex section below in ![Map between business opportunities and modelling approaches](#map-between-business-opportunities-and-modelling-approaches).
 
 # Current slides proposal
 
@@ -118,7 +118,9 @@ We propose the following structure for the final presentation, which will be a m
    2. **Channel optimization**  
 6. **Conclusions**
 
-# Annex - Map between business opportunities and modelling approaches
+# Annex
+
+## Business opportunities and modelling approaches
 
 ### 1. Process Improvement Detection
 - **Static (early-stage):**  
