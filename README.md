@@ -5,7 +5,7 @@ The goal of the sales process is to identify and communicate with potential lead
 ## How to start
 1. Clone the repository and set up your Python environment.
 2. Install the required libraries using `pip install -e .` or more easily with uv: `uv sync`
-3. Run notebooks using VS Code or Jupyter Lab. Start with notebooks in order.
+3. Run notebooks using VS Code or Jupyter Lab.
 
 ## Dataset description
 
@@ -63,7 +63,8 @@ We see two ways to make models based on the dataset, with different use cases an
 
 1) Predicting from initial data (static, enter-stage)
 A traditional approach that uses only early-stage information to predict final outcomes (e.g., win/loss, deal size). Useful for opportunity sizing, forecasting, prioritization (focus on high-propensity deals).
-   - Limitations: Data only captures aggregated stage durations (one record per opportunity), introducing bias and missing process dynamics. Possibly fixed focusing on Identified/Qualifying stage only, which may not capture all relevant early signals.
+   - Consideration: This kind of model might need careful subsetting of the data to control the bias (e.g., only opportunities at Identified/Qualifying stage or other similar filters), but it will still be limited by the lack of temporal dynamics and the fact that we have mostly a snapshot of the most updated record per opportunity.
+   - Limitations: Data only captures aggregated stage durations (one record per opportunity), introducing bias and missing process dynamics.
    - Data to be used: Client size variables, market, region, competitor info, supplies category.
 
 2) Predicting dynamically at each stage (dynamic, stage-aware)
