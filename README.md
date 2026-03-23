@@ -170,10 +170,3 @@ A stage-aware approach that updates predictions using information available as t
 
 - **Dynamic (stage-aware):**  
   Enables process-level simulations (e.g., reducing stage duration, changing sequencing), linking operational changes to outcomes.
-
----
-
-## TL;DR
-
-- **Static models:** allocation and strategy before execution  
-- **Dynamic models:** control and optimization during execution
