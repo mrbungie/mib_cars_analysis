@@ -31,6 +31,18 @@ This dataset consists of 78,025 rows and 19 columns (9 numerical, 10 categorical
 - Ratio_Validate - Ratio of total days spent in the Validated/Qualifying stage over total days in sales process.
 - Ratio_Qualify - Ratio of total days spent in Qualified/Gaining Agreement stage over total days in sales process.
 
+## Notebook guide
+The notebooks are organized in the following way:
+| Group | Notebook | Description | Link |
+| --- | --- | --- | --- |
+| 1_data_validation | 00_basic_validation.ipynb | Basic data validation and cleaning. | [Link](notebooks/1_data_validation/00_basic_validation.ipynb) |
+| 2_eda | 01_variable_eda.ipynb | Exploratory data analysis of the variables. (NOTE: Not applied to filtered data yet) | [Link](notebooks/2_eda/01_variable_eda.ipynb) |
+| 3_discretization_and_bivariate_analysis | 00_train_test_split.ipynb | Train-test split of the dataset. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/00_train_test_split.ipynb) |
+| 3_discretization_and_bivariate_analysis | 01_monotonicity_targets.ipynb | Analysis of monotonic relationships between features and targets. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/01_monotonicity_targets.ipynb) |
+| 3_discretization_and_bivariate_analysis | 02_woe_iv_winloss.ipynb | Weight of Evidence and Information Value analysis for the win/loss target. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/02_woe_iv_winloss.ipynb) |
+| 3_discretization_and_bivariate_analysis | 03_woe_iv_amount.ipynb | Weight of Evidence and Information Value analysis for the amount target. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/03_woe_iv_amount.ipynb) |
+| 3_discretization_and_bivariate_analysis | 04_optbinning_amount.ipynb | Optimal binning for the amount target. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/04_optbinning_amount.ipynb) |
+
 # Process
 
 The process status focuses on 3 key stages:
