@@ -55,7 +55,7 @@ The process status focuses on 3 key stages:
 
 ![Sales Process Stages](./images/image.png)
 
-From this it can be observed that the sales process is not linear, and there are many opportunities that go back and forth between stages. This is a key aspect to consider when analyzing the data and building predictive models.
+It is important to note that the sales process is not linear, and there are many opportunities that go back and forth between stages. This is a key aspect to consider when analyzing the data and building predictive models.
 
 > NOTE: From the 01_basic_validation.ipynb notebook, it seems that the dataset is mostly a snapshot of the most updated record per opportunity, with some duplicates. This means that we cannot leverage temporal dynamics in the sales process, and we need to be careful with potential data leakage when building models.
 
@@ -69,22 +69,28 @@ Right now we have identified the following opportunities for applying predictive
 4. **Secondary market segmentations** over predicted insights  
 5. **Others:** Early warning systems, budget allocation (over sales processes or product category/lines).  
 
+More information about these opportunities and their potential applications can be found in the Annex section below in ![Annex - Map between business opportunities and modelling approaches](#annex---map-between-business-opportunities-and-modelling-approaches).
+
 ## Modelling approaches and concerns
 
 We see two ways to make models based on the dataset, with different use cases and limitations:
 
-1) Predicting from initial data (static, enter-stage)
+1) **Predicting from initial data (static, enter-stage)**
 A traditional approach that uses only early-stage information to predict final outcomes (e.g., win/loss, deal size). Useful for opportunity sizing, forecasting, prioritization (focus on high-propensity deals).
-   - Consideration: This kind of model might need careful subsetting of the data to control the bias (e.g., only opportunities at Identified/Qualifying stage or other similar filters), but it will still be limited by the lack of temporal dynamics and the fact that we have mostly a snapshot of the most updated record per opportunity.
-   - Limitations: Data only captures aggregated stage durations (one record per opportunity), introducing bias and missing process dynamics.
-   - Data to be used: Client size variables, market, region, competitor info, supplies category.
+   - **Consideration**: This kind of model might need careful subsetting of the data to control the bias (e.g., only opportunities at Identified/Qualifying stage or other similar filters), but it will still be limited by the lack of temporal dynamics and the fact that we have mostly a snapshot of the most updated record per opportunity.
+   - **Limitations**: Data only captures aggregated stage durations (one record per opportunity), introducing bias and missing process dynamics.
+   - **Data to be used**: Client size variables, market, region, competitor info, supplies category.
 
-2) Predicting dynamically at each stage (dynamic, stage-aware)
+2) **Predicting dynamically at each stage (dynamic, stage-aware)**
 A stage-aware approach that updates predictions using information available as the opportunity progresses. Useful for process optimization, forecasting, channel strategy, and what-if simulations (e.g., reducing time-to-close, rerouting leads).
-   - Limitations: Same data constraint, lack of full stage transition history leads to biased estimates.
-   - Data to be used: Same as above, plus all process related information.
+   - **Limitations**: Same data constraint, lack of full stage transition history leads to biased estimates.
+   - **Data to be used**: Same as above, plus all process related information.
+
+More information about the modelling approaches and their business applications can be found in the Annex section below in ![Annex - Map between business opportunities and modelling approaches](#annex---map-between-business-opportunities-and-modelling-approaches).
 
 # Current slides proposal
+
+We propose the following structure for the final presentation, which will be a mix of business insights and technical details about the modelling approaches:
 
 1. **Intro & assumptions**  
 2. **Business framing:** Define a business framework over the dataset  
