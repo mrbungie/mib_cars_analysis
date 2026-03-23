@@ -1,8 +1,0 @@
-variable,win_rho,win_pvalue,win_strict_monotonic,win_direction,amountbin_rho,amountbin_pvalue,amountbin_strict_monotonic,amountbin_direction,abs_win_rho,abs_amountbin_rho,combined_abs_rho
-Sales Stage Change Count,0.8999999999999998,0.03738607346849874,False,non-monotonic,0.9999999999999999,1.4042654220543602e-24,True,increasing,0.8999999999999998,0.9999999999999999,0.9499999999999998
-Total Days Identified Through Closing,-1.0,0.0,True,decreasing,0.8833333333333333,0.0015905004234978695,False,non-monotonic,1.0,0.8833333333333333,0.9416666666666667
-Total Days Identified Through Qualified,-1.0,0.0,True,decreasing,0.8833333333333333,0.0015905004234978695,False,non-monotonic,1.0,0.8833333333333333,0.9416666666666667
-Ratio Days Qualified To Total Days,1.0,0.0,True,increasing,-0.5,0.6666666666666666,False,non-monotonic,1.0,0.5,0.75
-Ratio Days Identified To Total Days,-1.0,0.0,True,decreasing,0.5,0.6666666666666666,False,non-monotonic,1.0,0.5,0.75
-Ratio Days Validated To Total Days,-1.0,0.0,True,decreasing,-0.39999999999999997,0.6,False,non-monotonic,1.0,0.39999999999999997,0.7
-Elapsed Days In Sales Stage,0.0303030303030303,0.9337729580941466,False,non-monotonic,-0.11515151515151514,0.7514196523258485,False,non-monotonic,0.0303030303030303,0.11515151515151514,0.07272727272727272
