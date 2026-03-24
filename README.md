@@ -114,8 +114,8 @@ We propose the following structure for the final presentation, which will be a m
    1. **Model estimation:** Details about the Actual predictive modelling  
    2. **Model results:** Metrics + feature importance  
 5. **Application simulation:** Show one or two examples of the detected opportunities being applied for decisions (i.e. a simulation of the application.)
-   1. **Process prioritization**  
-   2. **Channel optimization**  
+   1. **Opportunity prioritization**  
+   2. **Forecasting amount**  
 6. **Conclusions**
 
 # Annex
