@@ -97,7 +97,7 @@ We propose the following structure for the final presentation, which will be a m
    1. Business process description  
    2. Detected opportunities for making the process better  
       1. **Opportunity prioritization:** (SELECTED CASE, Opportunity Result target) Straight focus on high propensity and/or what-ifs about changing priorities (days to closing) with certain customers.  
-      2. **Forecasting:** (SELECTED CASE, Opportunity Amount USD target) Predict expected total sales  
+      2. **Opportunity sizing and forecasting:** (SELECTED CASE, Opportunity Amount USD target) Predict sales per oppotunity, and aggregate to forecast total sales. Useful for planning, prioritization, and budget allocation.
       3. **Channel optimization:** (JUST MENTION) Simulate what-if scenarios for changing channel approaches / routing on specific customers  
       4. **Secondary market segmentations** (JUST MENTION)  over predicted insights  
       5. **Others:** (JUST MENTION)  Early warning systems, budget allocation (over sales processes or product category/lines).  
@@ -115,7 +115,7 @@ We propose the following structure for the final presentation, which will be a m
    2. **Model results:** Metrics + feature importance  
 5. **Application simulation:** Show one or two examples of the detected opportunities being applied for decisions (i.e. a simulation of the application.)
    1. **Opportunity prioritization**  
-   2. **Forecasting amount**  
+   2. **Opportunity sizing and forecasting**  
 6. **Conclusions**
 
 # Annex
