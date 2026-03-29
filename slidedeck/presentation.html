@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="presentation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="presentation_files/libs/quarto-html/tabby.min.js"></script>
+<script src="presentation_files/libs/quarto-html/popper.min.js"></script>
+<script src="presentation_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="presentation_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="presentation_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="presentation_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.25">
+
+  <meta name="author" content="Strategic Analysis Group">
+  <title>MIB Cars Analysis</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto-534cd8e3a96973385dffff3f4709048d.css">
+  <link rel="stylesheet" href="styles.css">
+  <link href="presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="presentation_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">MIB Cars Analysis</h1>
+  <p class="subtitle">Commercial prioritization and forecasting from sales opportunity data</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Strategic Analysis Group 
+</div>
+</div>
+</div>
+
+</section>
+<section id="agenda" class="slide level2 scrollable">
+<h2>Agenda</h2>
+<ol type="1">
+<li>Business framing and process assumptions</li>
+<li>Dataset and target overview</li>
+<li>EDA findings that matter for prioritization and forecasting</li>
+<li>Modelling approach and model outputs</li>
+<li>Application simulations</li>
+<li>Conclusions and next steps</li>
+</ol>
+</section>
+<section>
+<section id="business-framing" class="title-slide slide level1 center" data-background-color="#0F172A">
+<h1>Business framing</h1>
+
+</section>
+<section id="the-sales-process-is-non-linear-and-the-data-captures-its-current-state" class="slide level2">
+<h2>The sales process is non-linear, and the data captures its current state</h2>
+<div class="columns">
+<div class="column" style="width:56%;">
+<ul>
+<li>Opportunities move back and forth across <strong>Identified / Qualifying</strong>, <strong>Qualified / Validating</strong>, and <strong>Validated / Gaining Agreement</strong>.</li>
+<li>Because the dataset mostly stores the latest record per opportunity, we can use <strong>aggregate time-in-stage variables</strong>, but not full path dynamics.</li>
+<li>That is why the modelling work uses <strong>all available snapshot variables</strong>, especially the process-time fields that summarize where an opportunity currently stands.</li>
+</ul>
+</div><div class="column" style="width:44%;">
+<p><img data-src="assets/process.png" style="width:100.0%"></p>
+</div></div>
+</section>
+<section id="the-opportunity-set-is-broader-than-the-two-use-cases-developed-in-this-project" class="slide level2">
+<h2>The opportunity set is broader than the two use cases developed in this project</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<h3 id="selected-for-this-project">Selected for this project</h3>
+<ul>
+<li><strong>Process prioritization</strong>: rank opportunities by win propensity and support decisions on where sales effort should focus first.</li>
+<li><strong>Opportunity sizing &amp; forecasting</strong>: estimate deal value and aggregate expected sales for planning, prioritization, and budget visibility.</li>
+</ul>
+</div><div class="column" style="width:48%;">
+<h3 id="additional-opportunities-identified-in-the-data">Additional opportunities identified in the data</h3>
+<ul>
+<li><strong>Channel optimization</strong>: test what-if scenarios around route-to-market and engagement model choices.</li>
+<li><strong>Secondary market segmentation</strong>: create actionable commercial segments from predicted value and conversion potential.</li>
+<li><strong>Early warning systems</strong>: flag opportunities that are likely to deteriorate or stall.</li>
+<li><strong>Budget allocation</strong>: guide sales effort and product-focus decisions across segments, regions, and product lines.</li>
+</ul>
+</div></div>
+</section></section>
+<section>
+<section id="exploratory-data-analysis" class="title-slide slide level1 center" data-background-color="#0F172A">
+<h1>Exploratory data analysis</h1>
+
+</section>
+<section id="the-dataset-was-analyzed-and-prepared-with-the-two-use-cases-in-mind-which-shaped-the-eda-focus-and-modelling-choices" class="slide level2">
+<h2>The dataset was analyzed and prepared with the two use cases in mind, which shaped the EDA focus and modelling choices</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<ul>
+<li><strong>Scale</strong>: 78,025 sales opportunities and <strong>19 variables</strong>.</li>
+<li>Validation checks flagged duplicates and process-consistency issues before modelling. Key preparation findings:
+<ul>
+<li><strong>196 duplicated opportunity IDs</strong> (removed)</li>
+<li>** zero amount opportunities** (removed)</li>
+<li><strong>12,921 rows</strong> where stage ratios do not sum closely to 1 (kept)</li>
+</ul></li>
+<li>For the modelling experiments shown here, the sample used <strong>75,819 eligible rows</strong> out of <strong>78,025 total rows</strong> with valid targets.</li>
+</ul>
+</div><div class="column" style="width:48%;">
+<p>TO PUT A PLOT/TABLE WITH DATA HERE.</p>
+</div></div>
+<!-- - **What the data is good for**: ranking opportunities, understanding portfolio mix, and producing aggregate forecasts.
+- **What it is not**: a full event history of every sales-stage movement.
+- The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
+</section>
+<section id="client-size-matters-more-for-deal-economics-than-for-raw-win-rate" class="slide level2">
+<h2>Client size matters more for deal economics than for raw win rate</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/eda_client_segmentation.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>The portfolio is dominated by <strong>100K or less</strong> clients (59.5k opportunities).</li>
+<li>Win rate is relatively flat across most size bands (~22% to 23%), then drops for <strong>More than 1M</strong> clients (~19.3%).</li>
+<li>The large-client segment still matters because median deal size rises materially, so segmentation matters more for <strong>economics</strong> than for raw conversion alone.</li>
+</ul>
+</div></div>
+</section>
+<section id="prior-business-history-is-the-clearest-commercial-split-in-the-pipeline" class="slide level2">
+<h2>Prior business history is the clearest commercial split in the pipeline</h2>
+<div class="columns">
+<div class="column" style="width:42%;">
+<ul>
+<li><strong>(Re)Acquisition</strong> / no business in the past two years: 69,208 opportunities with a <strong>17.3%</strong> observed win rate.</li>
+<li><strong>Engagement / upselling</strong>: 8,817 opportunities with a <strong>63.9%</strong> observed win rate.</li>
+<li>This is the clearest business split in the analysis and should be treated as a first-order segmentation for prioritization.</li>
+</ul>
+</div><div class="column" style="width:58%;">
+<p><img data-src="assets/eda_two_phase_funnel.png" style="width:100.0%"></p>
+</div></div>
+</section>
+<section id="funnel-phase-explains-more-than-client-size-inside-the-phase-segment-matrix" class="slide level2">
+<h2>Funnel phase explains more than client size inside the phase × segment matrix</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/eda_funnel_x_segment.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>In <code>(Re)Acquisition</code>, win rates stay low across client sizes (<strong>14%–19%</strong>).</li>
+<li>In <strong>Engagement / upselling</strong>, win rates stay much higher (<strong>47%–67%</strong>).</li>
+<li>The main implication is operational: whether the client has recent business matters more than client-size granularity for triage.</li>
+</ul>
+</div></div>
+</section>
+<section id="process-time-variables-carry-most-of-the-predictive-signal" class="slide level2">
+<h2>Process-time variables carry most of the predictive signal</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<p><img data-src="assets/eda_iv_ranking.png" style="width:100.0%"></p>
+</div><div class="column" style="width:48%;">
+<p><img data-src="assets/eda_other_vars.png" style="width:100.0%"></p>
+</div></div>
+<ul>
+<li>The strongest IV signals for win/loss come from <strong>Total Days Identified Through Qualified</strong>, <strong>Elapsed Days In Sales Stage</strong>, and the stage-ratio variables.</li>
+<li>Both time-to-close and amount distributions are skewed, so the analysis should avoid over-interpreting averages without context.</li>
+</ul>
+</section></section>
+<section>
+<section id="modelling" class="title-slide slide level1 center" data-background-color="#0F172A">
+<h1>Modelling</h1>
+
+</section>
+<section id="for-the-selected-use-cases-we-built-two-models-with-different-targets-and-purposes" class="slide level2">
+<h2>For the selected use cases, we built two models with different targets and purposes</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h3 id="process-prioritization-winloss-classification-model">Process prioritization: Win/loss classification model</h3>
+<ul>
+<li>Target: <strong>Opportunity Result</strong>.</li>
+<li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.</li>
+<li>Uses the full dynamic snapshot, including process timing and stage-ratio variables.</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<h3 id="opportunity-sizing-and-forecasting-amount-regression-model">Opportunity Sizing and forecasting: Amount regression model</h3>
+<ul>
+<li>Target: <strong>Opportunity Amount USD</strong>.</li>
+<li>Business use: <strong>sizing and aggregate forecasting</strong>.</li>
+<li>Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.</li>
+</ul>
+</div></div>
+<p><br> <br></p>
+<p><strong>Variables used for both models:</strong> client size, route to market, region, competitor, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.</p>
+</section>
+<section id="data-preparation-and-modelling-sample" class="slide level2">
+<h2>Data preparation and modelling sample</h2>
+<div class="column" style="width:46%;">
+<ul>
+<li><strong>Train / test split</strong>: <strong>70% / 30%</strong>
+<ul>
+<li>Train: <strong>53,073</strong> rows</li>
+<li>Test: <strong>22,746</strong> rows</li>
+</ul></li>
+<li>The split was <strong>stratified jointly</strong> on:
+<ul>
+<li>win/loss target</li>
+<li>amount buckets</li>
+</ul></li>
+<li>This keeps both outcome balance and deal-size mix stable across train and test.</li>
+<li>Numeric data was scaled previously for linear and logistic regressions while categorical data was encoded appropriately.</li>
+</ul>
+</div><p>:::</p>
+</section>
+<section id="winloss-classification-is-the-stronger-operational-model" class="slide level2">
+<h2>Win/loss classification is the stronger operational model</h2>
+<div class="columns">
+<div class="column" style="width:54%;">
+<ul>
+<li>Best-performing model: <strong>XGBoost</strong>.</li>
+<li>Cross-validated metrics:
+<ul>
+<li><strong>ROC AUC: 0.926</strong></li>
+<li><strong>PR AUC: 0.814</strong></li>
+<li><strong>Accuracy: 0.882</strong></li>
+<li><strong>F1 (at 0.5 threshold): 0.718</strong></li>
+</ul></li>
+<li>Main drivers are process-time variables, which is consistent with your instruction that the model should be <strong>dynamic</strong> and use all available variables.</li>
+</ul>
+</div><div class="column" style="width:46%;">
+<p><img data-src="assets/model_importance.png" style="width:100.0%"></p>
+</div></div>
+</section>
+<section id="amount-regression-supports-planning-but-is-weaker-than-classification" class="slide level2">
+<h2>Amount regression supports planning, but is weaker than classification</h2>
+<ul>
+<li>Best-performing model: <strong>classic_linear_standard_scaler</strong>.</li>
+<li>Cross-validated metrics:
+<ul>
+<li><strong>R²: 0.134</strong></li>
+<li><strong>MAE: 74.3k USD</strong></li>
+<li><strong>MAPE is unstable / high (over 200%)</strong>, so relative percentage error should be treated carefully for small deals.</li>
+</ul></li>
+<li>The strongest predictors are <strong>Route To Market</strong>, <strong>Supplies Subgroup</strong>, <strong>Revenue From Client Past Two Years (USD)</strong>, <strong>Competitor Type</strong>, and <strong>Region</strong>.</li>
+<li>This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.</li>
+</ul>
+</section></section>
+<section>
+<section id="application-simulation" class="title-slide slide level1 center" data-background-color="#1E293B">
+<h1>Application simulation</h1>
+
+</section>
+<section id="prioritization-simulation-the-top-decile-captures-40.1-of-historical-wins" class="slide level2">
+<h2>Prioritization simulation: the top decile captures 40.1% of historical wins</h2>
+<div class="columns">
+<div class="column" style="width:44%;">
+<ul>
+<li>The model ranking is highly concentrated:
+<ul>
+<li><strong>Top decile</strong> captures <strong>40.1%</strong> of all wins.</li>
+<li><strong>Top two deciles</strong> capture <strong>59.9%</strong> of all wins.</li>
+</ul></li>
+<li>This supports a <strong>process-prioritization</strong> use case: sales effort can be focused on a much smaller slice of the pipeline.</li>
+<li>This simulation is based on held-out prediction outputs from the modelling workflow, not a mocked lift curve.</li>
+</ul>
+</div><div class="column" style="width:56%;">
+<p><img data-src="assets/sim_prioritization.png" style="width:100.0%"></p>
+</div></div>
+</section>
+<section id="forecast-simulation-predicted-total-sales-closely-matches-the-observed-aggregate-total" class="slide level2">
+<h2>Forecast simulation: predicted total sales closely matches the observed aggregate total</h2>
+<div class="columns">
+<div class="column" style="width:56%;">
+<p><img data-src="assets/sim_forecasting.png" style="width:100.0%"></p>
+</div><div class="column" style="width:44%;">
+<ul>
+<li>Aggregate actual amount: <strong>4.997B USD</strong>.</li>
+<li>Aggregate predicted amount: <strong>5.000B USD</strong>.</li>
+<li>Mean absolute error per opportunity: <strong>74.3k USD</strong>.</li>
+<li>The forecasting story is therefore strongest at the <strong>portfolio level</strong>, not at the individual-opportunity level.</li>
+</ul>
+</div></div>
+</section></section>
+<section>
+<section id="conclusions" class="title-slide slide level1 center" data-background-color="#0F172A">
+<h1>Conclusions</h1>
+
+</section>
+<section id="what-this-means-for-commercial-decision-making" class="slide level2">
+<h2>What this means for commercial decision-making</h2>
+<ul>
+<li>The two selected targets are explicit:
+<ul>
+<li><strong>Result model</strong> for prioritization</li>
+<li><strong>Amount model</strong> for sizing and forecasting</li>
+</ul></li>
+<li>The two selected models are explicit throughout the project narrative:
+<ul>
+<li><strong>Dynamic win/loss classification</strong> for prioritization</li>
+<li><strong>Dynamic amount regression</strong> for sizing and forecasting</li>
+</ul></li>
+<li>The main recommendation is to pilot the <strong>result model first</strong>, while treating amount forecasting as an aggregate planning aid built from the same dynamic feature set.</li>
+</ul>
+</section>
+<section class="slide level2">
+
+<h3 id="thank-you">Thank you</h3>
+<p>Questions, caveats, and next steps</p>
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="assets/hero.png" class="slide-logo"></p>
+<div class="footer footer-default">
+<p>MIB Cars Analysis</p>
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="presentation_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="presentation_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="presentation_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: false,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'fade',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1920,
+
+        height: 1080,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

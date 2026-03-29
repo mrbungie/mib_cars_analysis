@@ -1,0 +1,191 @@
+/* Consulting-style corporate premium theme - 1920x1080 Optimized */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap');
+
+.reveal {
+    font-family: 'Inter', sans-serif;
+    color: #111827;
+    font-size: 34px;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5 {
+    font-family: 'Outfit', sans-serif;
+    text-transform: none;
+    letter-spacing: -0.015em;
+    font-weight: 800;
+}
+
+/* Strategic Message Titles */
+.reveal section > h2 {
+    color: #0f172a;
+    font-size: 1.85em;
+    line-height: 1.15;
+    margin-bottom: 0.65em;
+    border-bottom: 4px solid #cbd5e1;
+    padding-bottom: 0.3em;
+    text-align: left;
+}
+
+/* Dark Section Titles */
+.reveal section[data-background-color^="#0F172A"] > h2,
+.reveal section[data-background-color^="#1E293B"] > h2,
+.reveal section[data-background-color^="#0f172a"] > h2,
+.reveal section[data-background-color^="#1e293b"] > h2 {
+    color: #f8fafc;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+.reveal ul {
+    list-style: none;
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.reveal ul li {
+    margin-bottom: 0.65em;
+    padding-left: 1.6em;
+    position: relative;
+    font-size: 1.02em;
+    line-height: 1.35;
+    color: #334155;
+    font-weight: 500;
+}
+
+.reveal ul li ul {
+    margin-top: 0.5em;
+}
+
+.reveal ul li ul li {
+    font-size: 0.88em;
+    margin-bottom: 0.4em;
+    color: #475569;
+}
+
+.reveal section[data-background-color^="#0F172A"] ul li,
+.reveal section[data-background-color^="#1E293B"] ul li,
+.reveal section[data-background-color^="#0f172a"] ul li,
+.reveal section[data-background-color^="#1e293b"] ul li {
+    color: #f1f5f9;
+}
+
+.reveal section[data-background-color^="#0F172A"] ul li ul li,
+.reveal section[data-background-color^="#1E293B"] ul li ul li,
+.reveal section[data-background-color^="#0f172a"] ul li ul li,
+.reveal section[data-background-color^="#1e293b"] ul li ul li {
+    color: #cbd5e1;
+}
+
+.reveal ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #2563eb;
+    font-weight: 800;
+}
+
+.reveal section[data-background-color^="#0F172A"] ul li::before,
+.reveal section[data-background-color^="#1E293B"] ul li::before,
+.reveal section[data-background-color^="#0f172a"] ul li::before,
+.reveal section[data-background-color^="#1e293b"] ul li::before,
+.reveal section[data-background-image] ul li::before {
+    color: #60a5fa;
+}
+
+.reveal strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+.reveal section[data-background-color^="#0F172A"] strong,
+.reveal section[data-background-color^="#1E293B"] strong,
+.reveal section[data-background-color^="#0f172a"] strong,
+.reveal section[data-background-color^="#1e293b"] strong,
+.reveal section[data-background-image] strong {
+    color: #ffffff;
+}
+
+.reveal .callout-note {
+    background: #f8fafc;
+    border-left: 6px solid #2563eb;
+    padding: 1.5rem;
+    font-size: 0.9em;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.reveal .slides section[data-background-image] {
+    background-color: #0f172a !important;
+}
+.reveal .slides section[data-background-image] h2 {
+    color: #f8fafc !important;
+    border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+.reveal .slides section[data-background-image] ul li {
+    color: #f1f5f9 !important;
+}
+
+.reveal .progress {
+    height: 6px;
+    background: #2563eb;
+}
+
+.reveal .controls-arrow {
+    color: #2563eb !important;
+}
+
+/* Footer & Logo */
+.reveal .footer {
+    font-size: 0.44em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.reveal .logo {
+    max-height: 56px !important;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.reveal img {
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    background: white;
+    max-width: 100%;
+    margin: 0.6em 0;
+}
+
+.reveal .columns {
+    margin-top: 0.8em;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.reveal .column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Title Slide */
+.title-slide h1.title {
+    font-size: 3.3em;
+    color: #0f172a;
+    margin-bottom: 0.3em;
+    line-height: 1.1;
+}
+.title-slide p.subtitle {
+    font-size: 1.45em;
+    color: #475569;
+    font-weight: 500;
+    line-height: 1.3;
+}
+.title-slide p.author {
+    font-size: 1em;
+    color: #64748b;
+    margin-top: 1.2em;
+    font-weight: 600;
+}
+
+.reveal .notes {
+    display: none;
+}
