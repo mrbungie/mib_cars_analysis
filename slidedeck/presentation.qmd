@@ -81,26 +81,26 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 - **What it is not**: a full event history of every sales-stage movement.
 - The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
 
-## Client size matters more for deal economics than for raw win rate
+## For any business operations, we recommend segmenting clients by client size
 
 ::: {.columns}
 ::: {.column width="58%"}
 ![](assets/eda_client_segmentation.png){width=100%}
 :::
 ::: {.column width="42%"}
-- The portfolio is dominated by **100K or less** clients (59.5k opportunities).
-- Win rate is relatively flat across most size bands (~22% to 23%), then drops for **More than 1M** clients (~19.3%).
-- The large-client segment still matters because median deal size rises materially, so segmentation matters more for **economics** than for raw conversion alone.
+- The portfolio is heavily concentrated in **100K or less** clients, so this segment should drive base operating playbooks and coverage models.
+- Conversion is relatively similar across most size bands, which means client size is more useful for **commercial treatment and value management** than for win-rate targeting alone.
+- Larger accounts still matter because deal economics improve materially with size, so client-size segmentation should inform account prioritization, service model, and sales effort allocation.
 :::
 :::
 
-## Prior business history is the clearest commercial split in the pipeline
+## We also recommend starting with a simple marketing funnel segmentation
 
 ::: {.columns}
 ::: {.column width="42%"}
 - **(Re)Acquisition** / no business in the past two years: 69,208 opportunities with a **17.3%** observed win rate.
 - **Engagement / upselling**: 8,817 opportunities with a **63.9%** observed win rate.
-- This is the clearest business split in the analysis and should be treated as a first-order segmentation for prioritization.
+- This is a practical first-layer funnel split for go-to-market operations because it separates low-history acquisition work from higher-propensity expansion opportunities.
 :::
 ::: {.column width="58%"}
 ![](assets/eda_two_phase_funnel.png){width=100%}
@@ -136,7 +136,7 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 
 # Modelling {background-color="#0F172A"}
 
-## For the selected use cases, we built two models with different targets and purposes
+## For the selected use cases, we focused on building two models with different targets and purposes
 
 ::: {.columns}
 ::: {.column width="50%"}
@@ -145,6 +145,9 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 - Target: **Opportunity Result**.
 - Business use: **process prioritization** and ranking the pipeline by win propensity.
 - Uses the full dynamic snapshot, including process timing and stage-ratio variables.
+- Relevant transformations tested: log-transforming amount variables, supervised binning and standard/robust scaling and OHE encoding.
+- Main metric focus is on **ROC AUC** and **PR AUC**.
+
 :::
 ::: {.column width="50%"}
 ### Opportunity Sizing and forecasting: Amount regression model
@@ -152,17 +155,20 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 - Target: **Opportunity Amount USD**.
 - Business use: **sizing and aggregate forecasting**.
 - Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.
+- Relevant transformations tested: log-transforming amount variables, supervised binning, standard/robust scaling and OHE encoding.
+- Main metric focus is on **MAE** and **MAPE**.
 :::
 :::
 
 <br>
 <br>
 
-**Variables used for both models:** client size, route to market, region, competitor, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.
+**Variables used for both models:** client size, route to market, region, competitor type, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.
 
 ## Data preparation and modelling sample
 
-::: {.column width="46%"}
+::: {.columns}
+::: {.column width="54%"}
 - **Train / test split**: **70% / 30%**
   - Train: **53,073** rows
   - Test: **22,746** rows
@@ -170,7 +176,10 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
   - win/loss target
   - amount buckets
 - This keeps both outcome balance and deal-size mix stable across train and test.
-- Numeric data was scaled previously for linear and logistic regressions while categorical data was encoded appropriately.
+- In the final models, regression uses standardized numeric inputs, while the selected logistic classifier uses supervised binning plus one-hot encoding.
+:::
+::: {.column width="46%"}
+SOME KIND OF DIAGRAM.
 :::
 :::
 
@@ -178,40 +187,49 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 
 ::: {.columns}
 ::: {.column width="54%"}
-- Best-performing model: **XGBoost**.
-- Cross-validated metrics:
-  - **ROC AUC: 0.926**
-  - **PR AUC: 0.814**
-  - **Accuracy: 0.882**
-  - **F1 (at 0.5 threshold): 0.718**
-- Main drivers are process-time variables, which is consistent with your instruction that the model should be **dynamic** and use all available variables.
+- Selected final logistic model: **Logit + binned one-hot encoding** (`logit_binned_ohe`).
+
+| Split | ROC AUC | PR AUC | Accuracy | F1 |
+| --- | ---: | ---: | ---: | ---: |
+| CV | 0.881 | 0.700 | 0.842 | 0.596 |
+| Held-out test | 0.877 | 0.695 | 0.842 | 0.598 |
+
 :::
 ::: {.column width="46%"}
-![](assets/model_importance.png){width=100%}
+![](assets/classification_importance.png){width=100%}
 :::
 :::
 
 ## Amount regression supports planning, but is weaker than classification
 
-- Best-performing model: **classic_linear_standard_scaler**.
-- Cross-validated metrics:
-  - **R²: 0.134**
-  - **MAE: 74.3k USD**
-  - **MAPE is unstable / high (over 200%)**, so relative percentage error should be treated carefully for small deals.
-- The strongest predictors are **Route To Market**, **Supplies Subgroup**, **Revenue From Client Past Two Years (USD)**, **Competitor Type**, and **Region**.
+::: {.columns}
+::: {.column width="54%"}
+- Selected final regression model: **classic_linear_standard_scaler**.
+
+| Split | R² | MAE | Median APE |
+| --- | ---: | ---: | ---: |
+| CV | 0.134 | 74.3k USD | 78.9% |
+| Held-out test | 0.135 | 74.0k USD | 78.5% |
+
+- Largest direct coefficients are concentrated in specific transformed terms such as **Route To Market: Telesales**, **Route To Market: Reseller**, **high prior-client revenue bands**, **missing competitor type**, and **Telecoverage**.
 - This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.
+:::
+::: {.column width="46%"}
+![](assets/regression_importance.png){width=100%}
+:::
+:::
 
 # Application simulation {background-color="#1E293B"}
 
-## Prioritization simulation: the top decile captures 40.1% of historical wins
+## Prioritization simulation: the top decile captures 35.2% of held-out test wins
 
 ::: {.columns}
 ::: {.column width="44%"}
 - The model ranking is highly concentrated:
-  - **Top decile** captures **40.1%** of all wins.
-  - **Top two deciles** capture **59.9%** of all wins.
+  - **Top decile** captures **35.2%** of all test wins.
+  - **Top two deciles** capture **64.8%** of all test wins.
 - This supports a **process-prioritization** use case: sales effort can be focused on a much smaller slice of the pipeline.
-- This simulation is based on held-out prediction outputs from the modelling workflow, not a mocked lift curve.
+- This simulation is based on held-out test-set predictions from the final logistic model.
 :::
 ::: {.column width="56%"}
 ![](assets/sim_prioritization.png){width=100%}
@@ -225,9 +243,9 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 ![](assets/sim_forecasting.png){width=100%}
 :::
 ::: {.column width="44%"}
-- Aggregate actual amount: **4.997B USD**.
-- Aggregate predicted amount: **5.000B USD**.
-- Mean absolute error per opportunity: **74.3k USD**.
+- Aggregate actual amount: **2.138B USD** on the held-out test set.
+- Aggregate predicted amount: **2.139B USD** on the held-out test set.
+- Mean absolute error per opportunity: **74.0k USD**.
 - The forecasting story is therefore strongest at the **portfolio level**, not at the individual-opportunity level.
 :::
 :::
@@ -240,7 +258,7 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
   - **Result model** for prioritization
   - **Amount model** for sizing and forecasting
 - The two selected models are explicit throughout the project narrative:
-  - **Dynamic win/loss classification** for prioritization
+  - **Best logistic win/loss classification** for prioritization
   - **Dynamic amount regression** for sizing and forecasting
 - The main recommendation is to pilot the **result model first**, while treating amount forecasting as an aggregate planning aid built from the same dynamic feature set.
 

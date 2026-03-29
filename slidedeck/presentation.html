@@ -215,27 +215,27 @@ Strategic Analysis Group
 - **What it is not**: a full event history of every sales-stage movement.
 - The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
 </section>
-<section id="client-size-matters-more-for-deal-economics-than-for-raw-win-rate" class="slide level2">
-<h2>Client size matters more for deal economics than for raw win rate</h2>
+<section id="for-any-business-operations-we-recommend-segmenting-clients-by-client-size" class="slide level2">
+<h2>For any business operations, we recommend segmenting clients by client size</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <p><img data-src="assets/eda_client_segmentation.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>The portfolio is dominated by <strong>100K or less</strong> clients (59.5k opportunities).</li>
-<li>Win rate is relatively flat across most size bands (~22% to 23%), then drops for <strong>More than 1M</strong> clients (~19.3%).</li>
-<li>The large-client segment still matters because median deal size rises materially, so segmentation matters more for <strong>economics</strong> than for raw conversion alone.</li>
+<li>The portfolio is heavily concentrated in <strong>100K or less</strong> clients, so this segment should drive base operating playbooks and coverage models.</li>
+<li>Conversion is relatively similar across most size bands, which means client size is more useful for <strong>commercial treatment and value management</strong> than for win-rate targeting alone.</li>
+<li>Larger accounts still matter because deal economics improve materially with size, so client-size segmentation should inform account prioritization, service model, and sales effort allocation.</li>
 </ul>
 </div></div>
 </section>
-<section id="prior-business-history-is-the-clearest-commercial-split-in-the-pipeline" class="slide level2">
-<h2>Prior business history is the clearest commercial split in the pipeline</h2>
+<section id="we-also-recommend-starting-with-a-simple-marketing-funnel-segmentation" class="slide level2">
+<h2>We also recommend starting with a simple marketing funnel segmentation</h2>
 <div class="columns">
 <div class="column" style="width:42%;">
 <ul>
 <li><strong>(Re)Acquisition</strong> / no business in the past two years: 69,208 opportunities with a <strong>17.3%</strong> observed win rate.</li>
 <li><strong>Engagement / upselling</strong>: 8,817 opportunities with a <strong>63.9%</strong> observed win rate.</li>
-<li>This is the clearest business split in the analysis and should be treated as a first-order segmentation for prioritization.</li>
+<li>This is a practical first-layer funnel split for go-to-market operations because it separates low-history acquisition work from higher-propensity expansion opportunities.</li>
 </ul>
 </div><div class="column" style="width:58%;">
 <p><img data-src="assets/eda_two_phase_funnel.png" style="width:100.0%"></p>
@@ -272,8 +272,8 @@ Strategic Analysis Group
 <h1>Modelling</h1>
 
 </section>
-<section id="for-the-selected-use-cases-we-built-two-models-with-different-targets-and-purposes" class="slide level2">
-<h2>For the selected use cases, we built two models with different targets and purposes</h2>
+<section id="for-the-selected-use-cases-we-focused-on-building-two-models-with-different-targets-and-purposes" class="slide level2">
+<h2>For the selected use cases, we focused on building two models with different targets and purposes</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <h3 id="process-prioritization-winloss-classification-model">Process prioritization: Win/loss classification model</h3>
@@ -281,6 +281,8 @@ Strategic Analysis Group
 <li>Target: <strong>Opportunity Result</strong>.</li>
 <li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.</li>
 <li>Uses the full dynamic snapshot, including process timing and stage-ratio variables.</li>
+<li>Relevant transformations tested: log-transforming amount variables, supervised binning and standard/robust scaling and OHE encoding.</li>
+<li>Main metric focus is on <strong>ROC AUC</strong> and <strong>PR AUC</strong>.</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <h3 id="opportunity-sizing-and-forecasting-amount-regression-model">Opportunity Sizing and forecasting: Amount regression model</h3>
@@ -288,14 +290,17 @@ Strategic Analysis Group
 <li>Target: <strong>Opportunity Amount USD</strong>.</li>
 <li>Business use: <strong>sizing and aggregate forecasting</strong>.</li>
 <li>Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.</li>
+<li>Relevant transformations tested: log-transforming amount variables, supervised binning, standard/robust scaling and OHE encoding.</li>
+<li>Main metric focus is on <strong>MAE</strong> and <strong>MAPE</strong>.</li>
 </ul>
 </div></div>
 <p><br> <br></p>
-<p><strong>Variables used for both models:</strong> client size, route to market, region, competitor, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.</p>
+<p><strong>Variables used for both models:</strong> client size, route to market, region, competitor type, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.</p>
 </section>
 <section id="data-preparation-and-modelling-sample" class="slide level2">
 <h2>Data preparation and modelling sample</h2>
-<div class="column" style="width:46%;">
+<div class="columns">
+<div class="column" style="width:54%;">
 <ul>
 <li><strong>Train / test split</strong>: <strong>70% / 30%</strong>
 <ul>
@@ -308,60 +313,106 @@ Strategic Analysis Group
 <li>amount buckets</li>
 </ul></li>
 <li>This keeps both outcome balance and deal-size mix stable across train and test.</li>
-<li>Numeric data was scaled previously for linear and logistic regressions while categorical data was encoded appropriately.</li>
+<li>In the final models, regression uses standardized numeric inputs, while the selected logistic classifier uses supervised binning plus one-hot encoding.</li>
 </ul>
-</div><p>:::</p>
+</div><div class="column" style="width:46%;">
+<p>SOME KIND OF DIAGRAM.</p>
+</div></div>
 </section>
 <section id="winloss-classification-is-the-stronger-operational-model" class="slide level2">
 <h2>Win/loss classification is the stronger operational model</h2>
 <div class="columns">
 <div class="column" style="width:54%;">
 <ul>
-<li>Best-performing model: <strong>XGBoost</strong>.</li>
-<li>Cross-validated metrics:
-<ul>
-<li><strong>ROC AUC: 0.926</strong></li>
-<li><strong>PR AUC: 0.814</strong></li>
-<li><strong>Accuracy: 0.882</strong></li>
-<li><strong>F1 (at 0.5 threshold): 0.718</strong></li>
-</ul></li>
-<li>Main drivers are process-time variables, which is consistent with your instruction that the model should be <strong>dynamic</strong> and use all available variables.</li>
+<li>Selected final logistic model: <strong>Logit + binned one-hot encoding</strong> (<code>logit_binned_ohe</code>).</li>
 </ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Split</th>
+<th style="text-align: right;">ROC AUC</th>
+<th style="text-align: right;">PR AUC</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CV</td>
+<td style="text-align: right;">0.881</td>
+<td style="text-align: right;">0.700</td>
+<td style="text-align: right;">0.842</td>
+<td style="text-align: right;">0.596</td>
+</tr>
+<tr class="even">
+<td>Held-out test</td>
+<td style="text-align: right;">0.877</td>
+<td style="text-align: right;">0.695</td>
+<td style="text-align: right;">0.842</td>
+<td style="text-align: right;">0.598</td>
+</tr>
+</tbody>
+</table>
 </div><div class="column" style="width:46%;">
-<p><img data-src="assets/model_importance.png" style="width:100.0%"></p>
+<p><img data-src="assets/classification_importance.png" style="width:100.0%"></p>
 </div></div>
 </section>
 <section id="amount-regression-supports-planning-but-is-weaker-than-classification" class="slide level2">
 <h2>Amount regression supports planning, but is weaker than classification</h2>
+<div class="columns">
+<div class="column" style="width:54%;">
 <ul>
-<li>Best-performing model: <strong>classic_linear_standard_scaler</strong>.</li>
-<li>Cross-validated metrics:
+<li>Selected final regression model: <strong>classic_linear_standard_scaler</strong>.</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Split</th>
+<th style="text-align: right;">R²</th>
+<th style="text-align: right;">MAE</th>
+<th style="text-align: right;">Median APE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CV</td>
+<td style="text-align: right;">0.134</td>
+<td style="text-align: right;">74.3k USD</td>
+<td style="text-align: right;">78.9%</td>
+</tr>
+<tr class="even">
+<td>Held-out test</td>
+<td style="text-align: right;">0.135</td>
+<td style="text-align: right;">74.0k USD</td>
+<td style="text-align: right;">78.5%</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li><strong>R²: 0.134</strong></li>
-<li><strong>MAE: 74.3k USD</strong></li>
-<li><strong>MAPE is unstable / high (over 200%)</strong>, so relative percentage error should be treated carefully for small deals.</li>
-</ul></li>
-<li>The strongest predictors are <strong>Route To Market</strong>, <strong>Supplies Subgroup</strong>, <strong>Revenue From Client Past Two Years (USD)</strong>, <strong>Competitor Type</strong>, and <strong>Region</strong>.</li>
+<li>Largest direct coefficients are concentrated in specific transformed terms such as <strong>Route To Market: Telesales</strong>, <strong>Route To Market: Reseller</strong>, <strong>high prior-client revenue bands</strong>, <strong>missing competitor type</strong>, and <strong>Telecoverage</strong>.</li>
 <li>This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.</li>
 </ul>
+</div><div class="column" style="width:46%;">
+<p><img data-src="assets/regression_importance.png" style="width:100.0%"></p>
+</div></div>
 </section></section>
 <section>
 <section id="application-simulation" class="title-slide slide level1 center" data-background-color="#1E293B">
 <h1>Application simulation</h1>
 
 </section>
-<section id="prioritization-simulation-the-top-decile-captures-40.1-of-historical-wins" class="slide level2">
-<h2>Prioritization simulation: the top decile captures 40.1% of historical wins</h2>
+<section id="prioritization-simulation-the-top-decile-captures-35.2-of-held-out-test-wins" class="slide level2">
+<h2>Prioritization simulation: the top decile captures 35.2% of held-out test wins</h2>
 <div class="columns">
 <div class="column" style="width:44%;">
 <ul>
 <li>The model ranking is highly concentrated:
 <ul>
-<li><strong>Top decile</strong> captures <strong>40.1%</strong> of all wins.</li>
-<li><strong>Top two deciles</strong> capture <strong>59.9%</strong> of all wins.</li>
+<li><strong>Top decile</strong> captures <strong>35.2%</strong> of all test wins.</li>
+<li><strong>Top two deciles</strong> capture <strong>64.8%</strong> of all test wins.</li>
 </ul></li>
 <li>This supports a <strong>process-prioritization</strong> use case: sales effort can be focused on a much smaller slice of the pipeline.</li>
-<li>This simulation is based on held-out prediction outputs from the modelling workflow, not a mocked lift curve.</li>
+<li>This simulation is based on held-out test-set predictions from the final logistic model.</li>
 </ul>
 </div><div class="column" style="width:56%;">
 <p><img data-src="assets/sim_prioritization.png" style="width:100.0%"></p>
@@ -374,9 +425,9 @@ Strategic Analysis Group
 <p><img data-src="assets/sim_forecasting.png" style="width:100.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>Aggregate actual amount: <strong>4.997B USD</strong>.</li>
-<li>Aggregate predicted amount: <strong>5.000B USD</strong>.</li>
-<li>Mean absolute error per opportunity: <strong>74.3k USD</strong>.</li>
+<li>Aggregate actual amount: <strong>2.138B USD</strong> on the held-out test set.</li>
+<li>Aggregate predicted amount: <strong>2.139B USD</strong> on the held-out test set.</li>
+<li>Mean absolute error per opportunity: <strong>74.0k USD</strong>.</li>
 <li>The forecasting story is therefore strongest at the <strong>portfolio level</strong>, not at the individual-opportunity level.</li>
 </ul>
 </div></div>
@@ -396,7 +447,7 @@ Strategic Analysis Group
 </ul></li>
 <li>The two selected models are explicit throughout the project narrative:
 <ul>
-<li><strong>Dynamic win/loss classification</strong> for prioritization</li>
+<li><strong>Best logistic win/loss classification</strong> for prioritization</li>
 <li><strong>Dynamic amount regression</strong> for sizing and forecasting</li>
 </ul></li>
 <li>The main recommendation is to pilot the <strong>result model first</strong>, while treating amount forecasting as an aggregate planning aid built from the same dynamic feature set.</li>
