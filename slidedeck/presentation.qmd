@@ -14,6 +14,12 @@ format:
     center: false
     width: 1920
     height: 1080
+  pptx:
+    slide-level: 2
+    incremental: true
+    center: false
+    width: 16in
+    height: 9in
 ---
 
 ## Agenda
@@ -31,7 +37,10 @@ format:
 
 ::: {.columns}
 ::: {.column width="56%"}
+- The sales process is about **auto-parts sales opportunities** with both potential leads and existing clients.
 - Opportunities move back and forth across **Identified / Qualifying**, **Qualified / Validating**, and **Validated / Gaining Agreement**.
+- Each opportunity ultimately ends in a **win or a loss**.
+- Sales teams also assign an **estimated opportunity amount**, which appears to be updated as the deal evolves.
 - Because the dataset mostly stores the latest record per opportunity, we can use **aggregate time-in-stage variables**, but not full path dynamics.
 - That is why the modelling work uses **all available snapshot variables**, especially the process-time fields that summarize where an opportunity currently stands.
 :::
@@ -211,6 +220,7 @@ SOME KIND OF DIAGRAM.
 | CV | 0.134 | 74.3k USD | 78.9% |
 | Held-out test | 0.135 | 74.0k USD | 78.5% |
 
+- For comparison, the **best-MAE** CV model was **`huber_robust_scaler`**, with **67.3k USD MAE** but a much lower **R² of 0.066**.
 - Largest direct coefficients are concentrated in specific transformed terms such as **Route To Market: Telesales**, **Route To Market: Reseller**, **high prior-client revenue bands**, **missing competitor type**, and **Telecoverage**.
 - This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.
 :::

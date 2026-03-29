@@ -162,7 +162,10 @@ Strategic Analysis Group
 <div class="columns">
 <div class="column" style="width:56%;">
 <ul>
+<li>The sales process is about <strong>auto-parts sales opportunities</strong> with both potential leads and existing clients.</li>
 <li>Opportunities move back and forth across <strong>Identified / Qualifying</strong>, <strong>Qualified / Validating</strong>, and <strong>Validated / Gaining Agreement</strong>.</li>
+<li>Each opportunity ultimately ends in a <strong>win or a loss</strong>.</li>
+<li>Sales teams also assign an <strong>estimated opportunity amount</strong>, which appears to be updated as the deal evolves.</li>
 <li>Because the dataset mostly stores the latest record per opportunity, we can use <strong>aggregate time-in-stage variables</strong>, but not full path dynamics.</li>
 <li>That is why the modelling work uses <strong>all available snapshot variables</strong>, especially the process-time fields that summarize where an opportunity currently stands.</li>
 </ul>
@@ -389,6 +392,7 @@ Strategic Analysis Group
 </tbody>
 </table>
 <ul>
+<li>For comparison, the <strong>best-MAE</strong> CV model was <strong><code>huber_robust_scaler</code></strong>, with <strong>67.3k USD MAE</strong> but a much lower <strong>R² of 0.066</strong>.</li>
 <li>Largest direct coefficients are concentrated in specific transformed terms such as <strong>Route To Market: Telesales</strong>, <strong>Route To Market: Reseller</strong>, <strong>high prior-client revenue bands</strong>, <strong>missing competitor type</strong>, and <strong>Telecoverage</strong>.</li>
 <li>This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.</li>
 </ul>
