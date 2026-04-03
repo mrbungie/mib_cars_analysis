@@ -26,34 +26,31 @@ def pct_fmt(value: float, _position: float) -> str:
     return f"{value:.0%}"
 
 
-def build_curve() -> pd.DataFrame:
-    classification = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_predictions")
-    regression = pd.read_excel(REGRESSION_PATH, sheet_name="test_predictions")
-
-    df = classification.merge(
-        regression, on="row_id", how="inner", validate="one_to_one"
-    )
-    df["expected_value"] = df["predicted_win_probability"] * df["predicted_amount"]
-    df["actual_won_amount"] = df["actual_amount"] * df["actual_result"]
-
-    df = df.sort_values("expected_value", ascending=False).reset_index(drop=True)
-    total_rows = len(df)
-    total_actual_won = float(df["actual_won_amount"].sum())
+def summarize_ranking(
+    df: pd.DataFrame,
+    rank_column: str,
+    label: str,
+    total_actual_won: float,
+    estimate_column: str | None = None,
+) -> pd.DataFrame:
+    ranked = df.sort_values(rank_column, ascending=False).reset_index(drop=True)
+    total_rows = len(ranked)
 
     levels = []
     for pct in range(1, 101):
         keep_n = max(1, int(round(total_rows * pct / 100)))
-        selected = df.iloc[:keep_n]
-        threshold_value = float(selected["expected_value"].iloc[-1])
-        estimated_value = float(selected["expected_value"].sum())
+        selected = ranked.iloc[:keep_n]
         actual_captured = float(selected["actual_won_amount"].sum())
         levels.append(
             {
+                "strategy": label,
                 "top_share_selected": pct / 100,
                 "selected_rows": keep_n,
-                "threshold_value": threshold_value,
-                "estimated_value": estimated_value,
+                "threshold_value": float(selected[rank_column].iloc[-1]),
                 "actual_captured": actual_captured,
+                "estimated_value": (
+                    float(selected[estimate_column].sum()) if estimate_column else None
+                ),
                 "capture_rate": actual_captured / total_actual_won
                 if total_actual_won
                 else 0.0,
@@ -63,86 +60,131 @@ def build_curve() -> pd.DataFrame:
     return pd.DataFrame(levels)
 
 
+def build_curve() -> tuple[pd.DataFrame, pd.DataFrame]:
+    classification = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_predictions")
+    regression = pd.read_excel(REGRESSION_PATH, sheet_name="test_predictions")
+
+    df = classification.merge(
+        regression, on="row_id", how="inner", validate="one_to_one"
+    )
+    df["expected_value"] = df["predicted_win_probability"] * df["predicted_amount"]
+    df["actual_won_amount"] = df["actual_amount"] * df["actual_result"]
+    total_actual_won = float(df["actual_won_amount"].sum())
+
+    expected_curve = summarize_ranking(
+        df,
+        "expected_value",
+        "Expected value",
+        total_actual_won,
+        estimate_column="expected_value",
+    )
+    propensity_curve = summarize_ranking(
+        df,
+        "predicted_win_probability",
+        "Propensity only",
+        total_actual_won,
+    )
+
+    return expected_curve, propensity_curve
+
+
 def main() -> None:
-    curve = build_curve()
+    ev_curve, propensity_curve = build_curve()
 
     sns.set_theme(style="whitegrid")
     plt.style.use("seaborn-v0_8-whitegrid")
 
-    fig, ax = plt.subplots(figsize=(8.6, 5.3))
+    fig, (ax_amount, ax_share) = plt.subplots(
+        2,
+        1,
+        figsize=(8.6, 6.8),
+        sharex=True,
+        gridspec_kw={"height_ratios": [1.05, 0.95], "hspace": 0.12},
+        constrained_layout=True,
+    )
 
-    ax.plot(
-        curve["top_share_selected"],
-        curve["estimated_value"],
+    ax_amount.plot(
+        ev_curve["top_share_selected"],
+        ev_curve["estimated_value"],
         color="#2563EB",
         linewidth=2.7,
         label="Sum of estimated E[X] × P(win)",
     )
-    ax.plot(
-        curve["top_share_selected"],
-        curve["actual_captured"],
+    ax_amount.plot(
+        ev_curve["top_share_selected"],
+        ev_curve["actual_captured"],
         color="#14B8A6",
         linewidth=2.7,
-        label="Actual won amount captured",
+        label="Actual won amount captured (ranked by E[X] × P(win))",
     )
-    ax.set_xlabel("Top share of opportunities kept by expected-value threshold")
-    ax.set_ylabel("USD")
-    ax.set_xlim(0.01, 1.0)
-    ax.xaxis.set_major_formatter(FuncFormatter(pct_fmt))
-    ax.yaxis.set_major_formatter(FuncFormatter(usd_compact))
+    ax_amount.set_ylabel("USD")
+    ax_amount.set_xlim(0.01, 1.0)
+    ax_amount.yaxis.set_major_formatter(FuncFormatter(usd_compact))
+    ax_amount.set_title(
+        "Expected-value thresholding vs propensity-only ranking",
+        fontsize=13,
+        weight="bold",
+    )
 
-    ax_rate = ax.twinx()
-    ax_rate.plot(
-        curve["top_share_selected"],
-        curve["capture_rate"],
+    ax_share.plot(
+        ev_curve["top_share_selected"],
+        ev_curve["capture_rate"],
         color="#DC2626",
         linewidth=2.0,
         linestyle="--",
-        label="Share of total won amount captured",
+        label="Use E[X] × P(win)",
     )
-    ax_rate.set_ylabel("Captured share of total won amount", color="#DC2626")
-    ax_rate.tick_params(axis="y", labelcolor="#DC2626")
-    ax_rate.yaxis.set_major_formatter(FuncFormatter(pct_fmt))
-    ax_rate.set_ylim(0, 1.02)
-
+    ax_share.plot(
+        propensity_curve["top_share_selected"],
+        propensity_curve["capture_rate"],
+        color="#7C3AED",
+        linewidth=2.0,
+        linestyle=":",
+        label="Use P(win)",
+    )
+    ax_share.set_ylabel("Captured share of total won amount")
+    ax_share.set_xlabel("Top share of opportunities kept by threshold")
+    ax_share.xaxis.set_major_formatter(FuncFormatter(pct_fmt))
+    ax_share.yaxis.set_major_formatter(FuncFormatter(pct_fmt))
+    ax_share.set_ylim(0, 1.02)
     for mark in [0.10, 0.25, 0.50]:
-        row = curve.loc[(curve["top_share_selected"] - mark).abs().idxmin()]
-        ax_rate.scatter(
+        row = ev_curve.loc[(ev_curve["top_share_selected"] - mark).abs().idxmin()]
+        prop_row = propensity_curve.loc[
+            (propensity_curve["top_share_selected"] - mark).abs().idxmin()
+        ]
+        ax_share.scatter(
             [row["top_share_selected"]],
             [row["capture_rate"]],
             color="#DC2626",
             s=24,
             zorder=5,
         )
-        ax_rate.text(
+        y_offset = 0.03 if mark < 0.5 else -0.08
+        ax_share.text(
             row["top_share_selected"] + 0.012,
-            min(1.0, row["capture_rate"] + 0.03),
-            f"Top {int(mark * 100)}%: {row['capture_rate']:.0%}",
-            color="#DC2626",
-            fontsize=9,
+            min(0.96, max(0.08, row["capture_rate"] + y_offset)),
+            f"EV {int(mark * 100)}%: {row['capture_rate']:.0%}\nP(win): {prop_row['capture_rate']:.0%}",
+            color="#0F172A",
+            fontsize=8.5,
             weight="bold",
         )
 
-    ax.text(
-        0.02,
-        0.96,
-        "Threshold = minimum predicted expected value kept",
-        transform=ax.transAxes,
-        fontsize=9,
-        color="#475569",
-        va="top",
-    )
-
-    handles_left, labels_left = ax.get_legend_handles_labels()
-    handles_right, labels_right = ax_rate.get_legend_handles_labels()
-    ax.legend(
-        handles_left + handles_right,
-        labels_left + labels_right,
+    handles_amount, labels_amount = ax_amount.get_legend_handles_labels()
+    handles_share, labels_share = ax_share.get_legend_handles_labels()
+    ax_amount.legend(
+        handles_amount,
+        labels_amount,
         loc="lower right",
         frameon=False,
     )
+    ax_share.legend(
+        handles_share,
+        labels_share,
+        loc="lower right",
+        ncol=1,
+        frameon=False,
+    )
 
-    fig.tight_layout()
     ASSET_PATH.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(ASSET_PATH, dpi=220, bbox_inches="tight")
     plt.close(fig)

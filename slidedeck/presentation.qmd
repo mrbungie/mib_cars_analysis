@@ -24,12 +24,10 @@ format:
 
 ## Executive Summary
 
-- This analysis examines an auto-parts sales opportunity pipeline and identifies structural inefficiencies and data quality issues (e.g., CRM input errors, lack of prioritization, inaccurate forecasting) driving suboptimal sales performance.
-  - The current sales process spreads effort across a large number of low-value, low-probability opportunities, resulting in structurally low conversion (22.7%) and inefficient revenue capture.
-- We propose a win/loss classification model for prioritization, complemented by a regression model for deal sizing and aggregate forecasting.
-  - The classification model performs strongly (AUROC 0.88), while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but supports portfolio-level planning.
-- Prioritization through propensity and expected value concentrates effort on high-probability and high-value opportunities (top 20%: ~22.7% → ~67% conversion; ~44% of value in top 10%).
-- We recommend embedding these scores in the CRM at opportunity creation, piloting via A/B testing, and defining clear thresholds and actions to operationalize prioritization in sales workflows and pipeline reviews.
+- This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e. CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.
+- We propose two models: a win/loss classifier (AUROC 0.88) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal).
+- Focusing on the top 20% of opportunities lifts conversion from 22.7% to ~67%; the top 10% captures ~44% of total pipeline value.
+- We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.
 
 ## Agenda
 
@@ -47,7 +45,7 @@ format:
 ::: {.columns}
 ::: {.column width="56%"}
 - The current sales process tracks auto-parts opportunities across both new leads and existing customers.
-- Opportunities transition between the stages Identified / Qualifying, Qualified / Validating, and Validated / Gaining Agreement. 
+- Opportunities transition between the stages Data entry → Identified / Qualifying →  Qualified / Validating, and Validated / Gaining Agreement → Closed (Win/Loss). 
   - Opportunities can move between stages in either direction, and they can also stall within a stage for extended periods.
   - Each opportunity ultimately resolves as either a win or a loss.
   - Sales teams maintain an estimated deal value, which is updated as the opportunity progresses.
@@ -113,7 +111,7 @@ format:
 - **What it is not**: a full event history of every sales-stage movement.
 - The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
 
-## For any business operations, we recommend segmenting clients by client size
+## Align coverage and service models to client size, focusing scalable playbooks on small clients and dedicated effort on high-value accounts.
 
 ::: {.columns}
 ::: {.column width="58%"}
@@ -126,7 +124,7 @@ format:
 :::
 :::
 
-## We also recommend starting with a simple marketing funnel segmentation
+## Treat acquisition and expansion as distinct growth engines, each with its own playbook and resource model.
 
 ::: {.columns}
 ::: {.column width="42%"}
@@ -155,10 +153,10 @@ format:
 
 # Modelling {background-color="#0F172A"}
 
-## For both classification and regression, we used a **dynamic snapshot** of the opportunity data, which captures the current state of the sales process and customer context
+## For both classification and regression, we used an stratified train/test split to ensure realistic evaluation
 
 ::: {.columns}
-::: {.column width="54%"}
+::: {.column width="50%"}
 - **Train / test split**: **70% / 30%**
   - Train: **53,073** rows
   - Test: **22,746** rows
@@ -169,7 +167,7 @@ format:
 - In the final models, regression uses standardized numeric inputs, while the selected logistic classifier uses supervised binning plus one-hot encoding.
 :::
 ::: {.column width="46%"}
-SOME KIND OF DIAGRAM.
+![](assets/model_split_treemap.png){width=100%}
 :::
 :::
 
@@ -179,19 +177,26 @@ SOME KIND OF DIAGRAM.
 ::: {.column width="54%"}
 - Target: **Opportunity Result**.
 - Business use: **process prioritization** and ranking the pipeline by win propensity.
-- Specific transformations tested: log-transforming amount variables and supervised binning.
-- Selected final logistic model: **Logistic Regression over supervisedly binned and one-hot encoded features** (`logit_binned_ohe`).
+- Selected final logistic model: **Logistic Regression over supervisedly binned and one-hot encoded features with balanced class weights** (`logit_binned_ohe_balanced`). [^1]
 
-| Split | ROC AUC | PR AUC |
-| --- | ---: | ---: |
-| CV | 0.881 | 0.700 |
-| Held-out test | 0.877 | 0.695 |
+| Model | Split | ROC AUC | PR AUC |
+| --- | --- | ---: | ---: |
+| Selected | CV | 0.881 | 0.698 |
+| Selected | Held-out test | 0.877 | 0.693 |
+| Baseline | CV | 0.502 | 0.228 |
+| Baseline | Held-out test | 0.505 | 0.229 |
 
 :::
-::: {.column width="46%"}
-![](assets/classification_importance.png){width=100%}
+::: {.column width="50%"}
+![](assets/classification_roc.png){width=100%}
 :::
 :::
+
+::: aside
+This simulation is based on held-out test-set predictions.
+[^1]: We still do not recommend the higher-scoring XGBoost variants for deployment here because of their black-box nature and because they were not part of the covered modelling stack.
+:::
+
 
 ## Use amount model for portfolio forecasting, not deal decisions
 
@@ -199,13 +204,24 @@ SOME KIND OF DIAGRAM.
 ::: {.column width="54%"}
 - Target: **Opportunity Amount USD**.
 - Business use: **sizing and aggregate forecasting**.
-- Specific transformations tested: log-transforming amount variables and supervised binning.
-- Selected final regression model: **Classic linear regression with standard scaled input** (`classic_linear_standard_scaler`).
+- Selected final regression model: **XGBoost regressor** (`xgboost`).
 
-| Split | R² | MAE | Median APE |
-| --- | ---: | ---: | ---: |
-| CV | 0.134 | 74.3k USD | 78.9% |
-| Held-out test | 0.135 | 74.0k USD | 78.5% |
+::: {style="font-size: 80%;"}
+
+**CV**
+
+| Model | Split | R² | MAE | Median APE |
+| --- | ---: | ---: | ---: | ---: |
+| Selected | CV | 0.156 | 72.3k USD | 77.7% |
+| Selected | Held-out test | 0.161 | 71.9k USD | 76.9% |
+| Mean baseline | CV | -0.000 | 84.9k USD | 88.3% |
+| Mean baseline | Held-out test | -0.000 | 84.9k USD | 88.3% |
+| Median baseline | CV | -0.108 | 75.0k USD | 74.6% |
+| Median baseline | Held-out test | -0.108 | 74.9k USD | 75.0% |
+| Random baseline | CV | -1.053 | 115.0k USD | 90.4% |
+| Random baseline | Held-out test | -0.972 | 113.4k USD | 90.1% |
+
+:::
 
 :::
 ::: {.column width="46%"}
@@ -244,8 +260,8 @@ This simulation is based on held-out test-set predictions.
 ::: {.column width="44%"}
 - Model is better at forecasting aggregate sales than individual-opportunity amounts, which is common in this type of data.
   - Aggregate actual amount: **2.138B USD** on the held-out test set.
-  - Aggregate predicted amount: **2.139B USD** on the held-out test set.
-  - Mean absolute error per opportunity: **74.0k USD**.
+  - Aggregate predicted amount: **2.142B USD** on the held-out test set.
+  - Mean absolute error per opportunity: **71.9k USD**.
 - We propose automatically calculating and adding this to the CRM at opportunity creation for aggregate planning and scenario analysis, but not for precise opportunity-level decisions because its value is strongest at the portfolio level.
 
 :::
@@ -255,17 +271,19 @@ This simulation is based on held-out test-set predictions.
 This simulation is based on held-out test-set predictions.
 :::
 
-## Concentration (~44% top 10%, ~68% top 25%) makes expected-value prioritization a key revenue lever
+## Concentration (~44% value capture at top 10%) makes expected-value prioritization a key revenue lever
 
 ::: {.columns}
 ::: {.column width="56%"}
-![](assets/sim_expected_value_threshold.png){width=100%}
+![](assets/sim_expected_value_threshold.png){width=80%}
 :::
+
 ::: {.column width="44%"}
-- Both win propensity and deal size can be used to rank the pipeline, but expected value **(E[Amount] × P(Win))** is the most powerful lever for prioritization.
-  - Focus effort on high-value opportunities by ranking the pipeline on expected value.
-  - Shifting to value-based prioritization accelerates revenue capture.
-- We propose embedding this in the CRM to set clear thresholds (e.g., top 10% = high priority) with the intent of guiding sales focus and resource allocation in an even better way than win propensity alone.
+- Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
+  - At top 10%, expected-value ranking captures 43.6% of won revenue vs 34.9% with propensity-only.
+  - At top 25%, the comparison is 70.9% vs 66.9%, so deal-size information matters most when capacity is tight.
+  - While overoptimistic, rankings remain directionally valid and can be calibrated in-model in follow-up iterations.
+- We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.
 
 :::
 :::
@@ -352,23 +370,21 @@ Questions, comments, and feedback are welcome!
 
 | Model | ROC AUC | PR AUC | Accuracy | F1 |
 | --- | ---: | ---: | ---: | ---: |
-| xgboost | 0.926 ± 0.003 | 0.814 ± 0.005 | 0.882 ± 0.004 | 0.718 ± 0.011 |
-| probit_binned_ohe | 0.881 ± 0.004 | 0.699 ± 0.005 | 0.841 ± 0.003 | 0.589 ± 0.010 |
+| xgboost_balanced | 0.912 ± 0.003 | 0.783 ± 0.007 | 0.830 ± 0.005 | 0.691 ± 0.007 |
+| xgboost | 0.912 ± 0.003 | 0.786 ± 0.006 | 0.871 ± 0.003 | 0.682 ± 0.008 |
+| logit_elasticnet_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.643 ± 0.011 |
+| logit_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.643 ± 0.010 |
 | logit_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.596 ± 0.011 |
 | logit_elasticnet_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.594 ± 0.010 |
-| probit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.837 ± 0.003 | 0.564 ± 0.010 |
-| probit_binned_woe_robust_scaler | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.837 ± 0.003 | 0.564 ± 0.010 |
+| logit_elastic_binned_woe_balanced | 0.877 ± 0.004 | 0.692 ± 0.003 | 0.790 ± 0.006 | 0.636 ± 0.007 |
 | logit_elastic_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.009 |
 | logit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.008 |
-| logit_binned_woe_robust_scaler | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.008 |
+| logit_elasticnet_standard_scaler_balanced | 0.868 ± 0.006 | 0.669 ± 0.011 | 0.787 ± 0.007 | 0.629 ± 0.011 |
 | logit_elasticnet_standard_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
-| logit_elasticnet_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
-| classic_logit_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
 | classic_logit_standard_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
-| classic_probit_robust_scaler | 0.867 ± 0.006 | 0.672 ± 0.011 | 0.827 ± 0.003 | 0.535 ± 0.011 |
-| classic_probit_standard_scaler | 0.867 ± 0.006 | 0.672 ± 0.011 | 0.827 ± 0.003 | 0.535 ± 0.011 |
+| random_classifier | 0.502 ± 0.002 | 0.228 ± 0.001 | 0.654 ± 0.001 | 0.227 ± 0.003 |
 
-Selected model in main deck: **logit_binned_ohe**.
+Selected model in main deck: **logit_binned_ohe_balanced**.
 
 :::
 
@@ -378,16 +394,20 @@ Selected model in main deck: **logit_binned_ohe**.
 
 | Model | R² | MAE (USD) | MAPE | Median APE |
 | --- | ---: | ---: | ---: | ---: |
+| xgboost | 0.156 ± 0.008 | 72.3k ± 0.9k | 294.6% ± 54.5% | 77.8% |
 | classic_linear_standard_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | 78.9% |
-| classic_linear_robust_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | n/a |
-| linear_binned_ohe | 0.134 ± 0.007 | 74.3k ± 1.0k | 300.4% ± 55.2% | n/a |
-| elastic_binned_woe | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | n/a |
-| linear_binned_woe_standard_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | n/a |
-| linear_binned_woe_robust_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | n/a |
-| xgboost | 0.129 ± 0.013 | 73.7k ± 0.9k | 273.5% ± 40.8% | n/a |
-| elasticnet_standard_scaler | 0.066 ± 0.003 | 79.6k ± 1.2k | 261.3% ± 57.9% | n/a |
-| huber_robust_scaler | 0.066 ± 0.006 | 67.3k ± 1.5k | 198.7% ± 38.0% | n/a |
+| linear_binned_ohe | 0.134 ± 0.007 | 74.3k ± 1.0k | 300.4% ± 55.2% | 78.9% |
+| elastic_binned_woe | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
+| linear_binned_woe_standard_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
+| elasticnet_standard_scaler | 0.066 ± 0.003 | 79.6k ± 1.2k | 261.3% ± 57.9% | 97.4% |
+| linear_power_scaler_binned_ohe | 0.043 ± 0.009 | 66.7k ± 1.4k | 180.5% ± 37.7% | 63.6% |
+| classic_linear_boxcox_standard_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.2% ± 34.3% | 63.9% |
+| classic_linear_yeojohnson_standard_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.1% ± 34.3% | 63.8% |
+| mean_regressor | -0.000 ± 0.000 | 84.9k ± 1.3k | 235.0% ± 53.9% | 88.3% |
+| classic_linear_log1p_standard_scaler | -0.006 ± 0.006 | 67.7k ± 1.5k | 148.3% ± 30.7% | 64.1% |
+| median_regressor | -0.108 ± 0.002 | 75.0k ± 1.5k | 124.7% ± 28.4% | 74.6% |
+| random_regressor | -1.053 ± 0.057 | 115.0k ± 2.1k | 164.1% ± 65.3% | 90.4% |
 
-Selected model in main deck: **classic_linear_standard_scaler**.
+Selected model in main deck: **xgboost**.
 
 :::

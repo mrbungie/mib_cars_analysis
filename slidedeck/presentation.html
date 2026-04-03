@@ -144,16 +144,10 @@ Strategic Analysis Group
 <section id="executive-summary" class="slide level2">
 <h2>Executive Summary</h2>
 <ul>
-<li>This analysis examines an auto-parts sales opportunity pipeline and identifies structural inefficiencies and data quality issues (e.g., CRM input errors, lack of prioritization, inaccurate forecasting) driving suboptimal sales performance.
-<ul>
-<li>The current sales process spreads effort across a large number of low-value, low-probability opportunities, resulting in structurally low conversion (22.7%) and inefficient revenue capture.</li>
-</ul></li>
-<li>We propose a win/loss classification model for prioritization, complemented by a regression model for deal sizing and aggregate forecasting.
-<ul>
-<li>The classification model performs strongly (AUROC 0.88), while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but supports portfolio-level planning.</li>
-</ul></li>
-<li>Prioritization through propensity and expected value concentrates effort on high-probability and high-value opportunities (top 20%: ~22.7% → ~67% conversion; ~44% of value in top 10%).</li>
-<li>We recommend embedding these scores in the CRM at opportunity creation, piloting via A/B testing, and defining clear thresholds and actions to operationalize prioritization in sales workflows and pipeline reviews.</li>
+<li>This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e.&nbsp;CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.</li>
+<li>We propose two models: a win/loss classifier (AUROC 0.88) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal).</li>
+<li>Focusing on the top 20% of opportunities lifts conversion from 22.7% to ~67%; the top 10% captures ~44% of total pipeline value.</li>
+<li>We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.</li>
 </ul>
 </section>
 <section id="agenda" class="slide level2 scrollable">
@@ -178,7 +172,7 @@ Strategic Analysis Group
 <div class="column" style="width:56%;">
 <ul>
 <li>The current sales process tracks auto-parts opportunities across both new leads and existing customers.</li>
-<li>Opportunities transition between the stages Identified / Qualifying, Qualified / Validating, and Validated / Gaining Agreement.
+<li>Opportunities transition between the stages Data entry → Identified / Qualifying → Qualified / Validating, and Validated / Gaining Agreement → Closed (Win/Loss).
 <ul>
 <li>Opportunities can move between stages in either direction, and they can also stall within a stage for extended periods.</li>
 <li>Each opportunity ultimately resolves as either a win or a loss.</li>
@@ -254,8 +248,8 @@ Strategic Analysis Group
 - **What it is not**: a full event history of every sales-stage movement.
 - The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
 </section>
-<section id="for-any-business-operations-we-recommend-segmenting-clients-by-client-size" class="slide level2">
-<h2>For any business operations, we recommend segmenting clients by client size</h2>
+<section id="align-coverage-and-service-models-to-client-size-focusing-scalable-playbooks-on-small-clients-and-dedicated-effort-on-high-value-accounts." class="slide level2">
+<h2>Align coverage and service models to client size, focusing scalable playbooks on small clients and dedicated effort on high-value accounts.</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <p><img data-src="assets/eda_client_segmentation.png" style="width:100.0%"></p>
@@ -267,8 +261,8 @@ Strategic Analysis Group
 </ul>
 </div></div>
 </section>
-<section id="we-also-recommend-starting-with-a-simple-marketing-funnel-segmentation" class="slide level2">
-<h2>We also recommend starting with a simple marketing funnel segmentation</h2>
+<section id="treat-acquisition-and-expansion-as-distinct-growth-engines-each-with-its-own-playbook-and-resource-model." class="slide level2">
+<h2>Treat acquisition and expansion as distinct growth engines, each with its own playbook and resource model.</h2>
 <div class="columns">
 <div class="column" style="width:42%;">
 <ul>
@@ -298,10 +292,10 @@ Strategic Analysis Group
 <h1>Modelling</h1>
 
 </section>
-<section id="for-both-classification-and-regression-we-used-a-dynamic-snapshot-of-the-opportunity-data-which-captures-the-current-state-of-the-sales-process-and-customer-context" class="slide level2">
-<h2>For both classification and regression, we used a <strong>dynamic snapshot</strong> of the opportunity data, which captures the current state of the sales process and customer context</h2>
+<section id="for-both-classification-and-regression-we-used-an-stratified-traintest-split-to-ensure-realistic-evaluation" class="slide level2">
+<h2>For both classification and regression, we used an stratified train/test split to ensure realistic evaluation</h2>
 <div class="columns">
-<div class="column" style="width:54%;">
+<div class="column" style="width:50%;">
 <ul>
 <li><strong>Train / test split</strong>: <strong>70% / 30%</strong>
 <ul>
@@ -317,7 +311,7 @@ Strategic Analysis Group
 <li>In the final models, regression uses standardized numeric inputs, while the selected logistic classifier uses supervised binning plus one-hot encoding.</li>
 </ul>
 </div><div class="column" style="width:46%;">
-<p>SOME KIND OF DIAGRAM.</p>
+<p><img data-src="assets/model_split_treemap.png" style="width:100.0%"></p>
 </div></div>
 </section>
 <section id="prioritization-classification-model-enables-immediate-and-precise-reallocation-of-sales-effort" class="slide level2">
@@ -327,12 +321,12 @@ Strategic Analysis Group
 <ul>
 <li>Target: <strong>Opportunity Result</strong>.</li>
 <li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.</li>
-<li>Specific transformations tested: log-transforming amount variables and supervised binning.</li>
-<li>Selected final logistic model: <strong>Logistic Regression over supervisedly binned and one-hot encoded features</strong> (<code>logit_binned_ohe</code>).</li>
+<li>Selected final logistic model: <strong>Logistic Regression over supervisedly binned and one-hot encoded features with balanced class weights</strong> (<code>logit_binned_ohe_balanced</code>). [^1]</li>
 </ul>
 <table class="caption-top">
 <thead>
 <tr class="header">
+<th>Model</th>
 <th>Split</th>
 <th style="text-align: right;">ROC AUC</th>
 <th style="text-align: right;">PR AUC</th>
@@ -340,21 +334,38 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
+<td>Selected</td>
 <td>CV</td>
 <td style="text-align: right;">0.881</td>
-<td style="text-align: right;">0.700</td>
+<td style="text-align: right;">0.698</td>
 </tr>
 <tr class="even">
+<td>Selected</td>
 <td>Held-out test</td>
 <td style="text-align: right;">0.877</td>
-<td style="text-align: right;">0.695</td>
+<td style="text-align: right;">0.693</td>
+</tr>
+<tr class="odd">
+<td>Baseline</td>
+<td>CV</td>
+<td style="text-align: right;">0.502</td>
+<td style="text-align: right;">0.228</td>
+</tr>
+<tr class="even">
+<td>Baseline</td>
+<td>Held-out test</td>
+<td style="text-align: right;">0.505</td>
+<td style="text-align: right;">0.229</td>
 </tr>
 </tbody>
 </table>
-</div><div class="column" style="width:46%;">
-<p><img data-src="assets/classification_importance.png" style="width:100.0%"></p>
+</div><div class="column" style="width:50%;">
+<p><img data-src="assets/classification_roc.png" style="width:100.0%"></p>
 </div></div>
-</section>
+
+<aside><div>
+<p>This simulation is based on held-out test-set predictions. [^1]: We still do not recommend the higher-scoring XGBoost variants for deployment here because of their black-box nature and because they were not part of the covered modelling stack.</p>
+</div></aside></section>
 <section id="use-amount-model-for-portfolio-forecasting-not-deal-decisions" class="slide level2">
 <h2>Use amount model for portfolio forecasting, not deal decisions</h2>
 <div class="columns">
@@ -362,13 +373,15 @@ Strategic Analysis Group
 <ul>
 <li>Target: <strong>Opportunity Amount USD</strong>.</li>
 <li>Business use: <strong>sizing and aggregate forecasting</strong>.</li>
-<li>Specific transformations tested: log-transforming amount variables and supervised binning.</li>
-<li>Selected final regression model: <strong>Classic linear regression with standard scaled input</strong> (<code>classic_linear_standard_scaler</code>).</li>
+<li>Selected final regression model: <strong>XGBoost regressor</strong> (<code>xgboost</code>).</li>
 </ul>
+<div style="font-size: 80%;">
+<p><strong>CV</strong></p>
 <table class="caption-top">
 <thead>
 <tr class="header">
-<th>Split</th>
+<th>Model</th>
+<th style="text-align: right;">Split</th>
 <th style="text-align: right;">R²</th>
 <th style="text-align: right;">MAE</th>
 <th style="text-align: right;">Median APE</th>
@@ -376,19 +389,64 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
-<td>CV</td>
-<td style="text-align: right;">0.134</td>
-<td style="text-align: right;">74.3k USD</td>
-<td style="text-align: right;">78.9%</td>
+<td>Selected</td>
+<td style="text-align: right;">CV</td>
+<td style="text-align: right;">0.156</td>
+<td style="text-align: right;">72.3k USD</td>
+<td style="text-align: right;">77.7%</td>
 </tr>
 <tr class="even">
-<td>Held-out test</td>
-<td style="text-align: right;">0.135</td>
-<td style="text-align: right;">74.0k USD</td>
-<td style="text-align: right;">78.5%</td>
+<td>Selected</td>
+<td style="text-align: right;">Held-out test</td>
+<td style="text-align: right;">0.161</td>
+<td style="text-align: right;">71.9k USD</td>
+<td style="text-align: right;">76.9%</td>
+</tr>
+<tr class="odd">
+<td>Mean baseline</td>
+<td style="text-align: right;">CV</td>
+<td style="text-align: right;">-0.000</td>
+<td style="text-align: right;">84.9k USD</td>
+<td style="text-align: right;">88.3%</td>
+</tr>
+<tr class="even">
+<td>Mean baseline</td>
+<td style="text-align: right;">Held-out test</td>
+<td style="text-align: right;">-0.000</td>
+<td style="text-align: right;">84.9k USD</td>
+<td style="text-align: right;">88.3%</td>
+</tr>
+<tr class="odd">
+<td>Median baseline</td>
+<td style="text-align: right;">CV</td>
+<td style="text-align: right;">-0.108</td>
+<td style="text-align: right;">75.0k USD</td>
+<td style="text-align: right;">74.6%</td>
+</tr>
+<tr class="even">
+<td>Median baseline</td>
+<td style="text-align: right;">Held-out test</td>
+<td style="text-align: right;">-0.108</td>
+<td style="text-align: right;">74.9k USD</td>
+<td style="text-align: right;">75.0%</td>
+</tr>
+<tr class="odd">
+<td>Random baseline</td>
+<td style="text-align: right;">CV</td>
+<td style="text-align: right;">-1.053</td>
+<td style="text-align: right;">115.0k USD</td>
+<td style="text-align: right;">90.4%</td>
+</tr>
+<tr class="even">
+<td>Random baseline</td>
+<td style="text-align: right;">Held-out test</td>
+<td style="text-align: right;">-0.972</td>
+<td style="text-align: right;">113.4k USD</td>
+<td style="text-align: right;">90.1%</td>
 </tr>
 </tbody>
 </table>
+</div>
 </div><div class="column" style="width:46%;">
 <p><img data-src="assets/regression_importance.png" style="width:100.0%"></p>
 </div></div>
@@ -428,8 +486,8 @@ Strategic Analysis Group
 <li>Model is better at forecasting aggregate sales than individual-opportunity amounts, which is common in this type of data.
 <ul>
 <li>Aggregate actual amount: <strong>2.138B USD</strong> on the held-out test set.</li>
-<li>Aggregate predicted amount: <strong>2.139B USD</strong> on the held-out test set.</li>
-<li>Mean absolute error per opportunity: <strong>74.0k USD</strong>.</li>
+<li>Aggregate predicted amount: <strong>2.142B USD</strong> on the held-out test set.</li>
+<li>Mean absolute error per opportunity: <strong>71.9k USD</strong>.</li>
 </ul></li>
 <li>We propose automatically calculating and adding this to the CRM at opportunity creation for aggregate planning and scenario analysis, but not for precise opportunity-level decisions because its value is strongest at the portfolio level.</li>
 </ul>
@@ -438,19 +496,20 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="concentration-44-top-10-68-top-25-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
-<h2>Concentration (~44% top 10%, ~68% top 25%) makes expected-value prioritization a key revenue lever</h2>
+<section id="concentration-44-value-capture-at-top-10-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
+<h2>Concentration (~44% value capture at top 10%) makes expected-value prioritization a key revenue lever</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
-<p><img data-src="assets/sim_expected_value_threshold.png" style="width:100.0%"></p>
+<p><img data-src="assets/sim_expected_value_threshold.png" style="width:80.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>Both win propensity and deal size can be used to rank the pipeline, but expected value <strong>(E[Amount] × P(Win))</strong> is the most powerful lever for prioritization.
+<li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
 <ul>
-<li>Focus effort on high-value opportunities by ranking the pipeline on expected value.</li>
-<li>Shifting to value-based prioritization accelerates revenue capture.</li>
+<li>At top 10%, expected-value ranking captures 43.6% of won revenue vs 34.9% with propensity-only.</li>
+<li>At top 25%, the comparison is 70.9% vs 66.9%, so deal-size information matters most when capacity is tight.</li>
+<li>While overoptimistic, rankings remain directionally valid and can be calibrated in-model in follow-up iterations.</li>
 </ul></li>
-<li>We propose embedding this in the CRM to set clear thresholds (e.g., top 10% = high priority) with the intent of guiding sales focus and resource allocation in an even better way than win propensity alone.</li>
+<li>We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.</li>
 </ul>
 </div></div>
 
@@ -580,18 +639,32 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
-<td>xgboost</td>
-<td style="text-align: right;">0.926 ± 0.003</td>
-<td style="text-align: right;">0.814 ± 0.005</td>
-<td style="text-align: right;">0.882 ± 0.004</td>
-<td style="text-align: right;">0.718 ± 0.011</td>
+<td>xgboost_balanced</td>
+<td style="text-align: right;">0.912 ± 0.003</td>
+<td style="text-align: right;">0.783 ± 0.007</td>
+<td style="text-align: right;">0.830 ± 0.005</td>
+<td style="text-align: right;">0.691 ± 0.007</td>
 </tr>
 <tr class="even">
-<td>probit_binned_ohe</td>
+<td>xgboost</td>
+<td style="text-align: right;">0.912 ± 0.003</td>
+<td style="text-align: right;">0.786 ± 0.006</td>
+<td style="text-align: right;">0.871 ± 0.003</td>
+<td style="text-align: right;">0.682 ± 0.008</td>
+</tr>
+<tr class="odd">
+<td>logit_elasticnet_binned_ohe_balanced</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
-<td style="text-align: right;">0.699 ± 0.005</td>
-<td style="text-align: right;">0.841 ± 0.003</td>
-<td style="text-align: right;">0.589 ± 0.010</td>
+<td style="text-align: right;">0.698 ± 0.005</td>
+<td style="text-align: right;">0.794 ± 0.008</td>
+<td style="text-align: right;">0.643 ± 0.011</td>
+</tr>
+<tr class="even">
+<td>logit_binned_ohe_balanced</td>
+<td style="text-align: right;">0.881 ± 0.004</td>
+<td style="text-align: right;">0.698 ± 0.005</td>
+<td style="text-align: right;">0.794 ± 0.008</td>
+<td style="text-align: right;">0.643 ± 0.010</td>
 </tr>
 <tr class="odd">
 <td>logit_binned_ohe</td>
@@ -608,85 +681,57 @@ Strategic Analysis Group
 <td style="text-align: right;">0.594 ± 0.010</td>
 </tr>
 <tr class="odd">
-<td>probit_binned_woe</td>
+<td>logit_elastic_binned_woe_balanced</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
-<td style="text-align: right;">0.693 ± 0.004</td>
-<td style="text-align: right;">0.837 ± 0.003</td>
-<td style="text-align: right;">0.564 ± 0.010</td>
+<td style="text-align: right;">0.692 ± 0.003</td>
+<td style="text-align: right;">0.790 ± 0.006</td>
+<td style="text-align: right;">0.636 ± 0.007</td>
 </tr>
 <tr class="even">
-<td>probit_binned_woe_robust_scaler</td>
-<td style="text-align: right;">0.877 ± 0.004</td>
-<td style="text-align: right;">0.693 ± 0.004</td>
-<td style="text-align: right;">0.837 ± 0.003</td>
-<td style="text-align: right;">0.564 ± 0.010</td>
-</tr>
-<tr class="odd">
 <td>logit_elastic_binned_woe</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.693 ± 0.004</td>
 <td style="text-align: right;">0.838 ± 0.002</td>
 <td style="text-align: right;">0.570 ± 0.009</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_woe</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.693 ± 0.004</td>
 <td style="text-align: right;">0.838 ± 0.002</td>
 <td style="text-align: right;">0.570 ± 0.008</td>
 </tr>
-<tr class="odd">
-<td>logit_binned_woe_robust_scaler</td>
-<td style="text-align: right;">0.877 ± 0.004</td>
-<td style="text-align: right;">0.693 ± 0.004</td>
-<td style="text-align: right;">0.838 ± 0.002</td>
-<td style="text-align: right;">0.570 ± 0.008</td>
-</tr>
 <tr class="even">
+<td>logit_elasticnet_standard_scaler_balanced</td>
+<td style="text-align: right;">0.868 ± 0.006</td>
+<td style="text-align: right;">0.669 ± 0.011</td>
+<td style="text-align: right;">0.787 ± 0.007</td>
+<td style="text-align: right;">0.629 ± 0.011</td>
+</tr>
+<tr class="odd">
 <td>logit_elasticnet_standard_scaler</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.675 ± 0.011</td>
 <td style="text-align: right;">0.828 ± 0.002</td>
 <td style="text-align: right;">0.546 ± 0.008</td>
 </tr>
-<tr class="odd">
-<td>logit_elasticnet_robust_scaler</td>
-<td style="text-align: right;">0.868 ± 0.006</td>
-<td style="text-align: right;">0.675 ± 0.011</td>
-<td style="text-align: right;">0.828 ± 0.002</td>
-<td style="text-align: right;">0.546 ± 0.008</td>
-</tr>
 <tr class="even">
-<td>classic_logit_robust_scaler</td>
-<td style="text-align: right;">0.868 ± 0.006</td>
-<td style="text-align: right;">0.675 ± 0.011</td>
-<td style="text-align: right;">0.828 ± 0.002</td>
-<td style="text-align: right;">0.547 ± 0.008</td>
-</tr>
-<tr class="odd">
 <td>classic_logit_standard_scaler</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.675 ± 0.011</td>
 <td style="text-align: right;">0.828 ± 0.002</td>
 <td style="text-align: right;">0.547 ± 0.008</td>
 </tr>
-<tr class="even">
-<td>classic_probit_robust_scaler</td>
-<td style="text-align: right;">0.867 ± 0.006</td>
-<td style="text-align: right;">0.672 ± 0.011</td>
-<td style="text-align: right;">0.827 ± 0.003</td>
-<td style="text-align: right;">0.535 ± 0.011</td>
-</tr>
 <tr class="odd">
-<td>classic_probit_standard_scaler</td>
-<td style="text-align: right;">0.867 ± 0.006</td>
-<td style="text-align: right;">0.672 ± 0.011</td>
-<td style="text-align: right;">0.827 ± 0.003</td>
-<td style="text-align: right;">0.535 ± 0.011</td>
+<td>random_classifier</td>
+<td style="text-align: right;">0.502 ± 0.002</td>
+<td style="text-align: right;">0.228 ± 0.001</td>
+<td style="text-align: right;">0.654 ± 0.001</td>
+<td style="text-align: right;">0.227 ± 0.003</td>
 </tr>
 </tbody>
 </table>
-<p>Selected model in main deck: <strong>logit_binned_ohe</strong>.</p>
+<p>Selected model in main deck: <strong>logit_binned_ohe_balanced</strong>.</p>
 </div>
 </section>
 <section id="annex-regression-cv-leaderboard" class="slide level2">
@@ -711,71 +756,99 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
+<td>xgboost</td>
+<td style="text-align: right;">0.156 ± 0.008</td>
+<td style="text-align: right;">72.3k ± 0.9k</td>
+<td style="text-align: right;">294.6% ± 54.5%</td>
+<td style="text-align: right;">77.8%</td>
+</tr>
+<tr class="even">
 <td>classic_linear_standard_scaler</td>
 <td style="text-align: right;">0.134 ± 0.006</td>
 <td style="text-align: right;">74.3k ± 1.1k</td>
 <td style="text-align: right;">297.1% ± 54.9%</td>
 <td style="text-align: right;">78.9%</td>
 </tr>
-<tr class="even">
-<td>classic_linear_robust_scaler</td>
-<td style="text-align: right;">0.134 ± 0.006</td>
-<td style="text-align: right;">74.3k ± 1.1k</td>
-<td style="text-align: right;">297.1% ± 54.9%</td>
-<td style="text-align: right;">n/a</td>
-</tr>
 <tr class="odd">
 <td>linear_binned_ohe</td>
 <td style="text-align: right;">0.134 ± 0.007</td>
 <td style="text-align: right;">74.3k ± 1.0k</td>
 <td style="text-align: right;">300.4% ± 55.2%</td>
-<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">78.9%</td>
 </tr>
 <tr class="even">
 <td>elastic_binned_woe</td>
 <td style="text-align: right;">0.131 ± 0.008</td>
 <td style="text-align: right;">74.3k ± 1.1k</td>
 <td style="text-align: right;">298.7% ± 58.7%</td>
-<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">79.3%</td>
 </tr>
 <tr class="odd">
 <td>linear_binned_woe_standard_scaler</td>
 <td style="text-align: right;">0.131 ± 0.008</td>
 <td style="text-align: right;">74.3k ± 1.1k</td>
 <td style="text-align: right;">298.7% ± 58.7%</td>
-<td style="text-align: right;">n/a</td>
-</tr>
-<tr class="even">
-<td>linear_binned_woe_robust_scaler</td>
-<td style="text-align: right;">0.131 ± 0.008</td>
-<td style="text-align: right;">74.3k ± 1.1k</td>
-<td style="text-align: right;">298.7% ± 58.7%</td>
-<td style="text-align: right;">n/a</td>
-</tr>
-<tr class="odd">
-<td>xgboost</td>
-<td style="text-align: right;">0.129 ± 0.013</td>
-<td style="text-align: right;">73.7k ± 0.9k</td>
-<td style="text-align: right;">273.5% ± 40.8%</td>
-<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">79.3%</td>
 </tr>
 <tr class="even">
 <td>elasticnet_standard_scaler</td>
 <td style="text-align: right;">0.066 ± 0.003</td>
 <td style="text-align: right;">79.6k ± 1.2k</td>
 <td style="text-align: right;">261.3% ± 57.9%</td>
-<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">97.4%</td>
 </tr>
 <tr class="odd">
-<td>huber_robust_scaler</td>
-<td style="text-align: right;">0.066 ± 0.006</td>
-<td style="text-align: right;">67.3k ± 1.5k</td>
-<td style="text-align: right;">198.7% ± 38.0%</td>
-<td style="text-align: right;">n/a</td>
+<td>linear_power_scaler_binned_ohe</td>
+<td style="text-align: right;">0.043 ± 0.009</td>
+<td style="text-align: right;">66.7k ± 1.4k</td>
+<td style="text-align: right;">180.5% ± 37.7%</td>
+<td style="text-align: right;">63.6%</td>
+</tr>
+<tr class="even">
+<td>classic_linear_boxcox_standard_scaler</td>
+<td style="text-align: right;">0.041 ± 0.007</td>
+<td style="text-align: right;">66.8k ± 1.4k</td>
+<td style="text-align: right;">176.2% ± 34.3%</td>
+<td style="text-align: right;">63.9%</td>
+</tr>
+<tr class="odd">
+<td>classic_linear_yeojohnson_standard_scaler</td>
+<td style="text-align: right;">0.041 ± 0.007</td>
+<td style="text-align: right;">66.8k ± 1.4k</td>
+<td style="text-align: right;">176.1% ± 34.3%</td>
+<td style="text-align: right;">63.8%</td>
+</tr>
+<tr class="even">
+<td>mean_regressor</td>
+<td style="text-align: right;">-0.000 ± 0.000</td>
+<td style="text-align: right;">84.9k ± 1.3k</td>
+<td style="text-align: right;">235.0% ± 53.9%</td>
+<td style="text-align: right;">88.3%</td>
+</tr>
+<tr class="odd">
+<td>classic_linear_log1p_standard_scaler</td>
+<td style="text-align: right;">-0.006 ± 0.006</td>
+<td style="text-align: right;">67.7k ± 1.5k</td>
+<td style="text-align: right;">148.3% ± 30.7%</td>
+<td style="text-align: right;">64.1%</td>
+</tr>
+<tr class="even">
+<td>median_regressor</td>
+<td style="text-align: right;">-0.108 ± 0.002</td>
+<td style="text-align: right;">75.0k ± 1.5k</td>
+<td style="text-align: right;">124.7% ± 28.4%</td>
+<td style="text-align: right;">74.6%</td>
+</tr>
+<tr class="odd">
+<td>random_regressor</td>
+<td style="text-align: right;">-1.053 ± 0.057</td>
+<td style="text-align: right;">115.0k ± 2.1k</td>
+<td style="text-align: right;">164.1% ± 65.3%</td>
+<td style="text-align: right;">90.4%</td>
 </tr>
 </tbody>
 </table>
-<p>Selected model in main deck: <strong>classic_linear_standard_scaler</strong>.</p>
+<p>Selected model in main deck: <strong>xgboost</strong>.</p>
 </div>
 
 </section></section>
