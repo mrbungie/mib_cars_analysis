@@ -26,7 +26,7 @@ format:
 
 - The current sales process for auto parts opportunities shows both opportunities in structural inefficiencies and also data quality issues (e.g., data input issues, lack of prioritization, inaccurate forecasting), which are driving suboptimal sales force performance.
 - For dealing with the structural inefficiencies, we propose a classification model to predict win/loss and support opportunity prioritization, and a regression model to estimate deal size for a priori sizing and forecasting.
-- The classification model performs well (AUROC 0.88), enabling effective prioritization, while the regression model is weaker (Mean Absolute Error ~$74K; R² 0.13) but still useful for aggregate forecasting and directional insights.
+- The classification model performs well (AUROC 0.88), enabling effective prioritization, while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but is still accurate enough for aggregate forecasting and directional planning.
 - We recommend piloting the classification model first, while using the regression model as a complementary tool for portfolio-level planning.
 
 ## Agenda
@@ -191,7 +191,7 @@ SOME KIND OF DIAGRAM.
 :::
 :::
 
-## Amount regression supports planning, but is weaker than classification
+## Amount regression is not reliable at deal level, but highly accurate at portfolio level for planning
 
 ::: {.columns}
 ::: {.column width="54%"}
@@ -214,16 +214,12 @@ SOME KIND OF DIAGRAM.
 
 # Application simulation {background-color="#1E293B"}
 
-## Prioritization simulation: the top propensity decile delivers 3.5× lift versus the average held-out win rate
+## Focusing on the top 20% of opportunities could raise conversion from 22.7% to about 67.0%, a ~2x increase, without increasing pipeline size
 
 ::: {.columns}
 ::: {.column width="44%"}
-The model ranking is highly concentrated:
-
-- **Top decile** runs at **3.52× lift**, with an observed win rate of **80.0%** versus **22.7%** overall.
-- **Ninth decile** is also well above average at **2.38× lift**, while deciles 1–6 remain below baseline.
-
-These can be used by sales teams to focus effort on the most promising opportunities (i.e. top 2 deciles), while also setting clear thresholds for pipeline reviews and resource allocation.
+- Sales effort is currently spread across low-probability deals → the model shows that concentrating on the top deciles can triple efficiency.
+- We propose to automatically embed this in the CRM at opportunity creation to prioritize high-propensity deals (e.g. top 1-2 deciles) and set clear thresholds for pipeline reviews and resource allocation.
 
 ::: aside
 This simulation is based on held-out test-set predictions.
@@ -242,12 +238,12 @@ This simulation is based on held-out test-set predictions.
 ![](assets/sim_forecasting.png){width=100%}
 :::
 ::: {.column width="44%"}
-- Aggregate actual amount: **2.138B USD** on the held-out test set.
-- Aggregate predicted amount: **2.139B USD** on the held-out test set.
-- Mean absolute error per opportunity: **74.0k USD**.
-- The forecasting story is therefore strongest at the **portfolio level**, not at the individual-opportunity level.
+- Model is better at forecasting aggregate sales than individual-opportunity amounts, which is common in this type of data.
+  - Aggregate actual amount: **2.138B USD** on the held-out test set.
+  - Aggregate predicted amount: **2.139B USD** on the held-out test set.
+  - Mean absolute error per opportunity: **74.0k USD**.
+- We propose automatically calculating and adding this to the CRM at opportunity creation for aggregate planning and scenario analysis, but not for precise opportunity-level decisions because its value is strongest at the portfolio level.
 
-These predictions can be used for high-level planning and scenario analysis at aggregate levels, but the regression model's weaker performance means it should not be used for opportunity-level prioritization or decision-making.
 :::
 :::
 
@@ -266,15 +262,47 @@ This simulation is based on held-out test-set predictions.
 - ~44% of value captured in top 10% of opportunities, ~68% in top 25%.
 - Shifting from broad coverage to value-based prioritization materially accelerates revenue capture.
 - Acts as a bridge between prioritization and forecasting, aligning effort with both likelihood and deal size.
+- We propose embedding this in the CRM to set clear thresholds for sales focus (e.g., top 10% of opportunities by expected value = high priority), while providing a more nuanced view of opportunity value than win propensity alone.
 
-This can be used to set clear thresholds for sales focus (e.g., top 10% = high priority), while also providing a more nuanced view of opportunity value than win propensity alone.
-
-:::
 :::
 :::
 
 ::: aside
 This simulation is based on held-out test-set predictions.
+:::
+
+## How this integrates into sales workflow
+
+::: {.columns}
+::: {.column width="52%"}
+### Operational flow
+
+**Opportunity created** → **score + expected value generated**
+
+- As soon as a new opportunity enters the CRM, the workflow generates:
+  - **win-propensity score**
+  - **predicted amount**
+  - **expected value = E[Amount] × P(Win)**
+
+### CRM displays
+
+- **Priority tier**: Top 10%, Top 25%, Top 50%, etc.
+- **Suggested action**: focus / monitor / deprioritize
+- This gives frontline teams a simple operating signal without exposing model internals.
+:::
+::: {.column width="48%"}
+### Weekly pipeline reviews
+
+- Use **threshold-based filtering** to narrow the active pipeline before review.
+- Focus reviews on opportunities above the agreed propensity or expected-value cutoff.
+- Align rep attention, manager escalation, and follow-up cadence to those thresholds.
+
+### Management view
+
+- **Forecast = sum of predicted values** across the active pipeline.
+- Leadership can compare forecast by region, route to market, owner, or priority tier.
+- This connects daily triage decisions to portfolio-level revenue planning.
+:::
 :::
 
 # Conclusions {background-color="#0F172A"}
@@ -306,6 +334,9 @@ This simulation is based on held-out test-set predictions.
 - Scale and integrate:
   - Extend to full pipeline and embed in forecasting cadence
   - Incorporate into commercial planning and resource allocation
+
+# Thank you {background-color="#0F172A"}
+Questions, comments, and feedback are welcome!
 
 # Annex {background-color="#0F172A"}
 
@@ -354,6 +385,3 @@ Selected model in main deck: **logit_binned_ohe**.
 Selected model in main deck: **classic_linear_standard_scaler**.
 
 :::
-
-# Thank you {background-color="#0F172A"}
-Questions, comments, and feedback are welcome!
