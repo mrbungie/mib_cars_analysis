@@ -218,7 +218,10 @@ SOME KIND OF DIAGRAM.
 
 ::: {.columns}
 ::: {.column width="44%"}
-- Sales effort is currently spread across low-probability deals → the model shows that concentrating on the top deciles can triple efficiency.
+- Sales effort is currently spread across low-probability deals → concentrating on top deciles can triple conversion efficiency.
+  - Top decile: 3.52× lift.
+  - Ninth decile: 2.38× lift.
+  - Eight decile: 1.66× lift.
 - We propose to automatically embed this in the CRM at opportunity creation to prioritize high-propensity deals (e.g. top 1-2 deciles) and set clear thresholds for pipeline reviews and resource allocation.
 
 ::: aside
@@ -231,7 +234,7 @@ This simulation is based on held-out test-set predictions.
 :::
 :::
 
-## Forecast simulation: predicted total sales closely matches the observed aggregate total
+## Leverage the opportunity sizing model for accurate aggregate forecasting, not individual deal sizing
 
 ::: {.columns}
 ::: {.column width="56%"}
@@ -251,24 +254,23 @@ This simulation is based on held-out test-set predictions.
 This simulation is based on held-out test-set predictions.
 :::
 
-## Expected-value thresholding captures realized value much faster than a broad-pipeline approach
+## Concentration (~44% top 10%, ~68% top 25%) makes expected-value prioritization a key revenue lever
 
 ::: {.columns}
 ::: {.column width="56%"}
 ![](assets/sim_expected_value_threshold.png){width=100%}
 :::
 ::: {.column width="44%"}
-- Rank and filter pipeline by expected value to concentrate effort where it matters most.
-- ~44% of value captured in top 10% of opportunities, ~68% in top 25%.
-- Shifting from broad coverage to value-based prioritization materially accelerates revenue capture.
-- Acts as a bridge between prioritization and forecasting, aligning effort with both likelihood and deal size.
-- We propose embedding this in the CRM to set clear thresholds for sales focus (e.g., top 10% of opportunities by expected value = high priority), while providing a more nuanced view of opportunity value than win propensity alone.
+- Both win propensity and deal size can be used to rank the pipeline, but expected value **(E[Amount] × P(Win))** is the most powerful lever for prioritization.
+  - Focus effort on high-value opportunities by ranking the pipeline on expected value.
+  - Shifting to value-based prioritization accelerates revenue capture.
+- We propose embedding this in the CRM to set clear thresholds (e.g., top 10% = high priority) with the intent of guiding sales focus and resource allocation in an even better way than win propensity alone.
 
 :::
 :::
 
 ::: aside
-This simulation is based on held-out test-set predictions.
+This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.
 :::
 
 ## How this integrates into sales workflow

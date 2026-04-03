@@ -398,7 +398,12 @@ Strategic Analysis Group
 <div class="columns">
 <div class="column" style="width:44%;">
 <ul>
-<li>Sales effort is currently spread across low-probability deals → the model shows that concentrating on the top deciles can triple efficiency.</li>
+<li>Sales effort is currently spread across low-probability deals → concentrating on top deciles can triple conversion efficiency.
+<ul>
+<li>Top decile: 3.52× lift.</li>
+<li>Ninth decile: 2.38× lift.</li>
+<li>Eight decile: 1.66× lift.</li>
+</ul></li>
 <li>We propose to automatically embed this in the CRM at opportunity creation to prioritize high-propensity deals (e.g.&nbsp;top 1-2 deciles) and set clear thresholds for pipeline reviews and resource allocation.</li>
 </ul>
 
@@ -408,8 +413,8 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="forecast-simulation-predicted-total-sales-closely-matches-the-observed-aggregate-total" class="slide level2">
-<h2>Forecast simulation: predicted total sales closely matches the observed aggregate total</h2>
+<section id="leverage-the-opportunity-sizing-model-for-accurate-aggregate-forecasting-not-individual-deal-sizing" class="slide level2">
+<h2>Leverage the opportunity sizing model for accurate aggregate forecasting, not individual deal sizing</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
 <p><img data-src="assets/sim_forecasting.png" style="width:100.0%"></p>
@@ -428,23 +433,24 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="expected-value-thresholding-captures-realized-value-much-faster-than-a-broad-pipeline-approach" class="slide level2">
-<h2>Expected-value thresholding captures realized value much faster than a broad-pipeline approach</h2>
+<section id="concentration-44-top-10-68-top-25-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
+<h2>Concentration (~44% top 10%, ~68% top 25%) makes expected-value prioritization a key revenue lever</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
 <p><img data-src="assets/sim_expected_value_threshold.png" style="width:100.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>Rank and filter pipeline by expected value to concentrate effort where it matters most.</li>
-<li>~44% of value captured in top 10% of opportunities, ~68% in top 25%.</li>
-<li>Shifting from broad coverage to value-based prioritization materially accelerates revenue capture.</li>
-<li>Acts as a bridge between prioritization and forecasting, aligning effort with both likelihood and deal size.</li>
-<li>We propose embedding this in the CRM to set clear thresholds for sales focus (e.g., top 10% of opportunities by expected value = high priority), while providing a more nuanced view of opportunity value than win propensity alone.</li>
+<li>Both win propensity and deal size can be used to rank the pipeline, but expected value <strong>(E[Amount] × P(Win))</strong> is the most powerful lever for prioritization.
+<ul>
+<li>Focus effort on high-value opportunities by ranking the pipeline on expected value.</li>
+<li>Shifting to value-based prioritization accelerates revenue capture.</li>
+</ul></li>
+<li>We propose embedding this in the CRM to set clear thresholds (e.g., top 10% = high priority) with the intent of guiding sales focus and resource allocation in an even better way than win propensity alone.</li>
 </ul>
 </div></div>
 
 <aside><div>
-<p>This simulation is based on held-out test-set predictions.</p>
+<p>This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.</p>
 </div></aside></section>
 <section id="how-this-integrates-into-sales-workflow" class="slide level2">
 <h2>How this integrates into sales workflow</h2>
