@@ -141,6 +141,15 @@ Strategic Analysis Group
 </div>
 
 </section>
+<section id="executive-summary" class="slide level2">
+<h2>Executive Summary</h2>
+<ul>
+<li>The current sales process for auto parts opportunities shows both opportunities in structural inefficiencies and also data quality issues (e.g., data input issues, lack of prioritization, inaccurate forecasting), which are driving suboptimal sales force performance.</li>
+<li>For dealing with the structural inefficiencies, we propose a classification model to predict win/loss and support opportunity prioritization, and a regression model to estimate deal size for a priori sizing and forecasting.</li>
+<li>The classification model performs well (AUROC 0.88), enabling effective prioritization, while the regression model is weaker (Mean Absolute Error ~$74K; R² 0.13) but still useful for aggregate forecasting and directional insights.</li>
+<li>We recommend piloting the classification model first, while using the regression model as a complementary tool for portfolio-level planning.</li>
+</ul>
+</section>
 <section id="agenda" class="slide level2 scrollable">
 <h2>Agenda</h2>
 <ol type="1">
@@ -162,19 +171,34 @@ Strategic Analysis Group
 <div class="columns">
 <div class="column" style="width:56%;">
 <ul>
-<li>The sales process is about <strong>auto-parts sales opportunities</strong> with both potential leads and existing clients.</li>
-<li>Opportunities move back and forth across <strong>Identified / Qualifying</strong>, <strong>Qualified / Validating</strong>, and <strong>Validated / Gaining Agreement</strong>.</li>
-<li>Each opportunity ultimately ends in a <strong>win or a loss</strong>.</li>
-<li>Sales teams also assign an <strong>estimated opportunity amount</strong>, which appears to be updated as the deal evolves.</li>
-<li>Because the dataset mostly stores the latest record per opportunity, we can use <strong>aggregate time-in-stage variables</strong>, but not full path dynamics.</li>
-<li>That is why the modelling work uses <strong>all available snapshot variables</strong>, especially the process-time fields that summarize where an opportunity currently stands.</li>
+<li>The sales process tracks auto-parts opportunities across both new leads and existing customers.</li>
+<li>Opportunities transition between the stages Identified / Qualifying, Qualified / Validating, and Validated / Gaining Agreement.
+<ul>
+<li>Opportunities can move between stages in either direction, and they can also stall within a stage for extended periods.</li>
+<li>Each opportunity ultimately resolves as either a win or a loss.</li>
+<li>Sales teams maintain an estimated deal value, which is updated as the opportunity progresses.</li>
+</ul></li>
 </ul>
 </div><div class="column" style="width:44%;">
 <p><img data-src="assets/process.png" style="width:100.0%"></p>
 </div></div>
 </section>
-<section id="the-opportunity-set-is-broader-than-the-two-use-cases-developed-in-this-project" class="slide level2">
-<h2>The opportunity set is broader than the two use cases developed in this project</h2>
+<section id="most-value-sits-in-a-small-share-of-opportunities-making-prioritization-an-important-growth-lever" class="slide level2">
+<h2>Most value sits in a small share of opportunities making prioritization an important growth lever</h2>
+<div class="columns">
+<div class="column" style="width:56%;">
+<p><img data-src="assets/eda_amount_win_rate.png" style="width:94.0%"></p>
+</div><div class="column" style="width:44%;">
+<ul>
+<li>The pipeline is high-volume but low-yield: only 22.7% of opportunities convert, meaning most effort is currently misallocated.</li>
+<li>Value is highly concentrated: the majority of opportunities are low-amount, but win rates increase materially with deal size, signaling where commercial focus should shift.</li>
+<li>This creates a clear opportunity: → Move from volume-driven selling to value-driven prioritization, combining win propensity + deal size.</li>
+<li>The implication is direct: → Not all opportunities should be pursued equally — targeting the right deals can lift conversion and revenue without increasing pipeline size.</li>
+</ul>
+</div></div>
+</section>
+<section id="therefore-we-propose-two-modelling-use-cases-prioritization-and-forecasting-plus-additional-data-driven-commercial-opportunities." class="slide level2">
+<h2>Therefore, we propose two modelling use cases: prioritization and forecasting, plus additional data-driven commercial opportunities.</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <h3 id="selected-for-this-project">Selected for this project</h3>
@@ -206,13 +230,19 @@ Strategic Analysis Group
 <li>Validation checks flagged duplicates and process-consistency issues before modelling. Key preparation findings:
 <ul>
 <li><strong>196 duplicated opportunity IDs</strong> (removed)</li>
-<li>** zero amount opportunities** (removed)</li>
+<li><strong>2047 zero amount opportunities</strong> (removed)</li>
 <li><strong>12,921 rows</strong> where stage ratios do not sum closely to 1 (kept)</li>
+<li>And other problems such as apparent data input issues, missing values, and outliers that were handled with specific transformations rather than row removal.</li>
 </ul></li>
 <li>For the modelling experiments shown here, the sample used <strong>75,819 eligible rows</strong> out of <strong>78,025 total rows</strong> with valid targets.</li>
 </ul>
 </div><div class="column" style="width:48%;">
-<p>TO PUT A PLOT/TABLE WITH DATA HERE.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="assets/number_of_problems.png" style="width:100.0%"></p>
+<figcaption>Problems identified in the data</figcaption>
+</figure>
+</div>
 </div></div>
 <!-- - **What the data is good for**: ranking opportunities, understanding portfolio mix, and producing aggregate forecasts.
 - **What it is not**: a full event history of every sales-stage movement.
@@ -244,21 +274,8 @@ Strategic Analysis Group
 <p><img data-src="assets/eda_two_phase_funnel.png" style="width:100.0%"></p>
 </div></div>
 </section>
-<section id="funnel-phase-explains-more-than-client-size-inside-the-phase-segment-matrix" class="slide level2">
-<h2>Funnel phase explains more than client size inside the phase × segment matrix</h2>
-<div class="columns">
-<div class="column" style="width:58%;">
-<p><img data-src="assets/eda_funnel_x_segment.png" style="width:100.0%"></p>
-</div><div class="column" style="width:42%;">
-<ul>
-<li>In <code>(Re)Acquisition</code>, win rates stay low across client sizes (<strong>14%–19%</strong>).</li>
-<li>In <strong>Engagement / upselling</strong>, win rates stay much higher (<strong>47%–67%</strong>).</li>
-<li>The main implication is operational: whether the client has recent business matters more than client-size granularity for triage.</li>
-</ul>
-</div></div>
-</section>
-<section id="process-time-variables-carry-most-of-the-predictive-signal" class="slide level2">
-<h2>Process-time variables carry most of the predictive signal</h2>
+<section id="we-ran-an-automated-iv-analysis-and-found-that-process-time-variables-carry-most-of-the-predictive-signal" class="slide level2">
+<h2>We ran an automated IV analysis and found that process-time variables carry most of the predictive signal</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <p><img data-src="assets/eda_iv_ranking.png" style="width:100.0%"></p>
@@ -275,33 +292,8 @@ Strategic Analysis Group
 <h1>Modelling</h1>
 
 </section>
-<section id="for-the-selected-use-cases-we-focused-on-building-two-models-with-different-targets-and-purposes" class="slide level2">
-<h2>For the selected use cases, we focused on building two models with different targets and purposes</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h3 id="process-prioritization-winloss-classification-model">Process prioritization: Win/loss classification model</h3>
-<ul>
-<li>Target: <strong>Opportunity Result</strong>.</li>
-<li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.</li>
-<li>Uses the full dynamic snapshot, including process timing and stage-ratio variables.</li>
-<li>Relevant transformations tested: log-transforming amount variables, supervised binning and standard/robust scaling and OHE encoding.</li>
-<li>Main metric focus is on <strong>ROC AUC</strong> and <strong>PR AUC</strong>.</li>
-</ul>
-</div><div class="column" style="width:50%;">
-<h3 id="opportunity-sizing-and-forecasting-amount-regression-model">Opportunity Sizing and forecasting: Amount regression model</h3>
-<ul>
-<li>Target: <strong>Opportunity Amount USD</strong>.</li>
-<li>Business use: <strong>sizing and aggregate forecasting</strong>.</li>
-<li>Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.</li>
-<li>Relevant transformations tested: log-transforming amount variables, supervised binning, standard/robust scaling and OHE encoding.</li>
-<li>Main metric focus is on <strong>MAE</strong> and <strong>MAPE</strong>.</li>
-</ul>
-</div></div>
-<p><br> <br></p>
-<p><strong>Variables used for both models:</strong> client size, route to market, region, competitor type, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.</p>
-</section>
-<section id="data-preparation-and-modelling-sample" class="slide level2">
-<h2>Data preparation and modelling sample</h2>
+<section id="for-both-classification-and-regression-we-used-a-dynamic-snapshot-of-the-opportunity-data-which-captures-the-current-state-of-the-sales-process-and-customer-context" class="slide level2">
+<h2>For both classification and regression, we used a <strong>dynamic snapshot</strong> of the opportunity data, which captures the current state of the sales process and customer context</h2>
 <div class="columns">
 <div class="column" style="width:54%;">
 <ul>
@@ -327,7 +319,10 @@ Strategic Analysis Group
 <div class="columns">
 <div class="column" style="width:54%;">
 <ul>
-<li>Selected final logistic model: <strong>Logit + binned one-hot encoding</strong> (<code>logit_binned_ohe</code>).</li>
+<li>Target: <strong>Opportunity Result</strong>.</li>
+<li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.</li>
+<li>Specific transformations tested: log-transforming amount variables and supervised binning.</li>
+<li>Selected final logistic model: <strong>Logistic Regression over supervisedly binned and one-hot encoded features</strong> (<code>logit_binned_ohe</code>).</li>
 </ul>
 <table class="caption-top">
 <thead>
@@ -335,8 +330,6 @@ Strategic Analysis Group
 <th>Split</th>
 <th style="text-align: right;">ROC AUC</th>
 <th style="text-align: right;">PR AUC</th>
-<th style="text-align: right;">Accuracy</th>
-<th style="text-align: right;">F1</th>
 </tr>
 </thead>
 <tbody>
@@ -344,15 +337,11 @@ Strategic Analysis Group
 <td>CV</td>
 <td style="text-align: right;">0.881</td>
 <td style="text-align: right;">0.700</td>
-<td style="text-align: right;">0.842</td>
-<td style="text-align: right;">0.596</td>
 </tr>
 <tr class="even">
 <td>Held-out test</td>
 <td style="text-align: right;">0.877</td>
 <td style="text-align: right;">0.695</td>
-<td style="text-align: right;">0.842</td>
-<td style="text-align: right;">0.598</td>
 </tr>
 </tbody>
 </table>
@@ -365,7 +354,11 @@ Strategic Analysis Group
 <div class="columns">
 <div class="column" style="width:54%;">
 <ul>
-<li>Selected final regression model: <strong>classic_linear_standard_scaler</strong>.</li>
+<li>Target: <strong>Opportunity Amount USD</strong>.</li>
+<li>Business use: <strong>sizing and aggregate forecasting</strong>.</li>
+<li>Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.</li>
+<li>Specific transformations tested: log-transforming amount variables and supervised binning.</li>
+<li>Selected final regression model: <strong>Classic linear regression with standard scaled input</strong> (<code>classic_linear_standard_scaler</code>).</li>
 </ul>
 <table class="caption-top">
 <thead>
@@ -391,11 +384,6 @@ Strategic Analysis Group
 </tr>
 </tbody>
 </table>
-<ul>
-<li>For comparison, the <strong>best-MAE</strong> CV model was <strong><code>huber_robust_scaler</code></strong>, with <strong>67.3k USD MAE</strong> but a much lower <strong>R² of 0.066</strong>.</li>
-<li>Largest direct coefficients are concentrated in specific transformed terms such as <strong>Route To Market: Telesales</strong>, <strong>Route To Market: Reseller</strong>, <strong>high prior-client revenue bands</strong>, <strong>missing competitor type</strong>, and <strong>Telecoverage</strong>.</li>
-<li>This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.</li>
-</ul>
 </div><div class="column" style="width:46%;">
 <p><img data-src="assets/regression_importance.png" style="width:100.0%"></p>
 </div></div>

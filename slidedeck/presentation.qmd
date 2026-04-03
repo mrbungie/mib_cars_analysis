@@ -22,6 +22,13 @@ format:
     height: 9in
 ---
 
+## Executive Summary
+
+- The current sales process for auto parts opportunities shows both opportunities in structural inefficiencies and also data quality issues (e.g., data input issues, lack of prioritization, inaccurate forecasting), which are driving suboptimal sales force performance.
+- For dealing with the structural inefficiencies, we propose a classification model to predict win/loss and support opportunity prioritization, and a regression model to estimate deal size for a priori sizing and forecasting.
+- The classification model performs well (AUROC 0.88), enabling effective prioritization, while the regression model is weaker (Mean Absolute Error ~$74K; R² 0.13) but still useful for aggregate forecasting and directional insights.
+- We recommend piloting the classification model first, while using the regression model as a complementary tool for portfolio-level planning.
+
 ## Agenda
 
 1. Business framing and process assumptions
@@ -37,19 +44,32 @@ format:
 
 ::: {.columns}
 ::: {.column width="56%"}
-- The sales process is about **auto-parts sales opportunities** with both potential leads and existing clients.
-- Opportunities move back and forth across **Identified / Qualifying**, **Qualified / Validating**, and **Validated / Gaining Agreement**.
-- Each opportunity ultimately ends in a **win or a loss**.
-- Sales teams also assign an **estimated opportunity amount**, which appears to be updated as the deal evolves.
-- Because the dataset mostly stores the latest record per opportunity, we can use **aggregate time-in-stage variables**, but not full path dynamics.
-- That is why the modelling work uses **all available snapshot variables**, especially the process-time fields that summarize where an opportunity currently stands.
+- The sales process tracks auto-parts opportunities across both new leads and existing customers.
+- Opportunities transition between the stages Identified / Qualifying, Qualified / Validating, and Validated / Gaining Agreement. 
+  - Opportunities can move between stages in either direction, and they can also stall within a stage for extended periods.
+  - Each opportunity ultimately resolves as either a win or a loss.
+  - Sales teams maintain an estimated deal value, which is updated as the opportunity progresses.
 :::
 ::: {.column width="44%"}
 ![](assets/process.png){width=100%}
 :::
 :::
 
-## The opportunity set is broader than the two use cases developed in this project
+## Most value sits in a small share of opportunities making prioritization an important growth lever
+
+::: {.columns}
+::: {.column width="56%"}
+![](assets/eda_amount_win_rate.png){width=94%}
+:::
+::: {.column width="44%"}
+- The pipeline is high-volume but low-yield: only 22.7% of opportunities convert, meaning most effort is currently misallocated.
+- Value is highly concentrated: the majority of opportunities are low-amount, but win rates increase materially with deal size, signaling where commercial focus should shift.
+- This creates a clear opportunity: → Move from volume-driven selling to value-driven prioritization, combining win propensity + deal size.
+- The implication is direct: → Not all opportunities should be pursued equally — targeting the right deals can lift conversion and revenue without increasing pipeline size.
+:::
+:::
+
+## Therefore, we propose two modelling use cases: prioritization and forecasting, plus additional data-driven commercial opportunities.
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -77,12 +97,13 @@ format:
 - **Scale**: 78,025 sales opportunities and **19 variables**.
 - Validation checks flagged duplicates and process-consistency issues before modelling. Key preparation findings:
   - **196 duplicated opportunity IDs** (removed)
-  - ** zero amount opportunities** (removed)
+  - **2047 zero amount opportunities** (removed)
   - **12,921 rows** where stage ratios do not sum closely to 1 (kept)
+  - And other problems such as apparent data input issues, missing values, and outliers that were handled with specific transformations rather than row removal.
 - For the modelling experiments shown here, the sample used **75,819 eligible rows** out of **78,025 total rows** with valid targets.
 :::
 ::: {.column width="48%"}
-TO PUT A PLOT/TABLE WITH DATA HERE.
+![Problems identified in the data](assets/number_of_problems.png){width=100%}
 :::
 :::
 
@@ -116,20 +137,7 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 :::
 :::
 
-## Funnel phase explains more than client size inside the phase × segment matrix
-
-::: {.columns}
-::: {.column width="58%"}
-![](assets/eda_funnel_x_segment.png){width=100%}
-:::
-::: {.column width="42%"}
-- In `(Re)Acquisition`, win rates stay low across client sizes (**14%–19%**).
-- In **Engagement / upselling**, win rates stay much higher (**47%–67%**).
-- The main implication is operational: whether the client has recent business matters more than client-size granularity for triage.
-:::
-:::
-
-## Process-time variables carry most of the predictive signal
+## We ran an automated IV analysis and found that process-time variables carry most of the predictive signal
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -145,36 +153,7 @@ TO PUT A PLOT/TABLE WITH DATA HERE.
 
 # Modelling {background-color="#0F172A"}
 
-## For the selected use cases, we focused on building two models with different targets and purposes
-
-::: {.columns}
-::: {.column width="50%"}
-### Process prioritization: Win/loss classification model
-
-- Target: **Opportunity Result**.
-- Business use: **process prioritization** and ranking the pipeline by win propensity.
-- Uses the full dynamic snapshot, including process timing and stage-ratio variables.
-- Relevant transformations tested: log-transforming amount variables, supervised binning and standard/robust scaling and OHE encoding.
-- Main metric focus is on **ROC AUC** and **PR AUC**.
-
-:::
-::: {.column width="50%"}
-### Opportunity Sizing and forecasting: Amount regression model
-
-- Target: **Opportunity Amount USD**.
-- Business use: **sizing and aggregate forecasting**.
-- Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.
-- Relevant transformations tested: log-transforming amount variables, supervised binning, standard/robust scaling and OHE encoding.
-- Main metric focus is on **MAE** and **MAPE**.
-:::
-:::
-
-<br>
-<br>
-
-**Variables used for both models:** client size, route to market, region, competitor type, supplies / supplies subgroup, prior client revenue, sales-stage change count, elapsed days, total days, total Siebel days, and stage-ratio variables.
-
-## Data preparation and modelling sample
+## For both classification and regression, we used a **dynamic snapshot** of the opportunity data, which captures the current state of the sales process and customer context
 
 ::: {.columns}
 ::: {.column width="54%"}
@@ -196,12 +175,15 @@ SOME KIND OF DIAGRAM.
 
 ::: {.columns}
 ::: {.column width="54%"}
-- Selected final logistic model: **Logit + binned one-hot encoding** (`logit_binned_ohe`).
+- Target: **Opportunity Result**.
+- Business use: **process prioritization** and ranking the pipeline by win propensity.
+- Specific transformations tested: log-transforming amount variables and supervised binning.
+- Selected final logistic model: **Logistic Regression over supervisedly binned and one-hot encoded features** (`logit_binned_ohe`).
 
-| Split | ROC AUC | PR AUC | Accuracy | F1 |
-| --- | ---: | ---: | ---: | ---: |
-| CV | 0.881 | 0.700 | 0.842 | 0.596 |
-| Held-out test | 0.877 | 0.695 | 0.842 | 0.598 |
+| Split | ROC AUC | PR AUC |
+| --- | ---: | ---: |
+| CV | 0.881 | 0.700 |
+| Held-out test | 0.877 | 0.695 |
 
 :::
 ::: {.column width="46%"}
@@ -213,16 +195,17 @@ SOME KIND OF DIAGRAM.
 
 ::: {.columns}
 ::: {.column width="54%"}
-- Selected final regression model: **classic_linear_standard_scaler**.
+- Target: **Opportunity Amount USD**.
+- Business use: **sizing and aggregate forecasting**.
+- Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.
+- Specific transformations tested: log-transforming amount variables and supervised binning.
+- Selected final regression model: **Classic linear regression with standard scaled input** (`classic_linear_standard_scaler`).
 
 | Split | R² | MAE | Median APE |
 | --- | ---: | ---: | ---: |
 | CV | 0.134 | 74.3k USD | 78.9% |
 | Held-out test | 0.135 | 74.0k USD | 78.5% |
 
-- For comparison, the **best-MAE** CV model was **`huber_robust_scaler`**, with **67.3k USD MAE** but a much lower **R² of 0.066**.
-- Largest direct coefficients are concentrated in specific transformed terms such as **Route To Market: Telesales**, **Route To Market: Reseller**, **high prior-client revenue bands**, **missing competitor type**, and **Telecoverage**.
-- This is usable for directional comparisons and aggregate forecasting, but it is not as decision-ready as a precise result model.
 :::
 ::: {.column width="46%"}
 ![](assets/regression_importance.png){width=100%}
