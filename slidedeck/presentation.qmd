@@ -173,7 +173,7 @@ SOME KIND OF DIAGRAM.
 :::
 :::
 
-## Win/loss classification is the stronger operational model
+## Prioritization classification model enables immediate and precise reallocation of sales effort
 
 ::: {.columns}
 ::: {.column width="54%"}
@@ -193,13 +193,12 @@ SOME KIND OF DIAGRAM.
 :::
 :::
 
-## Amount regression is not reliable at deal level, but highly accurate at portfolio level for planning
+## Use amount model for portfolio forecasting, not deal decisions
 
 ::: {.columns}
 ::: {.column width="54%"}
 - Target: **Opportunity Amount USD**.
 - Business use: **sizing and aggregate forecasting**.
-- Also uses the full dynamic snapshot, so amount estimates reflect both customer context and current process state.
 - Specific transformations tested: log-transforming amount variables and supervised binning.
 - Selected final regression model: **Classic linear regression with standard scaled input** (`classic_linear_standard_scaler`).
 
@@ -216,7 +215,7 @@ SOME KIND OF DIAGRAM.
 
 # Application simulation {background-color="#1E293B"}
 
-## Focusing on the top 20% of opportunities could raise conversion from 22.7% to about 67.0%, a ~1.95x increase, without increasing pipeline size
+## Tripling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size
 
 ::: {.columns}
 ::: {.column width="44%"}
@@ -275,7 +274,7 @@ This simulation is based on held-out test-set predictions.
 This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.
 :::
 
-## Scale growth by embedding models across the commercial process
+## Turn models into daily sales decisions via CRM integration
 
 ::: {.columns}
 ::: {.column width="52%"}
