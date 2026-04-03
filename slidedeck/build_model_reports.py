@@ -10,6 +10,7 @@ import statsmodels.api as sm
 import sklearn.utils.multiclass as multiclass
 from sklearn.base import BaseEstimator, RegressorMixin, clone
 from sklearn.compose import ColumnTransformer, TransformedTargetRegressor
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import ElasticNet, LogisticRegression
@@ -356,6 +357,7 @@ def build_classification_reports() -> None:
 
     experiment_grid = {
         "random_classifier": DummyClassifier(strategy="stratified", random_state=42),
+        "always_true_classifier": DummyClassifier(strategy="constant", constant=1),
         "classic_logit_standard_scaler": Pipeline(
             [
                 (
@@ -438,6 +440,31 @@ def build_classification_reports() -> None:
                         class_weight="balanced",
                         max_iter=10000,
                         random_state=42,
+                    ),
+                ),
+            ]
+        ),
+        "logit_binned_ohe_balanced_calibrated": Pipeline(
+            [
+                (
+                    "binning",
+                    NamedBinningProcess(
+                        variable_names=CLASSIFICATION_FEATURES,
+                        categorical_variables=categorical_cols,
+                        output_method="bin_ohe",
+                    ),
+                ),
+                (
+                    "model",
+                    CalibratedClassifierCV(
+                        estimator=LogisticRegression(
+                            solver="saga",
+                            class_weight="balanced",
+                            max_iter=10000,
+                            random_state=42,
+                        ),
+                        method="sigmoid",
+                        cv=3,
                     ),
                 ),
             ]
@@ -651,7 +678,7 @@ def build_classification_reports() -> None:
         .reset_index()
     )
 
-    selected_experiment = "logit_binned_ohe_balanced"
+    selected_experiment = "logit_binned_ohe_balanced_calibrated"
     if selected_experiment not in summary_df["experiment"].values:
         raise ValueError(
             f"Selected classification experiment missing: {selected_experiment}"
@@ -668,9 +695,50 @@ def build_classification_reports() -> None:
     final_pipeline.fit(X, y)
     baseline_pipeline = clone(experiment_grid[baseline_experiment])
     baseline_pipeline.fit(X, y)
+    classification_comparison_experiments = [
+        "logit_binned_ohe_balanced",
+        "logit_binned_ohe_balanced_calibrated",
+        "random_classifier",
+        "always_true_classifier",
+    ]
+    classification_comparison_predictions = []
+    for experiment_name in classification_comparison_experiments:
+        comparison_pipeline = clone(experiment_grid[experiment_name])
+        comparison_pipeline.fit(X, y)
+        comparison_proba = comparison_pipeline.predict_proba(X_test)[:, 1]
+        comparison_label = comparison_pipeline.predict(X_test)
+        classification_comparison_predictions.append(
+            pd.DataFrame(
+                {
+                    "row_id": list(X_test.index),
+                    "experiment": experiment_name,
+                    "actual_result": y_test.to_numpy(),
+                    "predicted_win_probability": comparison_proba,
+                    "predicted_label": comparison_label,
+                }
+            )
+        )
 
     test_proba = final_pipeline.predict_proba(X_test)[:, 1]
     test_label = (test_proba >= 0.5).astype(int)
+
+    train_oof_proba = cross_val_predict(
+        clone(experiment_grid[selected_experiment]),
+        X,
+        y,
+        cv=skf,
+        method="predict_proba",
+    )[:, 1]
+    train_threshold_grid = np.unique(np.concatenate(([0.0], train_oof_proba, [1.0])))
+    best_train_threshold = 0.5
+    best_train_f1 = -1.0
+    for threshold in train_threshold_grid:
+        threshold_pred = (train_oof_proba >= threshold).astype(int)
+        score = f1_score(y, threshold_pred, zero_division=0)
+        if score > best_train_f1:
+            best_train_f1 = score
+            best_train_threshold = float(threshold)
+
     baseline_test_proba = baseline_pipeline.predict_proba(X_test)[:, 1]
     baseline_test_label = (baseline_test_proba >= 0.5).astype(int)
 
@@ -779,6 +847,8 @@ def build_classification_reports() -> None:
                         test_metrics_df["experiment"] == selected_experiment, "f1"
                     ].iloc[0]
                 ),
+                "train_selected_threshold": best_train_threshold,
+                "train_selected_threshold_f1": best_train_f1,
                 "notes": "Final model trained on full train split and scored on held-out test split.",
             }
         ]
@@ -800,6 +870,9 @@ def build_classification_reports() -> None:
         )
         test_prediction_export.to_excel(
             writer, sheet_name="test_predictions", index=False
+        )
+        pd.concat(classification_comparison_predictions, ignore_index=True).to_excel(
+            writer, sheet_name="comparison_test_predictions", index=False
         )
         prioritization_lift_df.to_excel(
             writer, sheet_name="prioritization_lift", index=False
@@ -1086,6 +1159,36 @@ def build_regression_reports() -> None:
         )
 
     test_pred = np.asarray(final_pipeline.predict(X_test), dtype=float)
+    regression_comparison_experiments = [
+        "classic_linear_standard_scaler",
+        "xgboost",
+        "classic_linear_log1p_standard_scaler",
+        "classic_linear_yeojohnson_standard_scaler",
+        "classic_linear_boxcox_standard_scaler",
+    ]
+    regression_comparison_predictions = []
+    for experiment_name in regression_comparison_experiments:
+        comparison_pipeline = clone(experiment_grid[experiment_name])
+        comparison_pipeline.fit(X, y)
+        comparison_pred = np.asarray(comparison_pipeline.predict(X_test), dtype=float)
+        comparison_df = pd.DataFrame(
+            {
+                "row_id": list(X_test.index),
+                "experiment": experiment_name,
+                "actual_amount": y_test.to_numpy(),
+                "predicted_amount": comparison_pred,
+                "amount_bin": test_df.loc[X_test.index, "Deal Size Category (USD)"]
+                .astype(str)
+                .to_numpy(),
+            }
+        )
+        comparison_df["absolute_error"] = (
+            comparison_df["actual_amount"] - comparison_df["predicted_amount"]
+        ).abs()
+        comparison_df["ape"] = comparison_df["absolute_error"] / comparison_df[
+            "actual_amount"
+        ].replace(0, np.nan)
+        regression_comparison_predictions.append(comparison_df)
 
     def reg_metrics(name: str, pred: np.ndarray) -> dict[str, object]:
         abs_error = np.abs(y_test - pred)
@@ -1197,6 +1300,9 @@ def build_regression_reports() -> None:
         )
         test_prediction_export.to_excel(
             writer, sheet_name="test_predictions", index=False
+        )
+        pd.concat(regression_comparison_predictions, ignore_index=True).to_excel(
+            writer, sheet_name="comparison_test_predictions", index=False
         )
         forecast_summary_df.to_excel(writer, sheet_name="forecast_summary", index=False)
         metadata_df.to_excel(writer, sheet_name="metadata", index=False)

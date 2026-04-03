@@ -321,7 +321,7 @@ Strategic Analysis Group
 <ul>
 <li>Target: <strong>Opportunity Result</strong>.</li>
 <li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.</li>
-<li>Selected final logistic model: <strong>Logistic Regression over supervisedly binned and one-hot encoded features with balanced class weights</strong> (<code>logit_binned_ohe_balanced</code>). [^1]</li>
+<li>Selected final logistic model: <strong>Calibrated Logistic Regression over supervisedly binned and one-hot encoded features with balanced class weights</strong> (<code>logit_binned_ohe_balanced_calibrated</code>). [^1]</li>
 </ul>
 <table class="caption-top">
 <thead>
@@ -496,8 +496,8 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="concentration-44-value-capture-at-top-10-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
-<h2>Concentration (~44% value capture at top 10%) makes expected-value prioritization a key revenue lever</h2>
+<section id="concentration-45-value-capture-at-top-10-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
+<h2>Concentration (~45% value capture at top 10%) makes expected-value prioritization a key revenue lever</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
 <p><img data-src="assets/sim_expected_value_threshold.png" style="width:80.0%"></p>
@@ -505,8 +505,8 @@ Strategic Analysis Group
 <ul>
 <li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
 <ul>
-<li>At top 10%, expected-value ranking captures 43.6% of won revenue vs 34.9% with propensity-only.</li>
-<li>At top 25%, the comparison is 70.9% vs 66.9%, so deal-size information matters most when capacity is tight.</li>
+<li>At top 10%, expected-value ranking captures 45.3% of won revenue vs 34.8% with propensity-only.</li>
+<li>At top 25%, the comparison is 71.7% vs 66.8%, so deal-size information matters most when capacity is tight.</li>
 <li>While overoptimistic, rankings remain directionally valid and can be calibrated in-model in follow-up iterations.</li>
 </ul></li>
 <li>We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.</li>
@@ -667,71 +667,85 @@ Strategic Analysis Group
 <td style="text-align: right;">0.643 ± 0.010</td>
 </tr>
 <tr class="odd">
+<td>logit_binned_ohe_balanced_calibrated</td>
+<td style="text-align: right;">0.881 ± 0.004</td>
+<td style="text-align: right;">0.698 ± 0.005</td>
+<td style="text-align: right;">0.840 ± 0.003</td>
+<td style="text-align: right;">0.588 ± 0.010</td>
+</tr>
+<tr class="even">
 <td>logit_binned_ohe</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.700 ± 0.005</td>
 <td style="text-align: right;">0.842 ± 0.003</td>
 <td style="text-align: right;">0.596 ± 0.011</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_elasticnet_binned_ohe</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.700 ± 0.005</td>
 <td style="text-align: right;">0.842 ± 0.003</td>
 <td style="text-align: right;">0.594 ± 0.010</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elastic_binned_woe_balanced</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.692 ± 0.003</td>
 <td style="text-align: right;">0.790 ± 0.006</td>
 <td style="text-align: right;">0.636 ± 0.007</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_elastic_binned_woe</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.693 ± 0.004</td>
 <td style="text-align: right;">0.838 ± 0.002</td>
 <td style="text-align: right;">0.570 ± 0.009</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_binned_woe</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.693 ± 0.004</td>
 <td style="text-align: right;">0.838 ± 0.002</td>
 <td style="text-align: right;">0.570 ± 0.008</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_elasticnet_standard_scaler_balanced</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.669 ± 0.011</td>
 <td style="text-align: right;">0.787 ± 0.007</td>
 <td style="text-align: right;">0.629 ± 0.011</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elasticnet_standard_scaler</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.675 ± 0.011</td>
 <td style="text-align: right;">0.828 ± 0.002</td>
 <td style="text-align: right;">0.546 ± 0.008</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>classic_logit_standard_scaler</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.675 ± 0.011</td>
 <td style="text-align: right;">0.828 ± 0.002</td>
 <td style="text-align: right;">0.547 ± 0.008</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>random_classifier</td>
 <td style="text-align: right;">0.502 ± 0.002</td>
 <td style="text-align: right;">0.228 ± 0.001</td>
 <td style="text-align: right;">0.654 ± 0.001</td>
 <td style="text-align: right;">0.227 ± 0.003</td>
 </tr>
+<tr class="odd">
+<td>always_true_classifier</td>
+<td style="text-align: right;">0.500 ± 0.000</td>
+<td style="text-align: right;">0.227 ± 0.000</td>
+<td style="text-align: right;">0.227 ± 0.000</td>
+<td style="text-align: right;">0.370 ± 0.000</td>
+</tr>
 </tbody>
 </table>
-<p>Selected model in main deck: <strong>logit_binned_ohe_balanced</strong>.</p>
+<p>Selected model in main deck: <strong>logit_binned_ohe_balanced_calibrated</strong>.</p>
 </div>
 </section>
 <section id="annex-regression-cv-leaderboard" class="slide level2">
@@ -850,6 +864,276 @@ Strategic Analysis Group
 </table>
 <p>Selected model in main deck: <strong>xgboost</strong>.</p>
 </div>
+</section>
+<section id="annex-calibration-comparison-for-the-selected-classifier" class="slide level2">
+<h2>Annex: calibration comparison for the selected classifier</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/annex_calibration_comparison.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>The calibrated and non-calibrated variants have almost identical ROC / PR ranking performance, but calibration changes how raw probabilities line up with observed win rates.</li>
+<li>The calibrated curve tracks the 45-degree reference more closely through the middle probability range, which is the part used most often for thresholding and expected-value calculations.</li>
+<li>This is why the calibrated model is now the deployment candidate: the ranking stays strong, while the probabilities are more usable downstream.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-hold-out-classification-report-at-the-selected-models-optimal-threshold" class="slide level2">
+<h2>Annex: hold-out classification report at the selected model’s optimal threshold</h2>
+<div class="smallest">
+<p>Threshold chosen on <strong>training out-of-fold predictions</strong> by maximizing <strong>F1</strong> for the selected model: <strong>31.4%</strong> predicted win probability.</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th style="text-align: right;">Threshold</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">Precision</th>
+<th style="text-align: right;">Recall</th>
+<th style="text-align: right;">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Selected @ optimal threshold</td>
+<td style="text-align: right;">31.4%</td>
+<td style="text-align: right;">82.0%</td>
+<td style="text-align: right;">58.4%</td>
+<td style="text-align: right;">72.2%</td>
+<td style="text-align: right;">64.6%</td>
+</tr>
+<tr class="even">
+<td>Random classifier</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">65.1%</td>
+<td style="text-align: right;">23.5%</td>
+<td style="text-align: right;">23.6%</td>
+<td style="text-align: right;">23.5%</td>
+</tr>
+<tr class="odd">
+<td>Always true</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">22.7%</td>
+<td style="text-align: right;">22.7%</td>
+<td style="text-align: right;">100.0%</td>
+<td style="text-align: right;">37.0%</td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th style="text-align: right;">TN</th>
+<th style="text-align: right;">FP</th>
+<th style="text-align: right;">FN</th>
+<th style="text-align: right;">TP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Selected @ optimal threshold</td>
+<td style="text-align: right;">14,917</td>
+<td style="text-align: right;">2,659</td>
+<td style="text-align: right;">1,436</td>
+<td style="text-align: right;">3,734</td>
+</tr>
+<tr class="even">
+<td>Random classifier</td>
+<td style="text-align: right;">13,597</td>
+<td style="text-align: right;">3,979</td>
+<td style="text-align: right;">3,951</td>
+<td style="text-align: right;">1,219</td>
+</tr>
+<tr class="odd">
+<td>Always true</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">17,576</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5,170</td>
+</tr>
+</tbody>
+</table>
+<p>Diagnostic note: the threshold is selected on train-side OOF predictions, then evaluated once on the untouched hold-out set shown here.</p>
+</div>
+</section>
+<section id="annex-regression-error-by-amount-bin-on-the-hold-out-set" class="slide level2">
+<h2>Annex: regression error by amount bin on the hold-out set</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/annex_regression_error_bins.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>The comparison shows where model error changes most across deal-size bands, instead of averaging everything into one MAE figure.</li>
+<li><strong>XGBoost</strong> is strongest on aggregate, but the transformed linear variants remain competitive in smaller bins.</li>
+<li>The log-transform and power-transform variants reduce relative error in lower-value bands, while absolute error still rises materially for the largest opportunities.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-incremental-revenue-from-effort-reallocation-on-the-hold-out-set" class="slide level2">
+<h2>Annex: incremental revenue from effort reallocation on the hold-out set</h2>
+<div class="smallest">
+<p>Baseline conversion across the hold-out set: <strong>overall win rate = 22.7%</strong>.</p>
+<p><strong>Expected-value ranking</strong> (<code>predicted win probability × realized amount</code>)</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Top slice kept</th>
+<th style="text-align: right;">Opportunities</th>
+<th style="text-align: right;">Forecasted amount inside slice</th>
+<th style="text-align: right;">Segment win rate</th>
+<th style="text-align: right;">Win-rate lift vs overall</th>
+<th style="text-align: right;">Win-rate bonus (base)</th>
+<th style="text-align: right;">Incremental revenue (conservative)</th>
+<th style="text-align: right;">Incremental revenue (base)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>10%</td>
+<td style="text-align: right;">2,275</td>
+<td style="text-align: right;">306.1M</td>
+<td style="text-align: right;">66.9%</td>
+<td style="text-align: right;">44.2 pts</td>
+<td style="text-align: right;">13.3 pts</td>
+<td style="text-align: right;">27.1M</td>
+<td style="text-align: right;">40.6M</td>
+</tr>
+<tr class="even">
+<td>25%</td>
+<td style="text-align: right;">5,686</td>
+<td style="text-align: right;">616.4M</td>
+<td style="text-align: right;">54.6%</td>
+<td style="text-align: right;">31.9 pts</td>
+<td style="text-align: right;">9.6 pts</td>
+<td style="text-align: right;">39.3M</td>
+<td style="text-align: right;">58.9M</td>
+</tr>
+<tr class="odd">
+<td>50%</td>
+<td style="text-align: right;">11,373</td>
+<td style="text-align: right;">1.129B</td>
+<td style="text-align: right;">39.7%</td>
+<td style="text-align: right;">17.0 pts</td>
+<td style="text-align: right;">5.1 pts</td>
+<td style="text-align: right;">38.3M</td>
+<td style="text-align: right;">57.4M</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Probability-only ranking</strong> (<code>y_proba</code>)</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Top slice kept</th>
+<th style="text-align: right;">Opportunities</th>
+<th style="text-align: right;">Forecasted amount inside slice</th>
+<th style="text-align: right;">Segment win rate</th>
+<th style="text-align: right;">Win-rate lift vs overall</th>
+<th style="text-align: right;">Win-rate bonus (base)</th>
+<th style="text-align: right;">Incremental revenue (conservative)</th>
+<th style="text-align: right;">Incremental revenue (base)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>10%</td>
+<td style="text-align: right;">2,275</td>
+<td style="text-align: right;">186.5M</td>
+<td style="text-align: right;">80.0%</td>
+<td style="text-align: right;">57.2 pts</td>
+<td style="text-align: right;">17.2 pts</td>
+<td style="text-align: right;">21.3M</td>
+<td style="text-align: right;">32.0M</td>
+</tr>
+<tr class="even">
+<td>25%</td>
+<td style="text-align: right;">5,686</td>
+<td style="text-align: right;">462.0M</td>
+<td style="text-align: right;">61.4%</td>
+<td style="text-align: right;">38.7 pts</td>
+<td style="text-align: right;">11.6 pts</td>
+<td style="text-align: right;">35.7M</td>
+<td style="text-align: right;">53.6M</td>
+</tr>
+<tr class="odd">
+<td>50%</td>
+<td style="text-align: right;">11,373</td>
+<td style="text-align: right;">967.5M</td>
+<td style="text-align: right;">41.6%</td>
+<td style="text-align: right;">18.9 pts</td>
+<td style="text-align: right;">5.7 pts</td>
+<td style="text-align: right;">36.5M</td>
+<td style="text-align: right;">54.7M</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Top 10%</strong>: EV ranking leads by <strong>+8.6M</strong> incremental revenue at the base assumption (<code>λ = 0.3</code>), because the top slice concentrates much more forecasted value even though its win rate is lower than the probability-only slice.</li>
+<li><strong>Top 25%</strong>: EV ranking still leads by <strong>+5.3M</strong> at the base assumption, showing that forecasted amount continues to matter once the slice widens.</li>
+<li><strong>Top 50%</strong>: EV ranking leads by <strong>+2.7M</strong> at the base assumption; the two strategies become much closer once coverage broadens.</li>
+</ul>
+<p>Interpretation note: this is still a <strong>scenario-sizing exercise</strong>, but it is now closer to an operational story: ranking uses forecasted amount, and the intervention is modeled as an additive improvement in segment win rate rather than a multiplicative probability shock.</p>
+</div>
+</section>
+<section id="annex-methodology-behind-the-incremental-revenue-sizing-exercise" class="slide level2">
+<h2>Annex: methodology behind the incremental revenue sizing exercise</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<ul>
+<li>Start from the <strong>hold-out test set</strong> and define the portfolio baseline as the overall observed win rate.</li>
+<li>Create two ranking rules:
+<ul>
+<li><strong>Expected-value ranking</strong> = predicted win probability × forecasted amount</li>
+<li><strong>Probability-only ranking</strong> = predicted win probability</li>
+</ul></li>
+<li>For each cutoff (<strong>10%, 25%, 50%</strong>), keep only the top-ranked slice and measure:
+<ul>
+<li>number of opportunities in the slice</li>
+<li>forecasted amount already sitting inside that slice</li>
+<li>observed conversion rate in that slice</li>
+</ul></li>
+<li>Compute the <strong>conversion lift vs the portfolio baseline</strong>.</li>
+</ul>
+</div><div class="column" style="width:48%;">
+<ul>
+<li><p>Translate that conversion lift into a revenue estimate by assuming sales action adds a <strong>win-rate bonus</strong> to the selected segment.</p></li>
+<li><p>The bonus is defined as a fraction of the observed conversion lift:</p>
+<ul>
+<li><strong>conservative</strong>: recover <strong>20%</strong> of that advantage</li>
+<li><strong>base</strong>: recover <strong>30%</strong></li>
+<li><strong>aggressive</strong>: recover <strong>40%</strong></li>
+</ul></li>
+<li><p>Incremental revenue is then estimated as:</p>
+<p><strong>forecasted amount inside the slice × win-rate bonus</strong></p></li>
+<li><p>This is a <strong>sizing heuristic</strong>, not a causal estimate:</p>
+<ul>
+<li>it assumes sales effort can recover part of the observed conversion gap</li>
+<li>it uses hold-out forecasted amounts rather than realized future deal outcomes</li>
+<li>it is best read as a way to compare ranking policies under the same assumptions</li>
+</ul></li>
+</ul>
+</div></div>
 
 </section></section>
     </div>

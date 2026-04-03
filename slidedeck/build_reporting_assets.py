@@ -3,9 +3,18 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter
+from sklearn.calibration import calibration_curve
+from sklearn.metrics import (
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    accuracy_score,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -380,6 +389,190 @@ def build_assets(
     fig.tight_layout()
     fig.savefig(ASSET_DIR / "sim_forecasting.png", dpi=220, bbox_inches="tight")
     plt.close(fig)
+
+    class_compare = pd.read_excel(
+        CLASSIFICATION_PATH, sheet_name="comparison_test_predictions"
+    )
+    fig, ax = plt.subplots(figsize=(7.2, 5))
+    for experiment_name, color, label in [
+        ("logit_binned_ohe_balanced", "#0F172A", "Non-calibrated"),
+        ("logit_binned_ohe_balanced_calibrated", "#2563EB", "Calibrated"),
+    ]:
+        subset = class_compare.loc[
+            class_compare["experiment"] == experiment_name
+        ].copy()
+        frac_pos, mean_pred = calibration_curve(
+            subset["actual_result"],
+            subset["predicted_win_probability"],
+            n_bins=10,
+            strategy="quantile",
+        )
+        ax.plot(
+            mean_pred, frac_pos, marker="o", linewidth=2.2, label=label, color=color
+        )
+    ax.plot(
+        [0, 1],
+        [0, 1],
+        linestyle="--",
+        color="#94A3B8",
+        linewidth=1.2,
+        label="Perfect calibration",
+    )
+    ax.set_xlabel("Mean predicted win probability")
+    ax.set_ylabel("Observed win rate")
+    ax.set_title("Hold-out calibration: calibrated vs non-calibrated logit")
+    ax.xaxis.set_major_formatter(FuncFormatter(pct_fmt))
+    ax.yaxis.set_major_formatter(FuncFormatter(pct_fmt))
+    ax.legend(frameon=False, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(
+        ASSET_DIR / "annex_calibration_comparison.png", dpi=220, bbox_inches="tight"
+    )
+    plt.close(fig)
+
+    selected_predictions = pd.read_excel(
+        CLASSIFICATION_PATH, sheet_name="test_predictions"
+    )
+    class_threshold_compare = pd.read_excel(
+        CLASSIFICATION_PATH, sheet_name="comparison_test_predictions"
+    )
+    class_metadata = pd.read_excel(CLASSIFICATION_PATH, sheet_name="metadata")
+    train_selected_threshold = float(class_metadata.loc[0, "train_selected_threshold"])
+    comparison_rows = []
+    label_map = {
+        "logit_binned_ohe_balanced_calibrated": "Selected @ optimal threshold",
+        "random_classifier": "Random classifier",
+        "always_true_classifier": "Always true",
+    }
+    for experiment_name, label in label_map.items():
+        subset = class_threshold_compare.loc[
+            class_threshold_compare["experiment"] == experiment_name
+        ].copy()
+        if experiment_name == "logit_binned_ohe_balanced_calibrated":
+            predicted = (
+                subset["predicted_win_probability"] >= train_selected_threshold
+            ).astype(int)
+            threshold_value = train_selected_threshold
+        else:
+            predicted = subset["predicted_label"].astype(int)
+            threshold_value = np.nan
+        tn, fp, fn, tp = confusion_matrix(
+            subset["actual_result"], predicted, labels=[0, 1]
+        ).ravel()
+        comparison_rows.append(
+            {
+                "model": label,
+                "threshold": threshold_value,
+                "accuracy": accuracy_score(subset["actual_result"], predicted),
+                "precision": precision_score(
+                    subset["actual_result"], predicted, zero_division=0
+                ),
+                "recall": recall_score(
+                    subset["actual_result"], predicted, zero_division=0
+                ),
+                "f1": f1_score(subset["actual_result"], predicted, zero_division=0),
+                "tn": int(tn),
+                "fp": int(fp),
+                "fn": int(fn),
+                "tp": int(tp),
+            }
+        )
+    optimal_threshold_df = pd.DataFrame(comparison_rows)
+
+    comparison_predictions = pd.read_excel(
+        REGRESSION_PATH, sheet_name="comparison_test_predictions"
+    )
+    amount_order = [
+        "10K or less",
+        "10K to 20K",
+        "20K to 30K",
+        "30K to 40K",
+        "40K to 50K",
+        "50K to 60K",
+        "More than 60K",
+    ]
+    amount_labels = {
+        "10K or less": "≤10K",
+        "10K to 20K": "10–20K",
+        "20K to 30K": "20–30K",
+        "30K to 40K": "30–40K",
+        "40K to 50K": "40–50K",
+        "50K to 60K": "50–60K",
+        "More than 60K": ">60K",
+    }
+    error_summary = comparison_predictions.groupby(
+        ["amount_bin", "experiment"], as_index=False
+    ).agg(mae=("absolute_error", "mean"), median_ape=("ape", "median"))
+    error_summary["amount_bin"] = pd.Categorical(
+        error_summary["amount_bin"], categories=amount_order, ordered=True
+    )
+    error_summary = error_summary.sort_values("amount_bin")
+    error_summary["amount_label"] = (
+        error_summary["amount_bin"].astype(str).map(amount_labels)
+    )
+    fig, axes = plt.subplots(
+        2, 1, figsize=(8.2, 6.2), sharex=True, gridspec_kw={"hspace": 0.18}
+    )
+    experiment_labels = {
+        "classic_linear_standard_scaler": "Linear",
+        "xgboost": "XGBoost",
+        "classic_linear_log1p_standard_scaler": "Linear log1p",
+        "classic_linear_yeojohnson_standard_scaler": "Linear Yeo-Johnson",
+        "classic_linear_boxcox_standard_scaler": "Linear Box-Cox",
+    }
+    palette = {
+        "classic_linear_standard_scaler": "#0F172A",
+        "xgboost": "#2563EB",
+        "classic_linear_log1p_standard_scaler": "#14B8A6",
+        "classic_linear_yeojohnson_standard_scaler": "#7C3AED",
+        "classic_linear_boxcox_standard_scaler": "#DC2626",
+    }
+    for experiment_name, label in experiment_labels.items():
+        subset = error_summary.loc[error_summary["experiment"] == experiment_name]
+        axes[0].plot(
+            subset["amount_label"],
+            subset["mae"],
+            marker="o",
+            linewidth=2,
+            label=label,
+            color=palette[experiment_name],
+        )
+        axes[1].plot(
+            subset["amount_label"],
+            subset["median_ape"],
+            marker="o",
+            linewidth=2,
+            label=label,
+            color=palette[experiment_name],
+        )
+    axes[0].set_ylabel("MAE")
+    axes[0].yaxis.set_major_formatter(FuncFormatter(usd_compact))
+    axes[1].set_ylabel("Median APE")
+    axes[1].yaxis.set_major_formatter(FuncFormatter(pct_fmt))
+    axes[1].set_xlabel("Amount bin")
+    axes[1].tick_params(axis="x", rotation=0)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.suptitle("Hold-out error by amount bin", fontsize=13, fontweight="bold", y=0.98)
+    fig.legend(
+        handles,
+        labels,
+        frameon=False,
+        ncol=3,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.93),
+    )
+    fig.subplots_adjust(top=0.8, bottom=0.1, hspace=0.2)
+    fig.savefig(
+        ASSET_DIR / "annex_regression_error_bins.png", dpi=220, bbox_inches="tight"
+    )
+    plt.close(fig)
+
+    with pd.ExcelWriter(
+        MODEL_METRIC_TABLES_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace"
+    ) as writer:
+        optimal_threshold_df.to_excel(
+            writer, sheet_name="cls_optimal_threshold", index=False
+        )
 
 
 def main() -> None:
