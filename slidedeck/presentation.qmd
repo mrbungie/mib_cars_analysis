@@ -214,15 +214,21 @@ SOME KIND OF DIAGRAM.
 
 # Application simulation {background-color="#1E293B"}
 
-## Prioritization simulation: the top decile captures 35.2% of held-out test wins
+## Prioritization simulation: the top propensity decile delivers 3.5× lift versus the average held-out win rate
 
 ::: {.columns}
 ::: {.column width="44%"}
-- The model ranking is highly concentrated:
-  - **Top decile** captures **35.2%** of all test wins.
-  - **Top two deciles** capture **64.8%** of all test wins.
-- This supports a **process-prioritization** use case: sales effort can be focused on a much smaller slice of the pipeline.
-- This simulation is based on held-out test-set predictions from the final logistic model.
+The model ranking is highly concentrated:
+
+- **Top decile** runs at **3.52× lift**, with an observed win rate of **80.0%** versus **22.7%** overall.
+- **Ninth decile** is also well above average at **2.38× lift**, while deciles 1–6 remain below baseline.
+
+These can be used by sales teams to focus effort on the most promising opportunities (i.e. top 2 deciles), while also setting clear thresholds for pipeline reviews and resource allocation.
+
+::: aside
+This simulation is based on held-out test-set predictions.
+:::
+
 :::
 ::: {.column width="56%"}
 ![](assets/sim_prioritization.png){width=100%}
@@ -240,22 +246,114 @@ SOME KIND OF DIAGRAM.
 - Aggregate predicted amount: **2.139B USD** on the held-out test set.
 - Mean absolute error per opportunity: **74.0k USD**.
 - The forecasting story is therefore strongest at the **portfolio level**, not at the individual-opportunity level.
+
+These predictions can be used for high-level planning and scenario analysis at aggregate levels, but the regression model's weaker performance means it should not be used for opportunity-level prioritization or decision-making.
 :::
+:::
+
+::: aside
+This simulation is based on held-out test-set predictions.
+:::
+
+## Expected-value thresholding captures realized value much faster than a broad-pipeline approach
+
+::: {.columns}
+::: {.column width="56%"}
+![](assets/sim_expected_value_threshold.png){width=100%}
+:::
+::: {.column width="44%"}
+- Rank and filter pipeline by expected value to concentrate effort where it matters most.
+- ~44% of value captured in top 10% of opportunities, ~68% in top 25%.
+- Shifting from broad coverage to value-based prioritization materially accelerates revenue capture.
+- Acts as a bridge between prioritization and forecasting, aligning effort with both likelihood and deal size.
+
+This can be used to set clear thresholds for sales focus (e.g., top 10% = high priority), while also providing a more nuanced view of opportunity value than win propensity alone.
+
+:::
+:::
+:::
+
+::: aside
+This simulation is based on held-out test-set predictions.
 :::
 
 # Conclusions {background-color="#0F172A"}
 
 ## What this means for commercial decision-making
 
-- The two selected targets are explicit:
-  - **Result model** for prioritization
-  - **Amount model** for sizing and forecasting
-- The two selected models are explicit throughout the project narrative:
-  - **Best logistic win/loss classification** for prioritization
-  - **Dynamic amount regression** for sizing and forecasting
-- The main recommendation is to pilot the **result model first**, while treating amount forecasting as an aggregate planning aid built from the same dynamic feature set.
+- Two clear decision levers:
+  - **Result model** → prioritization of the pipeline
+  - **Amount model** → sizing and aggregate forecasting
+- Two models consistently applied:
+  - **Win/loss classification** to rank opportunities by likelihood to close
+  - **Regression** to estimate deal size based on current pipeline state
+- **Recommendation**:
+  - Pilot the result model first to drive immediate commercial impact through better prioritization
+  - Use the amount model as a planning layer, supporting aggregate forecasts and scenario sizing
+  - Eventually use them together to drive expected-value prioritization, which concentrates effort on the most valuable opportunities and accelerates revenue capture.
 
----
+## Next steps
 
-### Thank you
-Questions, caveats, and next steps
+- Pilot deployment (4–6 weeks):
+  - Embed prioritization scores into CRM workflows
+  - Run A/B test vs. current sales process and measure lift in conversion and revenue
+- Define operating model:
+  - Set clear thresholds and actions (e.g., top deciles = sales focus)
+  - Align sales incentives and pipeline reviews to model outputs
+- Monitor performance:
+  - Track conversion lift, cycle time, and revenue per opportunity
+  - Continuously recalibrate thresholds and retrain models
+- Scale and integrate:
+  - Extend to full pipeline and embed in forecasting cadence
+  - Incorporate into commercial planning and resource allocation
+
+# Annex {background-color="#0F172A"}
+
+## Annex: classification CV leaderboard
+
+::: {.smaller}
+
+| Model | ROC AUC | PR AUC | Accuracy | F1 |
+| --- | ---: | ---: | ---: | ---: |
+| xgboost | 0.926 ± 0.003 | 0.814 ± 0.005 | 0.882 ± 0.004 | 0.718 ± 0.011 |
+| probit_binned_ohe | 0.881 ± 0.004 | 0.699 ± 0.005 | 0.841 ± 0.003 | 0.589 ± 0.010 |
+| logit_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.596 ± 0.011 |
+| logit_elasticnet_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.594 ± 0.010 |
+| probit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.837 ± 0.003 | 0.564 ± 0.010 |
+| probit_binned_woe_robust_scaler | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.837 ± 0.003 | 0.564 ± 0.010 |
+| logit_elastic_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.009 |
+| logit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.008 |
+| logit_binned_woe_robust_scaler | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.008 |
+| logit_elasticnet_standard_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
+| logit_elasticnet_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
+| classic_logit_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
+| classic_logit_standard_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
+| classic_probit_robust_scaler | 0.867 ± 0.006 | 0.672 ± 0.011 | 0.827 ± 0.003 | 0.535 ± 0.011 |
+| classic_probit_standard_scaler | 0.867 ± 0.006 | 0.672 ± 0.011 | 0.827 ± 0.003 | 0.535 ± 0.011 |
+
+Selected model in main deck: **logit_binned_ohe**.
+
+:::
+
+## Annex: regression CV leaderboard
+
+::: {.smaller}
+
+| Model | R² | MAE (USD) | MAPE | Median APE |
+| --- | ---: | ---: | ---: | ---: |
+| classic_linear_standard_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | 78.9% |
+| classic_linear_robust_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | n/a |
+| linear_binned_ohe | 0.134 ± 0.007 | 74.3k ± 1.0k | 300.4% ± 55.2% | n/a |
+| elastic_binned_woe | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | n/a |
+| linear_binned_woe_standard_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | n/a |
+| linear_binned_woe_robust_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | n/a |
+| xgboost | 0.129 ± 0.013 | 73.7k ± 0.9k | 273.5% ± 40.8% | n/a |
+| elasticnet_standard_scaler | 0.066 ± 0.003 | 79.6k ± 1.2k | 261.3% ± 57.9% | n/a |
+| huber_robust_scaler | 0.066 ± 0.006 | 67.3k ± 1.5k | 198.7% ± 38.0% | n/a |
+
+Selected model in main deck: **classic_linear_standard_scaler**.
+
+:::
+
+# Thank you {background-color="#0F172A"}
+Questions, comments, and feedback are welcome!
