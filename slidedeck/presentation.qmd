@@ -45,7 +45,7 @@ format:
 
 ::: {.columns}
 ::: {.column width="56%"}
-- The sales process tracks auto-parts opportunities across both new leads and existing customers.
+- The current sales process tracks auto-parts opportunities across both new leads and existing customers.
 - Opportunities transition between the stages Identified / Qualifying, Qualified / Validating, and Validated / Gaining Agreement. 
   - Opportunities can move between stages in either direction, and they can also stall within a stage for extended periods.
   - Each opportunity ultimately resolves as either a win or a loss.
