@@ -144,10 +144,13 @@ Strategic Analysis Group
 <section id="executive-summary" class="slide level2">
 <h2>Executive Summary</h2>
 <ul>
-<li>The current sales process for auto parts opportunities shows both opportunities in structural inefficiencies and also data quality issues (e.g., data input issues, lack of prioritization, inaccurate forecasting), which are driving suboptimal sales force performance.</li>
-<li>For dealing with the structural inefficiencies, we propose a classification model to predict win/loss and support opportunity prioritization, and a regression model to estimate deal size for a priori sizing and forecasting.</li>
-<li>The classification model performs well (AUROC 0.88), enabling effective prioritization, while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but is still accurate enough for aggregate forecasting and directional planning.</li>
-<li>We recommend piloting the classification model first, while using the regression model as a complementary tool for portfolio-level planning.</li>
+<li>This analysis examines an auto-parts sales opportunity pipeline and identifies structural inefficiencies and data quality issues (e.g., CRM input errors, lack of prioritization, inaccurate forecasting) driving suboptimal sales performance.</li>
+<li>We propose a win/loss classification model for prioritization, complemented by a regression model for deal sizing and aggregate forecasting.
+<ul>
+<li>The classification model performs strongly (AUROC 0.88), while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but supports portfolio-level planning.</li>
+</ul></li>
+<li>Prioritization through propensity and expected value concentrates effort on high-probability and high-value opportunities (top 20%: ~22.7% → ~67% conversion; ~44% of value in top 10%).</li>
+<li>We recommend embedding these scores in the CRM at opportunity creation, piloting via A/B testing, and defining clear thresholds and actions to operationalize prioritization in sales workflows and pipeline reviews.</li>
 </ul>
 </section>
 <section id="agenda" class="slide level2 scrollable">
@@ -393,8 +396,8 @@ Strategic Analysis Group
 <h1>Application simulation</h1>
 
 </section>
-<section id="focusing-on-the-top-20-of-opportunities-could-raise-conversion-from-22.7-to-about-67.0-a-2x-increase-without-increasing-pipeline-size" class="slide level2">
-<h2>Focusing on the top 20% of opportunities could raise conversion from 22.7% to about 67.0%, a ~2x increase, without increasing pipeline size</h2>
+<section id="focusing-on-the-top-20-of-opportunities-could-raise-conversion-from-22.7-to-about-67.0-a-1.95x-increase-without-increasing-pipeline-size" class="slide level2">
+<h2>Focusing on the top 20% of opportunities could raise conversion from 22.7% to about 67.0%, a ~1.95x increase, without increasing pipeline size</h2>
 <div class="columns">
 <div class="column" style="width:44%;">
 <ul>
@@ -452,8 +455,8 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.</p>
 </div></aside></section>
-<section id="how-this-integrates-into-sales-workflow" class="slide level2">
-<h2>How this integrates into sales workflow</h2>
+<section id="scale-growth-by-embedding-models-across-the-commercial-process" class="slide level2">
+<h2>Scale growth by embedding models across the commercial process</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <h3 id="operational-flow">Operational flow</h3>
@@ -492,46 +495,51 @@ Strategic Analysis Group
 <h1>Conclusions</h1>
 
 </section>
-<section id="what-this-means-for-commercial-decision-making" class="slide level2">
-<h2>What this means for commercial decision-making</h2>
+<section id="key-takeaways-for-commercial-decision-making" class="slide level2">
+<h2>Key takeaways for commercial decision-making</h2>
 <ul>
-<li>Two clear decision levers:
+<li>Prioritization is the highest-impact use case
 <ul>
-<li><strong>Result model</strong> → prioritization of the pipeline</li>
-<li><strong>Amount model</strong> → sizing and aggregate forecasting</li>
+<li>Win/loss model (AUROC 0.88) improves sales focus.</li>
+<li>Top 20% of opportunities → conversion ~22.7% → ~67%.</li>
 </ul></li>
-<li>Two models consistently applied:
+<li>Forecast at the portfolio level, not the deal level
 <ul>
-<li><strong>Win/loss classification</strong> to rank opportunities by likelihood to close</li>
-<li><strong>Regression</strong> to estimate deal size based on current pipeline state</li>
+<li>Amount model is not reliable per deal, but supports aggregate forecasting and planning.</li>
 </ul></li>
-<li><strong>Recommendation</strong>:
+<li>Expected value is the strongest prioritization lever
 <ul>
-<li>Pilot the result model first to drive immediate commercial impact through better prioritization</li>
-<li>Use the amount model as a planning layer, supporting aggregate forecasts and scenario sizing</li>
-<li>Eventually use them together to drive expected-value prioritization, which concentrates effort on the most valuable opportunities and accelerates revenue capture.</li>
+<li>Combines win propensity × deal size.</li>
+<li>Value is concentrated: ~44% in top 10%, ~68% in top 25%.</li>
+</ul></li>
+<li>Recommendation
+<ul>
+<li>Pilot prioritization first (embed in CRM).</li>
+<li>Use forecasting for planning.</li>
+<li>Then combine into expected-value prioritization to guide focus and resource allocation.</li>
 </ul></li>
 </ul>
 </section>
-<section id="next-steps" class="slide level2">
-<h2>Next steps</h2>
+<section id="pilot-prove-scale-how-to-operationalize-model-driven-sales" class="slide level2">
+<h2>Pilot, prove, scale: how to operationalize model-driven sales</h2>
 <ul>
 <li>Pilot deployment (4–6 weeks):
 <ul>
 <li>Embed prioritization scores into CRM workflows</li>
 <li>Run A/B test vs.&nbsp;current sales process and measure lift in conversion and revenue</li>
 </ul></li>
-<li>Define operating model:
+<li>Define operating model (after pilot early results):
 <ul>
+<li>Incorporate funnel/client segmentation into the process</li>
 <li>Set clear thresholds and actions (e.g., top deciles = sales focus)</li>
-<li>Align sales incentives and pipeline reviews to model outputs</li>
+<li>Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively</li>
 </ul></li>
-<li>Monitor performance:
+<li>Monitor performance (starting after deployment):
 <ul>
 <li>Track conversion lift, cycle time, and revenue per opportunity</li>
 <li>Continuously recalibrate thresholds and retrain models</li>
 </ul></li>
-<li>Scale and integrate:
+<li>Scale and integrate (after pilot success):
 <ul>
 <li>Extend to full pipeline and embed in forecasting cadence</li>
 <li>Incorporate into commercial planning and resource allocation</li>

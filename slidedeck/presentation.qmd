@@ -24,10 +24,11 @@ format:
 
 ## Executive Summary
 
-- The current sales process for auto parts opportunities shows both opportunities in structural inefficiencies and also data quality issues (e.g., data input issues, lack of prioritization, inaccurate forecasting), which are driving suboptimal sales force performance.
-- For dealing with the structural inefficiencies, we propose a classification model to predict win/loss and support opportunity prioritization, and a regression model to estimate deal size for a priori sizing and forecasting.
-- The classification model performs well (AUROC 0.88), enabling effective prioritization, while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but is still accurate enough for aggregate forecasting and directional planning.
-- We recommend piloting the classification model first, while using the regression model as a complementary tool for portfolio-level planning.
+- This analysis examines an auto-parts sales opportunity pipeline and identifies structural inefficiencies and data quality issues (e.g., CRM input errors, lack of prioritization, inaccurate forecasting) driving suboptimal sales performance.
+- We propose a win/loss classification model for prioritization, complemented by a regression model for deal sizing and aggregate forecasting.
+  - The classification model performs strongly (AUROC 0.88), while the regression model is not reliable at the deal level (MAE ~$74K; R² 0.13) but supports portfolio-level planning.
+- Prioritization through propensity and expected value concentrates effort on high-probability and high-value opportunities (top 20%: ~22.7% → ~67% conversion; ~44% of value in top 10%).
+- We recommend embedding these scores in the CRM at opportunity creation, piloting via A/B testing, and defining clear thresholds and actions to operationalize prioritization in sales workflows and pipeline reviews.
 
 ## Agenda
 
@@ -214,7 +215,7 @@ SOME KIND OF DIAGRAM.
 
 # Application simulation {background-color="#1E293B"}
 
-## Focusing on the top 20% of opportunities could raise conversion from 22.7% to about 67.0%, a ~2x increase, without increasing pipeline size
+## Focusing on the top 20% of opportunities could raise conversion from 22.7% to about 67.0%, a ~1.95x increase, without increasing pipeline size
 
 ::: {.columns}
 ::: {.column width="44%"}
@@ -273,7 +274,7 @@ This simulation is based on held-out test-set predictions.
 This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.
 :::
 
-## How this integrates into sales workflow
+## Scale growth by embedding models across the commercial process
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -309,31 +310,34 @@ This simulation is based on held-out test-set predictions. This analysis assumes
 
 # Conclusions {background-color="#0F172A"}
 
-## What this means for commercial decision-making
+## Key takeaways for commercial decision-making
 
-- Two clear decision levers:
-  - **Result model** → prioritization of the pipeline
-  - **Amount model** → sizing and aggregate forecasting
-- Two models consistently applied:
-  - **Win/loss classification** to rank opportunities by likelihood to close
-  - **Regression** to estimate deal size based on current pipeline state
-- **Recommendation**:
-  - Pilot the result model first to drive immediate commercial impact through better prioritization
-  - Use the amount model as a planning layer, supporting aggregate forecasts and scenario sizing
-  - Eventually use them together to drive expected-value prioritization, which concentrates effort on the most valuable opportunities and accelerates revenue capture.
+- Prioritization is the highest-impact use case
+  - Win/loss model (AUROC 0.88) improves sales focus.
+  - Top 20% of opportunities → conversion ~22.7% → ~67%.
+- Forecast at the portfolio level, not the deal level
+  - Amount model is not reliable per deal, but supports aggregate forecasting and planning.
+- Expected value is the strongest prioritization lever
+  - Combines win propensity × deal size.
+  - Value is concentrated: ~44% in top 10%, ~68% in top 25%.
+- Recommendation
+  - Pilot prioritization first (embed in CRM).
+  - Use forecasting for planning.
+  - Then combine into expected-value prioritization to guide focus and resource allocation.
 
-## Next steps
+## Pilot, prove, scale: how to operationalize model-driven sales
 
 - Pilot deployment (4–6 weeks):
   - Embed prioritization scores into CRM workflows
   - Run A/B test vs. current sales process and measure lift in conversion and revenue
-- Define operating model:
+- Define operating model (after pilot early results):
+  - Incorporate funnel/client segmentation into the process
   - Set clear thresholds and actions (e.g., top deciles = sales focus)
-  - Align sales incentives and pipeline reviews to model outputs
-- Monitor performance:
+  - Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively
+- Monitor performance (starting after deployment):
   - Track conversion lift, cycle time, and revenue per opportunity
   - Continuously recalibrate thresholds and retrain models
-- Scale and integrate:
+- Scale and integrate (after pilot success):
   - Extend to full pipeline and embed in forecasting cadence
   - Incorporate into commercial planning and resource allocation
 
