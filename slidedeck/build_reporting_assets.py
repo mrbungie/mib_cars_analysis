@@ -247,7 +247,7 @@ def build_workbooks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Data
     )
     classification_importance = pd.read_excel(
         CLASSIFICATION_PATH, sheet_name="feature_importance"
-    ).head(10)
+    )
     classification_lift = pd.read_excel(
         CLASSIFICATION_PATH, sheet_name="prioritization_lift"
     )
@@ -263,7 +263,7 @@ def build_workbooks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Data
     regression_test_metrics = pd.read_excel(REGRESSION_PATH, sheet_name="test_metrics")
     regression_importance = pd.read_excel(
         REGRESSION_PATH, sheet_name="feature_importance"
-    ).head(10)
+    )
     regression_forecast = pd.read_excel(REGRESSION_PATH, sheet_name="forecast_summary")
     regression_predictions = pd.read_excel(
         REGRESSION_PATH, sheet_name="test_predictions"
@@ -413,12 +413,7 @@ def build_assets(
     class_test = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_metrics")
     class_selected = class_test.iloc[0]
 
-    fig, (ax_roc, ax_imp) = plt.subplots(
-        2,
-        1,
-        figsize=(7.2, 5.4),
-        gridspec_kw={"height_ratios": [2.8, 1.6], "hspace": 0.34},
-    )
+    fig, ax_roc = plt.subplots(figsize=(7.2, 4.8))
     ax_roc.plot(
         roc_df["fpr"],
         roc_df["tpr"],
@@ -440,61 +435,9 @@ def build_assets(
     ax_roc.legend(frameon=False, loc="lower right")
     ax_roc.grid(alpha=0.25)
 
-    class_plot = (
-        classification_importance.sort_values("importance_mean", ascending=False)
-        .head(4)
-        .copy()
-    )
-    class_plot["feature_label"] = (
-        class_plot["feature"]
-        .astype(str)
-        .str.replace(
-            "Ratio Days Identified To Total Days",
-            "Identified / total days",
-            regex=False,
-        )
-        .str.replace(
-            "Ratio Days Qualified To Total Days", "Qualified / total days", regex=False
-        )
-        .str.replace(
-            "Ratio Days Validated To Total Days", "Validated / total days", regex=False
-        )
-        .str.replace(
-            "Total Days Identified Through Qualified",
-            "Days: identified → qualified",
-            regex=False,
-        )
-        .str.replace(
-            "Total Days Identified Through Closing",
-            "Days: identified → closing",
-            regex=False,
-        )
-        .str.replace(
-            "Revenue From Client Past Two Years (USD)", "Revenue past 2y", regex=False
-        )
-        .str.replace("Client Size By Revenue (USD)", "Client size revenue", regex=False)
-        .str.replace(
-            "Elapsed Days In Sales Stage", "Elapsed days in stage", regex=False
-        )
-        .str.replace("Sales Stage Change Count", "Stage change count", regex=False)
-        .str.slice(0, 28)
-    )
-    sns.barplot(
-        data=class_plot.sort_values("importance_mean", ascending=True),
-        x="importance_mean",
-        y="feature_label",
-        color="#2563EB",
-        errorbar=None,
-        ax=ax_imp,
-    )
-    ax_imp.set_title("Top feature importance", fontsize=10, weight="bold")
-    ax_imp.set_xlabel("Importance")
-    ax_imp.set_ylabel("")
-    ax_imp.tick_params(axis="y", labelsize=9)
-    ax_imp.tick_params(axis="x", labelsize=8)
-    ax_imp.grid(False)
-    fig.subplots_adjust(left=0.31, right=0.97, top=0.93, bottom=0.11, hspace=0.42)
+    fig.tight_layout()
     fig.savefig(ASSET_DIR / "classification_roc.png", dpi=220, bbox_inches="tight")
+    plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(7.5, 5))
     sns.barplot(
@@ -673,6 +616,38 @@ def build_assets(
             }
         )
     optimal_threshold_df = pd.DataFrame(comparison_rows)
+    selected_threshold_row = optimal_threshold_df.loc[
+        optimal_threshold_df["model"] == "Selected @ optimal threshold"
+    ].iloc[0]
+
+    cm = np.array(
+        [
+            [selected_threshold_row["tn"], selected_threshold_row["fp"]],
+            [selected_threshold_row["fn"], selected_threshold_row["tp"]],
+        ]
+    )
+    fig, ax = plt.subplots(figsize=(5.2, 4.6))
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt=".0f",
+        cmap="Blues",
+        cbar=False,
+        ax=ax,
+        annot_kws={"fontsize": 12, "fontweight": "bold"},
+    )
+    ax.set_title("Confusion matrix at best threshold", fontsize=12, weight="bold")
+    ax.set_xlabel("Predicted label")
+    ax.set_ylabel("Actual label")
+    ax.set_xticklabels(["Loss", "Win"])
+    ax.set_yticklabels(["Loss", "Win"], rotation=0)
+    fig.tight_layout()
+    fig.savefig(
+        ASSET_DIR / "classification_confusion_matrix.png",
+        dpi=220,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
 
     comparison_predictions = pd.read_excel(
         REGRESSION_PATH, sheet_name="comparison_test_predictions"

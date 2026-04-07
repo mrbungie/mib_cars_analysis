@@ -28,6 +28,7 @@ format:
 - We propose two models: a win/loss classifier (AUROC 0.88) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal).
 - Focusing on the top 20% of opportunities lifts conversion from 22.7% to ~67%; the top 10% captures ~44% of total pipeline value.
 - We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.
+- We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven prioritization can improve commercial efficiency.
 
 ## Agenda
 
@@ -59,6 +60,7 @@ format:
 
 ::: {.columns}
 ::: {.column width="56%"}
+###### Conversion and value concentration across the pipeline:
 ![](assets/eda_amount_win_rate.png){width=94%}
 :::
 ::: {.column width="44%"}
@@ -94,16 +96,19 @@ format:
 
 ::: {.columns}
 ::: {.column width="52%"}
-- **Scale**: 78,025 sales opportunities and **19 variables**.
+- **Scale**: 78,025 sales opportunities and **19 variables** like:
+  - at-start information: client size, opportunity type, product category, region, etc.
+  - sales process details: elapsed time, stage changes, stage ratios, etc.
+  - targets like amount and win/loss status.
 - Validation checks flagged duplicates and process-consistency issues before modelling. Key preparation findings:
   - **196 duplicated opportunity IDs** (removed)
   - **2047 zero amount opportunities** (removed)
   - **12,921 rows** where stage ratios do not sum closely to 1 (kept)
-  - And other problems such as apparent data input issues, missing values, and outliers that were handled with specific transformations rather than row removal.
+  - Other problems were identified.
 - For the modelling experiments shown here, the sample used **75,819 eligible rows** out of **78,025 total rows** with valid targets.
 :::
 ::: {.column width="48%"}
-![Problems identified in the data](assets/number_of_problems.png){width=100%}
+![](assets/number_of_problems.png){width=100%}
 :::
 :::
 
@@ -115,6 +120,7 @@ format:
 
 ::: {.columns}
 ::: {.column width="58%"}
+###### Opportunity counts and win rates by client-size segment:
 ![](assets/eda_client_segmentation.png){width=100%}
 :::
 ::: {.column width="42%"}
@@ -133,11 +139,28 @@ format:
 - This is a practical first-layer funnel split for go-to-market operations because it separates low-history acquisition work from higher-propensity expansion opportunities.
 :::
 ::: {.column width="58%"}
+###### Opportunity counts and win rates by funnel stage:
 ![](assets/eda_two_phase_funnel.png){width=100%}
 :::
 :::
 
-## We ran automated IV analysis for both targets across all model variables
+## Performance differences are driven by product mix, not geography
+
+::: {.columns}
+::: {.column width="70%"}
+###### Distribution of amount and win rates by type, subtype, and region:
+![](assets/eda_distribution_by_type_subtype_region.png){width=98%}
+
+:::
+::: {.column width="30%" style="font-size: 82%;"}
+- Region is not a strong driver of conversion or deal size
+- Type and subtype drive meaningful variation in both outcomes
+- Prioritization should be product-driven, not geography-driven
+  - Challenging experiments should be run because this may reflect historical sales focus rather than true underlying demand differences.
+:::
+:::
+
+## Eventually an automated IV ranking was ran to identify the strongest predictors for both win/loss and amount
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -153,6 +176,27 @@ format:
 
 # Modelling {background-color="#0F172A"}
 
+## We have two modelling setups in mind for different stages of the sales process but just the most complete one is shown here
+
+::: {.columns}
+::: {.column width="50%"}
+### Static / pre-sales process model
+
+- Used for **early decisions** at opportunity creation especially around prioritization and sizing.
+- Uses only **at-creation variables**: product / route / region / client-size / past-revenue descriptors.
+- Best for **early triage** before any stage history exists.
+:::
+::: {.column width="50%"}
+### Dynamic / during sales process model
+
+- Used for **ongoing re-prioritization and re-sizing** during the process.
+- Uses the static variables **plus process-state variables**: elapsed time, stage changes, cumulative timing, and stage ratios.
+- **This is the setup used here.**
+:::
+:::
+
+Both setups would improve with **better historical covariates**, especially prior outcomes from similar process runs.
+
 ## For both classification and regression, we used an stratified train/test split to ensure realistic evaluation
 
 ::: {.columns}
@@ -164,9 +208,11 @@ format:
   - win/loss target
   - amount buckets
 - This keeps both outcome balance and deal-size mix stable across train and test.
-- In the final models, regression uses standardized numeric inputs, while the selected logistic classifier uses supervised binning plus one-hot encoding.
+- In the final models, different preprocessing techniques were used for both the X and the y, but the same train/test split was used for a fair performance estimate.
+- All models were trained with 5-fold cross-validation on the train set, and the final selected models were evaluated on the held-out test set for a realistic performance estimate.
 :::
 ::: {.column width="46%"}
+###### Set distribution treemap:
 ![](assets/model_split_treemap.png){width=100%}
 :::
 :::
@@ -177,24 +223,50 @@ format:
 ::: {.column width="54%"}
 - Target: **Opportunity Result**.
 - Business use: **process prioritization** and ranking the pipeline by win propensity.
-- Selected final logistic model: **Calibrated Logistic Regression over supervisedly binned and one-hot encoded features with balanced class weights** (`logit_binned_ohe_balanced_calibrated`). [^1]
-
-| Model | Split | ROC AUC | PR AUC |
-| --- | --- | ---: | ---: |
-| Selected | CV | 0.881 | 0.698 |
-| Selected | Held-out test | 0.877 | 0.693 |
-| Baseline | CV | 0.502 | 0.228 |
-| Baseline | Held-out test | 0.505 | 0.229 |
-
+  - Therefore we focused on ranking metrics such as ROC AUC and PR AUC.
+- We used all the variables except for the amount target and deal size.
+- Selected final logistic model: **Calibrated Logistic Regression over supervisedly binned and one-hot encoded features with balanced class weights** (`logit_binned_ohe_balanced_calibrated`).
+- This model has strong performance (AUROC 0.88, Accuracy 0.825 @ 31.4% threshold) versus the baselines (AUROC 0.5, Accuracy 0.773 @ base win rate for all false classifier).
 :::
 ::: {.column width="50%"}
+![](assets/classification_importance.png){width=100%}
+:::
+:::
+
+::: aside
+We did not use the higher-scoring tree-based variants because we thought the marginal performance lift did not justify the loss in interpretability for this use case.
+:::
+
+## Prioritization classification model enables immediate and precise reallocation of sales effort (cont., with performance metrics)
+
+::: {.columns}
+::: {.column width="57%"}
+::: {style="font-size: 66%;"}
+
+We ran a battery of metrics on the selected model considering:
+
+- Best threshold for the selected model = **31.4%**, chosen on **train out-of-fold predictions**.
+- Baselines are computed at the observed **base win rate**.
+
+The following table shows the selected model's performance on both CV and held-out test, compared to random and simple baselines:
+
+| Model | Split | ROC AUC | PR AUC | Accuracy | Precision | Recall | F1 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Selected | CV | 0.881 | 0.698 | 0.825 | 0.593 | 0.730 | 0.655 |
+| Selected | Held-out test | 0.877 | 0.693 | 0.820 | 0.584 | 0.722 | 0.646 |
+| Random baseline | Held-out test | 0.505 | 0.229 | 0.651 | 0.235 | 0.236 | 0.235 |
+| Always false baseline | Held-out test | 0.500 | 0.227 | 0.773 | 0.000 | 0.000 | 0.000 |
+| Always true baseline | Held-out test | 0.500 | 0.227 | 0.227 | 0.227 | 1.000 | 0.370 |
+
+:::
+:::
+::: {.column width="43%"}
 ![](assets/classification_roc.png){width=100%}
 :::
 :::
 
 ::: aside
-This simulation is based on held-out test-set predictions.
-[^1]: We still do not recommend the higher-scoring tree-based variants for deployment here (Random Forest and XGBoost) because of their black-box nature and because they were not part of the covered modelling stack.
+The annex contains more details about model selection, calibration, threshold selection, and the full classification report at the selected threshold.
 :::
 
 
@@ -204,32 +276,62 @@ This simulation is based on held-out test-set predictions.
 ::: {.column width="54%"}
 - Target: **Opportunity Amount USD**.
 - Business use: **sizing and directional forecasting**.
+  - Therefore we focused on error metrics such as MAE and especially MAPE since it is scale-invariant and better captures the relative error across the wide deal-size distribution.
+- We used all the variables except for the win/loss target and the deal-size descriptors.
 - Selected final regression model: **Box-Cox transformed XGBoost regressor** (`xgboost_boxcox`), selected by lowest CV Median APE.
-
-::: {style="font-size: 80%;"}
-
-**CV**
-
-| Model | Split | R² | MAE | Median APE |
-| --- | ---: | ---: | ---: | ---: |
-| Selected | CV | 0.062 | 65.1k USD | 61.7% |
-| Selected | Held-out test | 0.067 | 65.0k USD | 61.5% |
-| Mean baseline | CV | -0.000 | 84.9k USD | 88.3% |
-| Mean baseline | Held-out test | -0.000 | 84.9k USD | 88.3% |
-| Median baseline | CV | -0.108 | 75.0k USD | 74.6% |
-| Median baseline | Held-out test | -0.108 | 74.9k USD | 75.0% |
-| Random baseline | CV | -1.053 | 115.0k USD | 90.4% |
-| Random baseline | Held-out test | -0.972 | 113.4k USD | 90.1% |
-
-:::
-
+- The model beats simple baselines on MAPE and MAE, **but with R² ≈ 0.06, MAE ≈ 65k USD, and Median APE ≈ 62%**, deal-level precision remains weak, so the best use case is for directional sizing and ranking rather than exact deal-level forecasts.
 :::
 ::: {.column width="46%"}
 ![](assets/regression_importance.png){width=100%}
 :::
 :::
 
-# Application simulation {background-color="#1E293B"}
+## Use the amount model for per-opportunity sizing and ranking, not deal-level precision (cont., with performance metrics)
+
+::: {.columns}
+::: {.column width="54%"}
+::: {style="font-size: 80%;"}
+
+We ran a battery of metrics on the selected model and the baselines. The following table shows the selected model's performance on both CV and held-out test, compared to random and simple baselines:
+
+| Model | Split | R² | MAE | Median APE |
+| --- | ---: | ---: | ---: | ---: |
+| Selected | CV | 0.062 | 65.1k USD | 61.7% |
+| Selected | Held-out test | 0.067 | 65.0k USD | 61.5% |
+| Mean baseline | Held-out test | -0.000 | 84.9k USD | 88.3% |
+| Median baseline | Held-out test | -0.108 | 74.9k USD | 75.0% |
+| Random baseline | Held-out test | -0.972 | 113.4k USD | 90.1% |
+
+:::
+:::
+::: {.column width="46%"}
+![](assets/sim_forecasting.png){width=100%}
+
+::: {style="font-size: 78%;"}
+
+:::
+:::
+:::
+
+::: aside
+The annex contains more details about model selection, and per bin performance metrics.
+:::
+
+# Applications {background-color="#1E293B"}
+
+## The following simulations are subject to constraints and are intended as a demonstration of potential business uses and impacts
+
+::: {.columns}
+::: {.column width="52%"}
+- **No true pre-process static model is shown here**: due to time constraints, current models used in the simulation use evolving lifecycle features; an early-stage model is still needed.
+- **Potentially relevant covariates are missing**: the dataset lacks important drivers such as richer account history, rep behavior, pricing context, and external market conditions.
+- **Snapshot data limits process interpretation**: the dataset reflects a single recorded state, without full event history or detailed timing of interactions.
+:::
+::: {.column width="48%"}
+- **Simulations are based on held-out observational predictions**, results are based on held-out predictions, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.
+- **Missing business context**: factors like sales capacity, operational constraints, and CRM integration are not missing and we're not able to consult them to business stakeholders, affecting real-world applicability.
+:::
+:::
 
 ## Tripling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size
 
@@ -268,7 +370,7 @@ This simulation is based on held-out test-set predictions.
 :::
 
 ::: aside
-This simulation is based on held-out test-set predictions.
+This simulation is based on held-out test-set predictions. Previous simulations with linear regression showed almost non-existant aggregate error but much worse directional ranking, which is why we selected the XGBoost Box-Cox model for this use case.
 :::
 
 ## Concentration (~45% value capture at top 10%) makes expected-value prioritization a key revenue lever
@@ -281,7 +383,6 @@ This simulation is based on held-out test-set predictions.
 ::: {.column width="44%"}
 - Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
   - At top 10%, expected-value ranking captures 45.3% of won revenue vs 34.8% with propensity-only.
-  - At top 25%, the comparison is 71.4% vs 66.8%, so deal-size information matters most when capacity is tight.
   - Because the selected amount model under-forecasts the total portfolio, this expected-value ranking should be read as a directional prioritization tool rather than a revenue commitment.
 - We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.
 
@@ -292,7 +393,7 @@ This simulation is based on held-out test-set predictions.
 This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.
 :::
 
-## Turn models into daily sales decisions via CRM integration
+## Put model outputs to work in the CRM
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -314,16 +415,32 @@ This simulation is based on held-out test-set predictions. This analysis assumes
 ::: {.column width="48%"}
 ### Weekly pipeline reviews
 
-- Use **threshold-based filtering** to narrow the active pipeline before review.
-- Focus reviews on opportunities above the agreed propensity or expected-value cutoff.
-- Align rep attention, manager escalation, and follow-up cadence to those thresholds.
+- Review only opportunities above agreed propensity or expected-value thresholds.
+- Use those cutoffs to focus rep attention, escalation, and follow-up.
 
 ### Management view
 
-- **Directional forecast = sum of predicted values** across the active pipeline, with a separate bias-correction step before using it as a committed number.
-- Leadership can compare forecast by region, route to market, owner, or priority tier.
-- This connects daily triage decisions to directional portfolio planning, with explicit bias correction before forecast commitment.
+- **Directional forecast = sum of predicted values** across the active pipeline.
+- Management can compare it by region, route to market, owner, or priority tier.
 :::
+:::
+
+## From tactical use of model outputs to commercial strategy
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/strategic_lever_focus_summary.png){fig-align="center" width=50%}
+
+![](assets/strategic_lever_salesforce_summary.png){fig-align="center" width=50%}
+:::
+::: {.column width="42%"}
+- **Focus the team:** Assuming higher effort on top-ranked opportunities improves conversion, we might achieve better results per deal. Best simulated point is **top ~55%** of the ranked pipeline, reaching **$446M** in revenue, or **+$61M vs. baseline**.
+- **Optimize salesforce size:** With better prioritization, we might achieve higher efficiency. Best simulated point is **168 reps**, retaining **$380M** of revenue (98.8%) and improving net margin by **+$6M** vs. full staffing.
+:::
+:::
+
+::: aside
+Both simulations use held-out test-set predictions. Lever 1 assumes a focus-gain multiplier that decays from λ_max = 1.5× at the smallest slice to 1.0× at the full pipeline; Lever 2 uses $120K OTE as the label, $180K fully-loaded cost per rep in the economics and assumes a rep can do 100 opportunities from the holdout set.
 :::
 
 # Conclusions {background-color="#0F172A"}
@@ -342,14 +459,16 @@ This simulation is based on held-out test-set predictions. This analysis assumes
   - Pilot prioritization first (embed in CRM).
   - Use the amount model for sizing and ranking first.
   - Then combine into expected-value prioritization to guide focus and resource allocation.
+  - Post-pilot, consider strategic levers such as pipeline optimization and salesforce adjustments to improve commercial efficiency.
 
-## Pilot, prove, scale: how to operationalize model-driven sales
+## Next steps: how to operationalize model-driven sales
 
 - Pilot deployment (4–6 weeks):
   - Embed prioritization scores into CRM workflows
   - Run A/B test vs. current sales process and measure lift in conversion and revenue
 - Define operating model (after pilot early results):
   - Incorporate funnel/client segmentation into the process
+  - Potentially include product-level segmentation if it makes sense.
   - Set clear thresholds and actions (e.g., top deciles = sales focus)
   - Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively
 - Monitor performance (starting after deployment):
@@ -358,6 +477,7 @@ This simulation is based on held-out test-set predictions. This analysis assumes
 - Scale and integrate (after pilot success):
   - Extend to full pipeline and embed in forecasting cadence
   - Incorporate into commercial planning and resource allocation
+  - Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights
 
 # Thank you {background-color="#0F172A"}
 Questions, comments, and feedback are welcome!
@@ -368,19 +488,19 @@ Questions, comments, and feedback are welcome!
 
 ::: {.smaller}
 
-| Model | ROC AUC | PR AUC | Accuracy | F1 |
-| --- | ---: | ---: | ---: | ---: |
-| random_forest_classifier | 0.914 ± 0.004 | 0.773 ± 0.011 | 0.847 ± 0.006 | 0.707 ± 0.010 |
-| xgboost_balanced | 0.912 ± 0.003 | 0.783 ± 0.007 | 0.830 ± 0.005 | 0.691 ± 0.007 |
-| xgboost | 0.912 ± 0.003 | 0.786 ± 0.006 | 0.871 ± 0.003 | 0.682 ± 0.008 |
-| logit_elasticnet_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.643 ± 0.011 |
-| logit_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.643 ± 0.010 |
-| logit_binned_ohe_balanced_calibrated | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.840 ± 0.003 | 0.588 ± 0.010 |
-| logit_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.596 ± 0.011 |
-| logit_elasticnet_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.594 ± 0.010 |
-| logit_elastic_binned_woe_balanced | 0.877 ± 0.004 | 0.692 ± 0.003 | 0.790 ± 0.006 | 0.636 ± 0.007 |
-| logit_elastic_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.009 |
-| logit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.008 |
+| Model | ROC AUC | PR AUC | Accuracy | Precision | Recall | F1 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| random_forest_classifier | **0.914 ± 0.004** | 0.773 ± 0.011 | 0.847 ± 0.006 | 0.627 ± 0.011 | 0.810 ± 0.007 | **0.707 ± 0.010** |
+| xgboost_balanced | 0.912 ± 0.003 | 0.783 ± 0.007 | 0.830 ± 0.005 | 0.588 ± 0.010 | **0.839 ± 0.004** | 0.691 ± 0.007 |
+| xgboost | 0.912 ± 0.003 | **0.786 ± 0.006** | **0.871 ± 0.003** | **0.776 ± 0.008** | 0.609 ± 0.011 | 0.682 ± 0.008 |
+| logit_elasticnet_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.530 ± 0.012 | 0.818 ± 0.008 | 0.643 ± 0.011 |
+| logit_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.530 ± 0.011 | 0.818 ± 0.008 | 0.643 ± 0.010 |
+| logit_binned_ohe_balanced_calibrated | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.840 ± 0.003 | 0.711 ± 0.007 | 0.501 ± 0.012 | 0.588 ± 0.010 |
+| logit_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.711 ± 0.009 | 0.513 ± 0.013 | 0.596 ± 0.011 |
+| logit_elasticnet_binned_ohe | 0.881 ± 0.004 | 0.700 ± 0.005 | 0.842 ± 0.003 | 0.713 ± 0.008 | 0.510 ± 0.012 | 0.594 ± 0.010 |
+| logit_elastic_binned_woe_balanced | 0.877 ± 0.004 | 0.692 ± 0.003 | 0.790 ± 0.006 | 0.524 ± 0.009 | 0.809 ± 0.006 | 0.636 ± 0.007 |
+| logit_elastic_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.717 ± 0.009 | 0.473 ± 0.011 | 0.570 ± 0.009 |
+| logit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.718 ± 0.008 | 0.473 ± 0.009 | 0.570 ± 0.008 |
 | logit_elasticnet_robust_scaler_balanced | 0.868 ± 0.006 | 0.669 ± 0.011 | 0.787 ± 0.007 | 0.629 ± 0.011 |
 | logit_elasticnet_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
 | classic_logit_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
@@ -388,6 +508,33 @@ Questions, comments, and feedback are welcome!
 | always_true_classifier | 0.500 ± 0.000 | 0.227 ± 0.000 | 0.227 ± 0.000 | 0.370 ± 0.000 |
 
 Selected model in main deck: **logit_binned_ohe_balanced_calibrated**.
+
+:::
+
+## Annex: how to read IV charts
+
+::: {.smaller}
+
+- **Information Value (IV)** is a score used to rank how much predictive signal a variable carries against a target.
+- In this deck:
+  - **left IV chart** = signal against **win / loss**
+  - **right IV chart** = signal against **amount**
+
+| IV range | Interpretation |
+| --- | --- |
+| < 0.02 | Useless |
+| 0.02 to 0.10 | Weak |
+| 0.10 to 0.30 | Medium |
+| 0.30 to 0.50 | Strong |
+| > 0.50 | Suspiciously high → check for leakage |
+
+- **Colors** add direction, because IV itself is only a strength score:
+  - **green** = increasing relationship
+  - **red** = decreasing relationship
+  - **gray** = categorical or unclear direction
+- **Asterisk (`*`)** = strictly monotonic relationship across bins.
+- Very high IV values for process variables can reflect genuinely strong signal, but they should always be checked for **timing leakage**.
+- IV is derived from **Weight of Evidence (WoE)**: it compares how differently wins vs losses are distributed across the bins of a variable.
 
 :::
 
@@ -443,12 +590,14 @@ Threshold chosen on **training out-of-fold predictions** by maximizing **F1** fo
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Selected @ optimal threshold | 31.4% | 82.0% | 58.4% | 72.2% | 64.6% |
 | Random classifier | n/a | 65.1% | 23.5% | 23.6% | 23.5% |
+| Always false | n/a | 77.3% | 0.0% | 0.0% | 0.0% |
 | Always true | n/a | 22.7% | 22.7% | 100.0% | 37.0% |
 
 | Model | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
 | Selected @ optimal threshold | 14,917 | 2,659 | 1,436 | 3,734 |
 | Random classifier | 13,597 | 3,979 | 3,951 | 1,219 |
+| Always false | 17,576 | 0 | 5,170 | 0 |
 | Always true | 0 | 17,576 | 0 | 5,170 |
 
 Diagnostic note: the threshold is selected on train-side OOF predictions, then evaluated once on the untouched hold-out set shown here.
@@ -468,63 +617,67 @@ Diagnostic note: the threshold is selected on train-side OOF predictions, then e
 :::
 :::
 
-## Annex: incremental revenue from effort reallocation on the hold-out set
-
-::: {.smallest}
-
-Baseline conversion across the hold-out set: **overall win rate = 22.7%**.
-
-**Expected-value ranking** (`predicted win probability × predicted amount`)
-
-| Top slice kept | Opportunities | Forecasted amount inside slice | Segment win rate | Win-rate lift vs overall | Win-rate bonus (base) | Incremental revenue (conservative) | Incremental revenue (base) | Incremental revenue (aggressive) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10% | 2,275 | 187.3M | 63.3% | 40.6 pts | 12.2 pts | 15.2M | 22.8M | 30.4M |
-| 25% | 5,686 | 361.8M | 53.0% | 30.3 pts | 9.1 pts | 21.9M | 32.9M | 43.9M |
-| 50% | 11,373 | 664.4M | 39.6% | 16.9 pts | 5.1 pts | 22.4M | 33.7M | 44.9M |
-
-**Probability-only ranking** (`y_proba`)
-
-| Top slice kept | Opportunities | Forecasted amount inside slice | Segment win rate | Win-rate lift vs overall | Win-rate bonus (base) | Incremental revenue (conservative) | Incremental revenue (base) | Incremental revenue (aggressive) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10% | 2,275 | 98.9M | 80.0% | 57.2 pts | 17.2 pts | 11.3M | 17.0M | 22.6M |
-| 25% | 5,686 | 248.6M | 61.4% | 38.7 pts | 11.6 pts | 19.2M | 28.8M | 38.5M |
-| 50% | 11,373 | 542.0M | 41.6% | 18.9 pts | 5.7 pts | 20.4M | 30.7M | 40.9M |
-
-- **Top 10%**: EV ranking leads by **+5.8M** incremental revenue at the base assumption (`λ = 0.3`), because the top slice still concentrates much more forecasted value even though its win rate is lower than the probability-only slice.
-- **Top 25%**: EV ranking still leads by **+4.1M** at the base assumption, showing that deal-size information continues to matter once the slice widens.
-- **Top 50%**: EV ranking leads by **+3.0M** at the base assumption; the two strategies become closer once coverage broadens.
-
-Interpretation note: this is still a **scenario-sizing exercise**, but it is now closer to an operational story: ranking uses forecasted amount, and the intervention is modeled as an additive improvement in segment win rate rather than a multiplicative probability shock.
-
-:::
-
-## Annex: methodology behind the incremental revenue sizing exercise
+## Annex: strategic lever 1 — focus the same team on fewer, better-ranked deals
 
 ::: {.columns}
-::: {.column width="52%"}
-- Start from the **hold-out test set** and define the portfolio baseline as the overall observed win rate.
-- Create two ranking rules:
-  - **Expected-value ranking** = predicted win probability × forecasted amount
-  - **Probability-only ranking** = predicted win probability
-- For each cutoff (**10%, 25%, 50%**), keep only the top-ranked slice and measure:
-  - number of opportunities in the slice
-  - forecasted amount already sitting inside that slice
-  - observed conversion rate in that slice
-- Compute the **conversion lift vs the portfolio baseline**.
+::: {.column width="55%"}
+![](assets/sim_focus_gain_main.png){width=88%}
 :::
-::: {.column width="48%"}
-- Translate that conversion lift into a revenue estimate by assuming sales action adds a **win-rate bonus** to the selected segment.
-- The bonus is defined as a fraction of the observed conversion lift:
-  - **conservative**: recover **20%** of that advantage
-  - **base**: recover **30%**
-  - **aggressive**: recover **40%**
-- Incremental revenue is then estimated as:
+::: {.column width="45%"}
+- Same salesforce, fewer deals — dropped opportunities go unworked.
+- Focus gain grows as the slice shrinks (λ_max = 1.5× at top slice → 1.0× at full pipeline).
+- Break-even at **top ~27%**; optimal at **top ~55%** → **$446M** (+$61M vs. baseline).
+:::
+:::
 
-  **forecasted amount inside the slice × win-rate bonus**
+::: aside
+Focus-gain λ_max is a scenario assumption, not an empirically estimated causal effect. λ decays linearly from λ_max at the smallest slice to 1.0× at the full pipeline. Simulation uses held-out test-set predictions.
+:::
 
-- This is a **sizing heuristic**, not a causal estimate:
-  - it assumes sales effort can recover part of the observed conversion gap
-  - it uses hold-out forecasted amounts rather than realized future deal outcomes
-  - it is best read as a way to compare ranking policies under the same assumptions
+
+## Annex: focus-gain sensitivity across λ values
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/sim_focus_gain_sweep.png){width=100%}
+:::
+::: {.column width="42%"}
+- Each curve shows the **net revenue delta in USD** vs. the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.
+- λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.
+- Break-even shifts left as λ_max increases: at λ_max = 1.5 the top ~27% of the pipeline already matches full-pipeline revenue; at λ_max = 3.0 even a very small slice generates a large surplus.
+- The main deck uses **λ_max = 1.50** as the base scenario.
+:::
+:::
+
+## Annex: Strategic lever 2: Reduce the salesforce and let the model pick the best opportunities
+
+::: {.columns}
+::: {.column width="55%"}
+![](assets/sim_salesforce_reduction_main.png){width=100%}
+:::
+::: {.column width="45%"}
+- Baseline: **228 reps** × $120K OTE = **$41M** fully-loaded salesforce cost, covering 22,746 opportunities.
+- Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.
+- **Optimal headcount: 168 reps** → $380M revenue retained (98.8%) at $30M cost → net margin **+$6M** vs. full staffing.
+- Last individually break-even rep batch: **rep #216** — reps 217–228 generate less revenue than their fully-loaded cost.
+:::
+:::
+
+::: aside
+Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cost estimated at $180K (1.5× OTE, including benefits, payroll taxes, tech stack, and overhead). Simulation uses held-out test-set predictions.
+:::
+
+## Annex: salesforce reduction — marginal revenue per rep batch
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/sim_salesforce_reduction_marginal.png){width=100%}
+
+:::
+::: {.column width="42%"}
+- Each bar shows the **marginal revenue** contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.
+- The dashed line marks the **cost of one rep batch** (~$1.44M at $120K OTE).
+- **Blue bars** are ROI-positive: the batch earns more than it costs. **Red bars** are ROI-negative: cutting those reps improves net margin.
+- The crossover point is around rep #216 — reps beyond that generate less revenue than their **fully-loaded cost** ($180K), making reduction unambiguously value-accretive.
 :::
 :::

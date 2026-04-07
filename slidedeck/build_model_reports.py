@@ -255,19 +255,51 @@ def get_classifier_importance(
         else [f"feature_{i}" for i in range(transformed.shape[1])]
     )
 
-    if hasattr(model, "coef_"):
-        coef_values = np.asarray(model.coef_).reshape(-1)
-        coef_df = pd.DataFrame(
-            {"transformed_feature": transformed_columns, "coefficient": coef_values}
-        )
+    def extract_classifier_term_importance(current_model) -> pd.DataFrame | None:
+        if hasattr(current_model, "coef_"):
+            coef_values = np.asarray(current_model.coef_).reshape(-1)
+            return pd.DataFrame(
+                {
+                    "transformed_feature": transformed_columns,
+                    "term_importance": np.abs(coef_values),
+                }
+            )
+        if isinstance(current_model, CalibratedClassifierCV):
+            calibrated_models = getattr(current_model, "calibrated_classifiers_", [])
+            if not calibrated_models:
+                return None
+            term_frames: list[pd.DataFrame] = []
+            for calibrated_model in calibrated_models:
+                base_estimator = getattr(calibrated_model, "estimator", None)
+                if base_estimator is None or not hasattr(base_estimator, "coef_"):
+                    continue
+                coef_values = np.asarray(base_estimator.coef_).reshape(-1)
+                term_frames.append(
+                    pd.DataFrame(
+                        {
+                            "transformed_feature": transformed_columns,
+                            "term_importance": np.abs(coef_values),
+                        }
+                    )
+                )
+            if not term_frames:
+                return None
+            return (
+                pd.concat(term_frames, ignore_index=True)
+                .groupby("transformed_feature", as_index=False)
+                .agg(term_importance=("term_importance", "mean"))
+            )
+        return None
+
+    coef_df = extract_classifier_term_importance(model)
+    if coef_df is not None:
         coef_df["feature"] = coef_df["transformed_feature"].apply(
             lambda x: normalize_feature_name(x, original_features)
         )
         feature_importance_df = (
             coef_df.groupby("feature", as_index=False)
             .agg(
-                importance_mean=("coefficient", lambda s: float(np.abs(s).sum())),
-                signed_coefficient=("coefficient", lambda s: float(s.sum())),
+                importance_mean=("term_importance", lambda s: float(s.sum())),
                 transformed_terms=("transformed_feature", "count"),
             )
             .sort_values("importance_mean", ascending=False)
@@ -282,7 +314,6 @@ def get_classifier_importance(
                     for c in transformed_columns
                 ],
                 "importance_mean": importances,
-                "signed_coefficient": importances,
                 "transformed_terms": 1,
             }
         )
@@ -290,7 +321,6 @@ def get_classifier_importance(
             feature_importance_df.groupby("feature", as_index=False)
             .agg(
                 importance_mean=("importance_mean", "sum"),
-                signed_coefficient=("signed_coefficient", "sum"),
                 transformed_terms=("transformed_terms", "sum"),
             )
             .sort_values("importance_mean", ascending=False)
@@ -301,7 +331,6 @@ def get_classifier_importance(
             {
                 "feature": original_features,
                 "importance_mean": 0.0,
-                "signed_coefficient": 0.0,
                 "transformed_terms": 1,
             }
         )
@@ -310,7 +339,9 @@ def get_classifier_importance(
     return feature_importance_df
 
 
-def get_regressor_importance(final_pipeline, X: pd.DataFrame) -> pd.DataFrame:
+def get_regressor_importance(
+    final_pipeline, X: pd.DataFrame, original_features: list[str]
+) -> pd.DataFrame:
     if "preprocessing" in final_pipeline.named_steps:
         transformed = final_pipeline.named_steps["preprocessing"].transform(
             X.iloc[: min(len(X), 500)].copy()
@@ -336,35 +367,53 @@ def get_regressor_importance(final_pipeline, X: pd.DataFrame) -> pd.DataFrame:
         coef_values = np.asarray(model.coef_).reshape(-1)
         feature_importance_df = pd.DataFrame(
             {
-                "feature": transformed_columns,
+                "feature": [
+                    normalize_feature_name(c, original_features)
+                    for c in transformed_columns
+                ],
                 "importance_mean": np.abs(coef_values),
-                "signed_coefficient": coef_values,
                 "transformed_terms": 1,
             }
+        )
+        feature_importance_df = (
+            feature_importance_df.groupby("feature", as_index=False)
+            .agg(
+                importance_mean=("importance_mean", "sum"),
+                transformed_terms=("transformed_terms", "sum"),
+            )
+            .sort_values("importance_mean", ascending=False)
+            .reset_index(drop=True)
         )
     elif hasattr(model, "feature_importances_"):
         importances = np.asarray(model.feature_importances_).reshape(-1)
         feature_importance_df = pd.DataFrame(
             {
-                "feature": transformed_columns,
+                "feature": [
+                    normalize_feature_name(c, original_features)
+                    for c in transformed_columns
+                ],
                 "importance_mean": importances,
-                "signed_coefficient": importances,
                 "transformed_terms": 1,
             }
+        )
+        feature_importance_df = (
+            feature_importance_df.groupby("feature", as_index=False)
+            .agg(
+                importance_mean=("importance_mean", "sum"),
+                transformed_terms=("transformed_terms", "sum"),
+            )
+            .sort_values("importance_mean", ascending=False)
+            .reset_index(drop=True)
         )
     else:
         feature_importance_df = pd.DataFrame(
             {
-                "feature": transformed_columns,
+                "feature": original_features,
                 "importance_mean": 0.0,
-                "signed_coefficient": 0.0,
                 "transformed_terms": 1,
             }
         )
 
-    feature_importance_df = feature_importance_df.sort_values(
-        "importance_mean", ascending=False
-    ).reset_index(drop=True)
     feature_importance_df["importance_std"] = 0.0
     return feature_importance_df
 
@@ -699,6 +748,10 @@ def build_classification_reports() -> None:
                         "roc_auc": roc_auc_score(y_valid, valid_proba),
                         "pr_auc": average_precision_score(y_valid, valid_proba),
                         "accuracy": accuracy_score(y_valid, valid_label),
+                        "precision": precision_score(
+                            y_valid, valid_label, zero_division=0
+                        ),
+                        "recall": recall_score(y_valid, valid_label, zero_division=0),
                         "f1": f1_score(y_valid, valid_label),
                         "status": "ok",
                         "error": np.nan,
@@ -712,6 +765,8 @@ def build_classification_reports() -> None:
                         "roc_auc": np.nan,
                         "pr_auc": np.nan,
                         "accuracy": np.nan,
+                        "precision": np.nan,
+                        "recall": np.nan,
                         "f1": np.nan,
                         "status": "failed",
                         "error": str(exc),
@@ -728,6 +783,10 @@ def build_classification_reports() -> None:
             pr_auc_std=("pr_auc", "std"),
             accuracy_mean=("accuracy", "mean"),
             accuracy_std=("accuracy", "std"),
+            precision_mean=("precision", "mean"),
+            precision_std=("precision", "std"),
+            recall_mean=("recall", "mean"),
+            recall_std=("recall", "std"),
             f1_mean=("f1", "mean"),
             f1_std=("f1", "std"),
             n_failed=("status", lambda s: int((s == "failed").sum())),
@@ -796,6 +855,11 @@ def build_classification_reports() -> None:
         if score > best_train_f1:
             best_train_f1 = score
             best_train_threshold = float(threshold)
+
+    train_threshold_pred = (train_oof_proba >= best_train_threshold).astype(int)
+    best_train_accuracy = accuracy_score(y, train_threshold_pred)
+    best_train_precision = precision_score(y, train_threshold_pred, zero_division=0)
+    best_train_recall = recall_score(y, train_threshold_pred, zero_division=0)
 
     baseline_test_proba = baseline_pipeline.predict_proba(X_test)[:, 1]
     baseline_test_label = (baseline_test_proba >= 0.5).astype(int)
@@ -906,6 +970,9 @@ def build_classification_reports() -> None:
                     ].iloc[0]
                 ),
                 "train_selected_threshold": best_train_threshold,
+                "train_selected_threshold_accuracy": best_train_accuracy,
+                "train_selected_threshold_precision": best_train_precision,
+                "train_selected_threshold_recall": best_train_recall,
                 "train_selected_threshold_f1": best_train_f1,
                 "notes": "Final model trained on full train split and scored on held-out test split.",
             }
@@ -1387,7 +1454,9 @@ def build_regression_reports() -> None:
         ]
     )
 
-    feature_importance_df = get_regressor_importance(final_pipeline, X)
+    feature_importance_df = get_regressor_importance(
+        final_pipeline, X, REGRESSION_FEATURES
+    )
 
     test_prediction_export = pd.DataFrame(
         {
