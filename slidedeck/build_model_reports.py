@@ -8,11 +8,12 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import sklearn.utils.multiclass as multiclass
-from sklearn.base import BaseEstimator, RegressorMixin, clone
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, clone
 from sklearn.compose import ColumnTransformer, TransformedTargetRegressor
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import ElasticNet, LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -28,7 +29,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold, StratifiedKFold, cross_val_predict
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from tqdm.auto import tqdm
 from xgboost import XGBClassifier, XGBRegressor
 
@@ -37,6 +38,19 @@ _original_type_of_target = multiclass.type_of_target
 
 def patched_type_of_target(y, input_name: str = "", raise_unknown: bool = False):
     if getattr(y, "dtype", None) in [np.float32, np.float64]:
+        values = np.asarray(y)
+        finite_values = values[np.isfinite(values)]
+        unique_values = np.unique(finite_values)
+        if (
+            finite_values.size
+            and unique_values.size <= 20
+            and np.allclose(finite_values, np.round(finite_values))
+        ):
+            return _original_type_of_target(
+                np.round(values).astype(int),
+                input_name=input_name,
+                raise_unknown=raise_unknown,
+            )
         return "continuous"
     return _original_type_of_target(
         y, input_name=input_name, raise_unknown=raise_unknown
@@ -114,9 +128,31 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         return self.random_state_.choice(self.y_train_, size=n, replace=True)
 
 
+class IntegerTargetClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, estimator):
+        self.estimator = estimator
+
+    def fit(self, X, y):
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, np.asarray(y, dtype=int))
+        return self
+
+    def predict(self, X):
+        return self.estimator_.predict(X)
+
+    def predict_proba(self, X):
+        return self.estimator_.predict_proba(X)
+
+    @property
+    def feature_importances_(self):
+        return self.estimator_.feature_importances_
+
+
 def get_classic_preprocessor(
-    categorical_cols: list[str], numerical_cols: list[str], scaler=StandardScaler()
+    categorical_cols: list[str], numerical_cols: list[str], scaler=None
 ):
+    if scaler is None:
+        scaler = RobustScaler()
     return ColumnTransformer(
         [
             (
@@ -358,23 +394,23 @@ def build_classification_reports() -> None:
     experiment_grid = {
         "random_classifier": DummyClassifier(strategy="stratified", random_state=42),
         "always_true_classifier": DummyClassifier(strategy="constant", constant=1),
-        "classic_logit_standard_scaler": Pipeline(
+        "classic_logit_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 ("model", StatsModelsClassifier(sm.Logit)),
             ]
         ),
-        "logit_elasticnet_standard_scaler": Pipeline(
+        "logit_elasticnet_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -389,12 +425,12 @@ def build_classification_reports() -> None:
                 ),
             ]
         ),
-        "logit_elasticnet_standard_scaler_balanced": Pipeline(
+        "logit_elasticnet_robust_scaler_balanced": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -406,6 +442,28 @@ def build_classification_reports() -> None:
                         class_weight="balanced",
                         max_iter=10000,
                         random_state=42,
+                    ),
+                ),
+            ]
+        ),
+        "random_forest_classifier": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    IntegerTargetClassifier(
+                        RandomForestClassifier(
+                            n_estimators=400,
+                            min_samples_leaf=5,
+                            class_weight="balanced_subsample",
+                            n_jobs=-1,
+                            random_state=42,
+                        )
                     ),
                 ),
             ]
@@ -577,7 +635,7 @@ def build_classification_reports() -> None:
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -599,7 +657,7 @@ def build_classification_reports() -> None:
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -906,12 +964,12 @@ def build_regression_reports() -> None:
         "random_regressor": RandomRegressor(random_state=42),
         "mean_regressor": DummyRegressor(strategy="mean"),
         "median_regressor": DummyRegressor(strategy="median"),
-        "classic_linear_log1p_standard_scaler": Pipeline(
+        "classic_linear_log1p_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -920,12 +978,12 @@ def build_regression_reports() -> None:
                 ),
             ]
         ),
-        "classic_linear_yeojohnson_standard_scaler": Pipeline(
+        "classic_linear_yeojohnson_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -936,12 +994,12 @@ def build_regression_reports() -> None:
                 ),
             ]
         ),
-        "classic_linear_boxcox_standard_scaler": Pipeline(
+        "classic_linear_boxcox_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -952,23 +1010,23 @@ def build_regression_reports() -> None:
                 ),
             ]
         ),
-        "classic_linear_standard_scaler": Pipeline(
+        "classic_linear_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 ("model", StatsModelsRegressor(sm.OLS)),
             ]
         ),
-        "elasticnet_standard_scaler": Pipeline(
+        "elasticnet_robust_scaler": Pipeline(
             [
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 ("model", ElasticNet(l1_ratio=0.5, max_iter=10000, random_state=42)),
@@ -1005,7 +1063,7 @@ def build_regression_reports() -> None:
                 ),
             ]
         ),
-        "linear_binned_woe_standard_scaler": Pipeline(
+        "linear_binned_woe_robust_scaler": Pipeline(
             [
                 (
                     "binning",
@@ -1015,8 +1073,27 @@ def build_regression_reports() -> None:
                         output_method="mean",
                     ),
                 ),
-                ("scaler", DataFrameScaler(StandardScaler())),
+                ("scaler", DataFrameScaler(RobustScaler())),
                 ("model", StatsModelsRegressor(sm.OLS)),
+            ]
+        ),
+        "random_forest_regressor": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    RandomForestRegressor(
+                        n_estimators=400,
+                        min_samples_leaf=5,
+                        n_jobs=-1,
+                        random_state=42,
+                    ),
+                ),
             ]
         ),
         "elastic_binned_woe": Pipeline(
@@ -1037,7 +1114,7 @@ def build_regression_reports() -> None:
                 (
                     "preprocessing",
                     get_classic_preprocessor(
-                        categorical_cols, numerical_cols, scaler=StandardScaler()
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
                     ),
                 ),
                 (
@@ -1050,6 +1127,102 @@ def build_regression_reports() -> None:
                         subsample=0.9,
                         colsample_bytree=0.9,
                         objective="reg:squarederror",
+                    ),
+                ),
+            ]
+        ),
+        "xgboost_log1p": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    get_transformed_regressor_log1p(
+                        XGBRegressor(
+                            random_state=42,
+                            n_estimators=250,
+                            max_depth=4,
+                            learning_rate=0.05,
+                            subsample=0.9,
+                            colsample_bytree=0.9,
+                            objective="reg:squarederror",
+                        )
+                    ),
+                ),
+            ]
+        ),
+        "xgboost_yeojohnson": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    get_power_transformed_regressor(
+                        XGBRegressor(
+                            random_state=42,
+                            n_estimators=250,
+                            max_depth=4,
+                            learning_rate=0.05,
+                            subsample=0.9,
+                            colsample_bytree=0.9,
+                            objective="reg:squarederror",
+                        ),
+                        method="yeo-johnson",
+                    ),
+                ),
+            ]
+        ),
+        "xgboost_boxcox": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    get_power_transformed_regressor(
+                        XGBRegressor(
+                            random_state=42,
+                            n_estimators=250,
+                            max_depth=4,
+                            learning_rate=0.05,
+                            subsample=0.9,
+                            colsample_bytree=0.9,
+                            objective="reg:squarederror",
+                        ),
+                        method="box-cox",
+                    ),
+                ),
+            ]
+        ),
+        "xgboost_pseudohubererror": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    XGBRegressor(
+                        random_state=42,
+                        n_estimators=250,
+                        max_depth=4,
+                        learning_rate=0.05,
+                        subsample=0.9,
+                        colsample_bytree=0.9,
+                        objective="reg:pseudohubererror",
                     ),
                 ),
             ]
@@ -1116,7 +1289,7 @@ def build_regression_reports() -> None:
             median_ape_std=("mdape", "std"),
             n_failed=("status", lambda s: int((s == "failed").sum())),
         )
-        .sort_values("r2_mean", ascending=False)
+        .sort_values(["median_ape", "mae_mean"], ascending=[True, True])
         .reset_index()
     )
 
@@ -1129,9 +1302,9 @@ def build_regression_reports() -> None:
         ~summary_df["experiment"].isin(baseline_experiments)
     ].copy()
     selected_experiment = str(
-        non_baseline_summary.sort_values("r2_mean", ascending=False).iloc[0][
-            "experiment"
-        ]
+        non_baseline_summary.sort_values(
+            ["median_ape", "mae_mean"], ascending=[True, True]
+        ).iloc[0]["experiment"]
     )
     baseline_experiment = "random_regressor"
     selected_cv_metrics = summary_df.loc[
@@ -1160,11 +1333,12 @@ def build_regression_reports() -> None:
 
     test_pred = np.asarray(final_pipeline.predict(X_test), dtype=float)
     regression_comparison_experiments = [
-        "classic_linear_standard_scaler",
+        "xgboost_boxcox",
+        "xgboost_log1p",
+        "xgboost_yeojohnson",
+        "random_forest_regressor",
         "xgboost",
-        "classic_linear_log1p_standard_scaler",
-        "classic_linear_yeojohnson_standard_scaler",
-        "classic_linear_boxcox_standard_scaler",
+        "classic_linear_boxcox_robust_scaler",
     ]
     regression_comparison_predictions = []
     for experiment_name in regression_comparison_experiments:
@@ -1260,7 +1434,7 @@ def build_regression_reports() -> None:
                 "selected_experiment": selected_experiment,
                 "baseline_experiment": baseline_experiment,
                 "baseline_experiments": ", ".join(baseline_experiments),
-                "selection_rule": "Best regression model by CV R2",
+                "selection_rule": "Best regression model by CV Median APE, tie-broken by MAE",
                 "cv_r2_mean": float(selected_cv_metrics.loc[0, "r2_mean"]),
                 "cv_mae_mean": float(selected_cv_metrics.loc[0, "mae_mean"]),
                 "cv_mape_mean": float(selected_cv_metrics.loc[0, "mape_mean"]),

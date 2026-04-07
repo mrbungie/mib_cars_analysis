@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter
+from optbinning import ContinuousOptimalBinning, OptimalBinning
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import (
     confusion_matrix,
@@ -24,6 +25,199 @@ CLASSIFICATION_PATH = SLIDE_DATA_DIR / "classification_model_report.xlsx"
 REGRESSION_PATH = SLIDE_DATA_DIR / "regression_model_report.xlsx"
 MODEL_SLIDE_DATA_PATH = SLIDE_DATA_DIR / "model_slide_data.xlsx"
 MODEL_METRIC_TABLES_PATH = SLIDE_DATA_DIR / "model_metric_tables.xlsx"
+TRAIN_PATH = ROOT / "data/intermediate/df_train_stratified.parquet"
+
+MODEL_FEATURES = [
+    "Supplies Group",
+    "Supplies Subgroup",
+    "Region",
+    "Route To Market",
+    "Elapsed Days In Sales Stage",
+    "Sales Stage Change Count",
+    "Total Days Identified Through Closing",
+    "Total Days Identified Through Qualified",
+    "Client Size By Revenue (USD)",
+    "Client Size By Employee Count",
+    "Revenue From Client Past Two Years (USD)",
+    "Competitor Type",
+    "Ratio Days Identified To Total Days",
+    "Ratio Days Validated To Total Days",
+    "Ratio Days Qualified To Total Days",
+]
+CLASSIFICATION_TARGET = "Opportunity Result Bool"
+REGRESSION_TARGET = "Opportunity Amount USD"
+
+
+def tidy_feature_label(name: str) -> str:
+    return (
+        str(name)
+        .replace("Ratio Days Identified To Total Days", "Identified / total days")
+        .replace("Ratio Days Qualified To Total Days", "Qualified / total days")
+        .replace("Ratio Days Validated To Total Days", "Validated / total days")
+        .replace(
+            "Total Days Identified Through Qualified", "Days: identified → qualified"
+        )
+        .replace("Total Days Identified Through Closing", "Days: identified → closing")
+        .replace("Revenue From Client Past Two Years (USD)", "Revenue past 2y")
+        .replace("Client Size By Revenue (USD)", "Client size revenue")
+        .replace("Client Size By Employee Count", "Client size employees")
+        .replace("Elapsed Days In Sales Stage", "Elapsed days in stage")
+        .replace("Sales Stage Change Count", "Stage change count")
+        .replace("Route To Market", "Route to market")
+    )
+
+
+def _feature_dtype(series: pd.Series) -> str:
+    if pd.api.types.is_numeric_dtype(series):
+        return "numerical"
+    return "categorical"
+
+
+def _monotonic_profile(feature: pd.Series, target: pd.Series) -> dict[str, object]:
+    if _feature_dtype(feature) != "numerical":
+        return {"direction": "unclear", "strict_monotonic": False}
+
+    clean = pd.DataFrame({"x": feature, "y": target}).dropna().copy()
+    if clean.empty or clean["x"].nunique(dropna=True) <= 2:
+        return {"direction": "unclear", "strict_monotonic": False}
+
+    try:
+        clean["bin"] = pd.qcut(
+            clean["x"], q=min(10, clean["x"].nunique()), duplicates="drop"
+        )
+    except ValueError:
+        return {"direction": "unclear", "strict_monotonic": False}
+
+    grouped = (
+        clean.groupby("bin", observed=False)
+        .agg(x_mean=("x", "mean"), y_mean=("y", "mean"))
+        .dropna()
+        .sort_values("x_mean")
+    )
+    if len(grouped) < 3:
+        return {"direction": "unclear", "strict_monotonic": False}
+
+    y_values = grouped["y_mean"].to_numpy(dtype=float)
+    diffs = np.diff(y_values)
+    non_zero_diffs = diffs[np.abs(diffs) > 1e-12]
+
+    strict_increasing = bool(non_zero_diffs.size > 0 and np.all(non_zero_diffs > 0))
+    strict_decreasing = bool(non_zero_diffs.size > 0 and np.all(non_zero_diffs < 0))
+    strict_monotonic = strict_increasing or strict_decreasing
+
+    rho = float(
+        pd.Series(grouped["x_mean"]).corr(
+            pd.Series(grouped["y_mean"]), method="spearman"
+        )
+    )
+    if np.isnan(rho):
+        direction = "unclear"
+    elif strict_increasing or rho >= 0.3:
+        direction = "increasing"
+    elif strict_decreasing or rho <= -0.3:
+        direction = "decreasing"
+    else:
+        direction = "unclear"
+
+    return {"direction": direction, "strict_monotonic": strict_monotonic}
+
+
+def _compute_binary_iv(
+    feature: pd.Series, target: pd.Series, feature_name: str
+) -> float:
+    clean = pd.DataFrame({"x": feature, "y": target}).dropna()
+    if clean.empty or clean["x"].nunique(dropna=True) <= 1:
+        return np.nan
+    optb = OptimalBinning(name=feature_name, dtype=_feature_dtype(clean["x"]))
+    optb.fit(clean["x"], clean["y"].astype(int))
+    table = optb.binning_table.build()
+    return float(table.iloc[-1]["IV"]) if "IV" in table.columns else np.nan
+
+
+def _compute_continuous_iv(
+    feature: pd.Series, target: pd.Series, feature_name: str
+) -> float:
+    clean = pd.DataFrame({"x": feature, "y": target}).dropna()
+    if clean.empty or clean["x"].nunique(dropna=True) <= 1:
+        return np.nan
+    cob = ContinuousOptimalBinning(name=feature_name, dtype=_feature_dtype(clean["x"]))
+    cob.fit(clean["x"], clean["y"].astype(float))
+    table = cob.binning_table.build()
+    return float(table.iloc[-1]["IV"]) if "IV" in table.columns else np.nan
+
+
+def build_eda_iv_assets() -> None:
+    train_df = pd.read_parquet(TRAIN_PATH)
+    classification_rows = []
+    regression_rows = []
+    for feature_name in MODEL_FEATURES:
+        feature = train_df[feature_name]
+        classification_rows.append(
+            {
+                "feature": feature_name,
+                "iv": _compute_binary_iv(
+                    feature, train_df[CLASSIFICATION_TARGET], feature_name
+                ),
+                **_monotonic_profile(feature, train_df[CLASSIFICATION_TARGET]),
+            }
+        )
+        regression_rows.append(
+            {
+                "feature": feature_name,
+                "iv": _compute_continuous_iv(
+                    feature, train_df[REGRESSION_TARGET], feature_name
+                ),
+                **_monotonic_profile(feature, train_df[REGRESSION_TARGET]),
+            }
+        )
+
+    def save_plot(rows: list[dict[str, object]], title: str, output_name: str):
+        plot_df = (
+            pd.DataFrame(rows).sort_values("iv", ascending=True).reset_index(drop=True)
+        )
+        color_map = {
+            "increasing": "#16A34A",
+            "decreasing": "#DC2626",
+            "unclear": "#6B7280",
+        }
+        plot_df["feature_label"] = plot_df.apply(
+            lambda row: (
+                tidy_feature_label(row["feature"])
+                + (" *" if row["strict_monotonic"] else "")
+            ),
+            axis=1,
+        )
+        plot_df["bar_color"] = plot_df["direction"].map(color_map).fillna("#6B7280")
+        fig_height = max(5.8, 0.32 * len(plot_df) + 1.2)
+        fig, ax = plt.subplots(figsize=(8.6, fig_height))
+        ax.barh(plot_df["feature_label"], plot_df["iv"], color=plot_df["bar_color"])
+        ax.set_title(title, fontsize=12, weight="bold")
+        ax.set_xlabel("Information value")
+        ax.set_ylabel("")
+        ax.grid(axis="x", alpha=0.25)
+        ax.grid(axis="y", visible=False)
+        from matplotlib.patches import Patch
+
+        legend_handles = [
+            Patch(facecolor="#16A34A", label="Increasing relationship"),
+            Patch(facecolor="#DC2626", label="Decreasing relationship"),
+            Patch(facecolor="#6B7280", label="Categorical / unclear"),
+        ]
+        ax.legend(handles=legend_handles, frameon=False, loc="lower right", fontsize=9)
+        fig.tight_layout()
+        fig.savefig(ASSET_DIR / output_name, dpi=220, bbox_inches="tight")
+        plt.close(fig)
+
+    save_plot(
+        classification_rows,
+        "IV by feature for win/loss target",
+        "eda_iv_classification.png",
+    )
+    save_plot(
+        regression_rows,
+        "IV by feature for amount target",
+        "eda_iv_regression.png",
+    )
 
 
 def usd_compact(value: float, _position: float) -> str:
@@ -213,6 +407,7 @@ def build_assets(
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     sns.set_theme(style="whitegrid")
     plt.style.use("seaborn-v0_8-whitegrid")
+    build_eda_iv_assets()
 
     roc_df = pd.read_excel(CLASSIFICATION_PATH, sheet_name="roc_curve")
     class_test = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_metrics")
@@ -514,18 +709,20 @@ def build_assets(
         2, 1, figsize=(8.2, 6.2), sharex=True, gridspec_kw={"hspace": 0.18}
     )
     experiment_labels = {
-        "classic_linear_standard_scaler": "Linear",
+        "xgboost_boxcox": "XGBoost Box-Cox",
+        "xgboost_log1p": "XGBoost log1p",
+        "xgboost_yeojohnson": "XGBoost Yeo-Johnson",
+        "random_forest_regressor": "Random Forest",
         "xgboost": "XGBoost",
-        "classic_linear_log1p_standard_scaler": "Linear log1p",
-        "classic_linear_yeojohnson_standard_scaler": "Linear Yeo-Johnson",
-        "classic_linear_boxcox_standard_scaler": "Linear Box-Cox",
+        "classic_linear_boxcox_robust_scaler": "Linear Box-Cox",
     }
     palette = {
-        "classic_linear_standard_scaler": "#0F172A",
-        "xgboost": "#2563EB",
-        "classic_linear_log1p_standard_scaler": "#14B8A6",
-        "classic_linear_yeojohnson_standard_scaler": "#7C3AED",
-        "classic_linear_boxcox_standard_scaler": "#DC2626",
+        "xgboost_boxcox": "#2563EB",
+        "xgboost_log1p": "#14B8A6",
+        "xgboost_yeojohnson": "#7C3AED",
+        "random_forest_regressor": "#F59E0B",
+        "xgboost": "#0F172A",
+        "classic_linear_boxcox_robust_scaler": "#DC2626",
     }
     for experiment_name, label in experiment_labels.items():
         subset = error_summary.loc[error_summary["experiment"] == experiment_name]

@@ -137,19 +137,19 @@ format:
 :::
 :::
 
-## We ran an automated IV analysis and found that process-time variables carry most of the predictive signal
+## We ran automated IV analysis for both targets across all model variables
 
 ::: {.columns}
 ::: {.column width="52%"}
-![](assets/eda_iv_ranking.png){width=100%}
+![](assets/eda_iv_classification.png){width=100%}
 :::
 ::: {.column width="48%"}
-![](assets/eda_other_vars.png){width=100%}
+![](assets/eda_iv_regression.png){width=100%}
 :::
 :::
 
-- The strongest IV signals for win/loss come from **Total Days Identified Through Qualified**, **Elapsed Days In Sales Stage**, and the stage-ratio variables.
-- Both time-to-close and amount distributions are skewed, so the analysis should avoid over-interpreting averages without context.
+- The left chart shows IVs against the **win/loss target**, while the right chart shows IVs against the **amount target**, using the full set of variables that enter the models.
+- Process-time variables and stage-ratio features remain among the strongest signals for classification, while the amount target keeps a broader but still process-heavy IV profile.
 
 # Modelling {background-color="#0F172A"}
 
@@ -194,17 +194,17 @@ format:
 
 ::: aside
 This simulation is based on held-out test-set predictions.
-[^1]: We still do not recommend the higher-scoring XGBoost variants for deployment here because of their black-box nature and because they were not part of the covered modelling stack.
+[^1]: We still do not recommend the higher-scoring tree-based variants for deployment here (Random Forest and XGBoost) because of their black-box nature and because they were not part of the covered modelling stack.
 :::
 
 
-## Use amount model for portfolio forecasting, not deal decisions
+## Use the amount model for per-opportunity sizing and ranking, not deal-level precision
 
 ::: {.columns}
 ::: {.column width="54%"}
 - Target: **Opportunity Amount USD**.
-- Business use: **sizing and aggregate forecasting**.
-- Selected final regression model: **XGBoost regressor** (`xgboost`).
+- Business use: **sizing and directional forecasting**.
+- Selected final regression model: **Box-Cox transformed XGBoost regressor** (`xgboost_boxcox`), selected by lowest CV Median APE.
 
 ::: {style="font-size: 80%;"}
 
@@ -212,8 +212,8 @@ This simulation is based on held-out test-set predictions.
 
 | Model | Split | R² | MAE | Median APE |
 | --- | ---: | ---: | ---: | ---: |
-| Selected | CV | 0.156 | 72.3k USD | 77.7% |
-| Selected | Held-out test | 0.161 | 71.9k USD | 76.9% |
+| Selected | CV | 0.062 | 65.1k USD | 61.7% |
+| Selected | Held-out test | 0.067 | 65.0k USD | 61.5% |
 | Mean baseline | CV | -0.000 | 84.9k USD | 88.3% |
 | Mean baseline | Held-out test | -0.000 | 84.9k USD | 88.3% |
 | Median baseline | CV | -0.108 | 75.0k USD | 74.6% |
@@ -251,18 +251,18 @@ This simulation is based on held-out test-set predictions.
 :::
 :::
 
-## Leverage the opportunity sizing model for accurate aggregate forecasting, not individual deal sizing
+## Use the amount model for directional sizing and ranking, not committed aggregate forecasting
 
 ::: {.columns}
 ::: {.column width="56%"}
 ![](assets/sim_forecasting.png){width=100%}
 :::
 ::: {.column width="44%"}
-- Model is better at forecasting aggregate sales than individual-opportunity amounts, which is common in this type of data.
+- Model is more useful for relative sizing than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
   - Aggregate actual amount: **2.138B USD** on the held-out test set.
-  - Aggregate predicted amount: **2.142B USD** on the held-out test set.
-  - Mean absolute error per opportunity: **71.9k USD**.
-- We propose automatically calculating and adding this to the CRM at opportunity creation for aggregate planning and scenario analysis, but not for precise opportunity-level decisions because its value is strongest at the portfolio level.
+  - Aggregate predicted amount: **1.309B USD** on the held-out test set.
+  - Mean absolute error per opportunity: **65.0k USD**.
+- We propose using this prediction as a sizing input for prioritization and scenario analysis, but not as a committed portfolio forecast without a separate bias-correction step.
 
 :::
 :::
@@ -281,8 +281,8 @@ This simulation is based on held-out test-set predictions.
 ::: {.column width="44%"}
 - Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
   - At top 10%, expected-value ranking captures 45.3% of won revenue vs 34.8% with propensity-only.
-  - At top 25%, the comparison is 71.7% vs 66.8%, so deal-size information matters most when capacity is tight.
-  - While overoptimistic, rankings remain directionally valid and can be calibrated in-model in follow-up iterations.
+  - At top 25%, the comparison is 71.4% vs 66.8%, so deal-size information matters most when capacity is tight.
+  - Because the selected amount model under-forecasts the total portfolio, this expected-value ranking should be read as a directional prioritization tool rather than a revenue commitment.
 - We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.
 
 :::
@@ -320,9 +320,9 @@ This simulation is based on held-out test-set predictions. This analysis assumes
 
 ### Management view
 
-- **Forecast = sum of predicted values** across the active pipeline.
+- **Directional forecast = sum of predicted values** across the active pipeline, with a separate bias-correction step before using it as a committed number.
 - Leadership can compare forecast by region, route to market, owner, or priority tier.
-- This connects daily triage decisions to portfolio-level revenue planning.
+- This connects daily triage decisions to directional portfolio planning, with explicit bias correction before forecast commitment.
 :::
 :::
 
@@ -333,14 +333,14 @@ This simulation is based on held-out test-set predictions. This analysis assumes
 - Prioritization is the highest-impact use case
   - Win/loss model (AUROC 0.88) improves sales focus.
   - Top 20% of opportunities → conversion ~22.7% → ~67%.
-- Forecast at the portfolio level, not the deal level
-  - Amount model is not reliable per deal, but supports aggregate forecasting and planning.
+- Use the amount model as a directional sizing layer, not as a committed forecast
+  - Amount model is not reliable per deal, and it under-forecasts the held-out portfolio by roughly 39%, so it needs bias correction before forecast use.
 - Expected value is the strongest prioritization lever
   - Combines win propensity × deal size.
   - Value is concentrated: ~44% in top 10%, ~68% in top 25%.
 - Recommendation
   - Pilot prioritization first (embed in CRM).
-  - Use forecasting for planning.
+  - Use the amount model for sizing and ranking first.
   - Then combine into expected-value prioritization to guide focus and resource allocation.
 
 ## Pilot, prove, scale: how to operationalize model-driven sales
@@ -370,6 +370,7 @@ Questions, comments, and feedback are welcome!
 
 | Model | ROC AUC | PR AUC | Accuracy | F1 |
 | --- | ---: | ---: | ---: | ---: |
+| random_forest_classifier | 0.914 ± 0.004 | 0.773 ± 0.011 | 0.847 ± 0.006 | 0.707 ± 0.010 |
 | xgboost_balanced | 0.912 ± 0.003 | 0.783 ± 0.007 | 0.830 ± 0.005 | 0.691 ± 0.007 |
 | xgboost | 0.912 ± 0.003 | 0.786 ± 0.006 | 0.871 ± 0.003 | 0.682 ± 0.008 |
 | logit_elasticnet_binned_ohe_balanced | 0.881 ± 0.004 | 0.698 ± 0.005 | 0.794 ± 0.008 | 0.643 ± 0.011 |
@@ -380,9 +381,9 @@ Questions, comments, and feedback are welcome!
 | logit_elastic_binned_woe_balanced | 0.877 ± 0.004 | 0.692 ± 0.003 | 0.790 ± 0.006 | 0.636 ± 0.007 |
 | logit_elastic_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.009 |
 | logit_binned_woe | 0.877 ± 0.004 | 0.693 ± 0.004 | 0.838 ± 0.002 | 0.570 ± 0.008 |
-| logit_elasticnet_standard_scaler_balanced | 0.868 ± 0.006 | 0.669 ± 0.011 | 0.787 ± 0.007 | 0.629 ± 0.011 |
-| logit_elasticnet_standard_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
-| classic_logit_standard_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
+| logit_elasticnet_robust_scaler_balanced | 0.868 ± 0.006 | 0.669 ± 0.011 | 0.787 ± 0.007 | 0.629 ± 0.011 |
+| logit_elasticnet_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.546 ± 0.008 |
+| classic_logit_robust_scaler | 0.868 ± 0.006 | 0.675 ± 0.011 | 0.828 ± 0.002 | 0.547 ± 0.008 |
 | random_classifier | 0.502 ± 0.002 | 0.228 ± 0.001 | 0.654 ± 0.001 | 0.227 ± 0.003 |
 | always_true_classifier | 0.500 ± 0.000 | 0.227 ± 0.000 | 0.227 ± 0.000 | 0.370 ± 0.000 |
 
@@ -396,21 +397,26 @@ Selected model in main deck: **logit_binned_ohe_balanced_calibrated**.
 
 | Model | R² | MAE (USD) | MAPE | Median APE |
 | --- | ---: | ---: | ---: | ---: |
+| xgboost_boxcox | 0.062 ± 0.010 | 65.1k ± 1.5k | 164.1% ± 31.2% | 61.7% |
+| xgboost_log1p | 0.015 ± 0.009 | 65.9k ± 1.5k | 131.3% ± 26.1% | 61.8% |
+| xgboost_yeojohnson | 0.062 ± 0.010 | 65.1k ± 1.5k | 165.2% ± 32.3% | 61.8% |
+| linear_power_scaler_binned_ohe | 0.043 ± 0.009 | 66.7k ± 1.4k | 180.5% ± 37.7% | 63.6% |
+| classic_linear_yeojohnson_robust_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.1% ± 34.3% | 63.8% |
+| classic_linear_boxcox_robust_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.2% ± 34.3% | 63.9% |
+| classic_linear_log1p_robust_scaler | -0.006 ± 0.006 | 67.7k ± 1.5k | 148.3% ± 30.7% | 64.1% |
+| median_regressor | -0.108 ± 0.002 | 75.0k ± 1.5k | 124.7% ± 28.4% | 74.6% |
+| random_forest_regressor | 0.147 ± 0.009 | 72.7k ± 0.9k | 292.2% ± 65.4% | 75.5% |
 | xgboost | 0.156 ± 0.008 | 72.3k ± 0.9k | 294.6% ± 54.5% | 77.8% |
-| classic_linear_standard_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | 78.9% |
+| xgboost_pseudohubererror | -0.477 ± 0.012 | 92.7k ± 1.5k | 458.8% ± 94.4% | 96.9% |
+| classic_linear_robust_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | 78.9% |
 | linear_binned_ohe | 0.134 ± 0.007 | 74.3k ± 1.0k | 300.4% ± 55.2% | 78.9% |
 | elastic_binned_woe | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
-| linear_binned_woe_standard_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
-| elasticnet_standard_scaler | 0.066 ± 0.003 | 79.6k ± 1.2k | 261.3% ± 57.9% | 97.4% |
-| linear_power_scaler_binned_ohe | 0.043 ± 0.009 | 66.7k ± 1.4k | 180.5% ± 37.7% | 63.6% |
-| classic_linear_boxcox_standard_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.2% ± 34.3% | 63.9% |
-| classic_linear_yeojohnson_standard_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.1% ± 34.3% | 63.8% |
+| linear_binned_woe_robust_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
 | mean_regressor | -0.000 ± 0.000 | 84.9k ± 1.3k | 235.0% ± 53.9% | 88.3% |
-| classic_linear_log1p_standard_scaler | -0.006 ± 0.006 | 67.7k ± 1.5k | 148.3% ± 30.7% | 64.1% |
-| median_regressor | -0.108 ± 0.002 | 75.0k ± 1.5k | 124.7% ± 28.4% | 74.6% |
 | random_regressor | -1.053 ± 0.057 | 115.0k ± 2.1k | 164.1% ± 65.3% | 90.4% |
+| elasticnet_robust_scaler | 0.066 ± 0.003 | 79.7k ± 1.3k | 260.6% ± 58.1% | 97.6% |
 
-Selected model in main deck: **xgboost**.
+Selected model in main deck: **xgboost_boxcox** by CV Median APE, tie-broken by MAE.
 
 :::
 
@@ -457,8 +463,8 @@ Diagnostic note: the threshold is selected on train-side OOF predictions, then e
 :::
 ::: {.column width="42%"}
 - The comparison shows where model error changes most across deal-size bands, instead of averaging everything into one MAE figure.
-- **XGBoost** is strongest on aggregate, but the transformed linear variants remain competitive in smaller bins.
-- The log-transform and power-transform variants reduce relative error in lower-value bands, while absolute error still rises materially for the largest opportunities.
+- The transformed XGBoost variants dominate the relative-error ranking, with **XGBoost Box-Cox** narrowly leading overall.
+- The main gain comes from reducing typical proportional error, while the largest opportunities still drive a gap between per-deal accuracy and total-portfolio forecasting.
 :::
 :::
 
@@ -468,25 +474,25 @@ Diagnostic note: the threshold is selected on train-side OOF predictions, then e
 
 Baseline conversion across the hold-out set: **overall win rate = 22.7%**.
 
-**Expected-value ranking** (`predicted win probability × realized amount`)
+**Expected-value ranking** (`predicted win probability × predicted amount`)
 
 | Top slice kept | Opportunities | Forecasted amount inside slice | Segment win rate | Win-rate lift vs overall | Win-rate bonus (base) | Incremental revenue (conservative) | Incremental revenue (base) | Incremental revenue (aggressive) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10% | 2,275 | 306.1M | 66.9% | 44.2 pts | 13.3 pts | 27.1M | 40.6M | 54.1M |
-| 25% | 5,686 | 616.4M | 54.6% | 31.9 pts | 9.6 pts | 39.3M | 58.9M | 78.6M |
-| 50% | 11,373 | 1.129B | 39.7% | 17.0 pts | 5.1 pts | 38.3M | 57.4M | 76.6M |
+| 10% | 2,275 | 187.3M | 63.3% | 40.6 pts | 12.2 pts | 15.2M | 22.8M | 30.4M |
+| 25% | 5,686 | 361.8M | 53.0% | 30.3 pts | 9.1 pts | 21.9M | 32.9M | 43.9M |
+| 50% | 11,373 | 664.4M | 39.6% | 16.9 pts | 5.1 pts | 22.4M | 33.7M | 44.9M |
 
 **Probability-only ranking** (`y_proba`)
 
 | Top slice kept | Opportunities | Forecasted amount inside slice | Segment win rate | Win-rate lift vs overall | Win-rate bonus (base) | Incremental revenue (conservative) | Incremental revenue (base) | Incremental revenue (aggressive) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10% | 2,275 | 186.5M | 80.0% | 57.2 pts | 17.2 pts | 21.3M | 32.0M | 42.7M |
-| 25% | 5,686 | 462.0M | 61.4% | 38.7 pts | 11.6 pts | 35.7M | 53.6M | 71.5M |
-| 50% | 11,373 | 967.5M | 41.6% | 18.9 pts | 5.7 pts | 36.5M | 54.7M | 73.0M |
+| 10% | 2,275 | 98.9M | 80.0% | 57.2 pts | 17.2 pts | 11.3M | 17.0M | 22.6M |
+| 25% | 5,686 | 248.6M | 61.4% | 38.7 pts | 11.6 pts | 19.2M | 28.8M | 38.5M |
+| 50% | 11,373 | 542.0M | 41.6% | 18.9 pts | 5.7 pts | 20.4M | 30.7M | 40.9M |
 
-- **Top 10%**: EV ranking leads by **+8.6M** incremental revenue at the base assumption (`λ = 0.3`), because the top slice concentrates much more forecasted value even though its win rate is lower than the probability-only slice.
-- **Top 25%**: EV ranking still leads by **+5.3M** at the base assumption, showing that forecasted amount continues to matter once the slice widens.
-- **Top 50%**: EV ranking leads by **+2.7M** at the base assumption; the two strategies become much closer once coverage broadens.
+- **Top 10%**: EV ranking leads by **+5.8M** incremental revenue at the base assumption (`λ = 0.3`), because the top slice still concentrates much more forecasted value even though its win rate is lower than the probability-only slice.
+- **Top 25%**: EV ranking still leads by **+4.1M** at the base assumption, showing that deal-size information continues to matter once the slice widens.
+- **Top 50%**: EV ranking leads by **+3.0M** at the base assumption; the two strategies become closer once coverage broadens.
 
 Interpretation note: this is still a **scenario-sizing exercise**, but it is now closer to an operational story: ranking uses forecasted amount, and the intervention is modeled as an additive improvement in segment win rate rather than a multiplicative probability shock.
 

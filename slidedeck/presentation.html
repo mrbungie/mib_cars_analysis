@@ -274,17 +274,17 @@ Strategic Analysis Group
 <p><img data-src="assets/eda_two_phase_funnel.png" style="width:100.0%"></p>
 </div></div>
 </section>
-<section id="we-ran-an-automated-iv-analysis-and-found-that-process-time-variables-carry-most-of-the-predictive-signal" class="slide level2">
-<h2>We ran an automated IV analysis and found that process-time variables carry most of the predictive signal</h2>
+<section id="we-ran-automated-iv-analysis-for-both-targets-across-all-model-variables" class="slide level2">
+<h2>We ran automated IV analysis for both targets across all model variables</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
-<p><img data-src="assets/eda_iv_ranking.png" style="width:100.0%"></p>
+<p><img data-src="assets/eda_iv_classification.png" style="width:100.0%"></p>
 </div><div class="column" style="width:48%;">
-<p><img data-src="assets/eda_other_vars.png" style="width:100.0%"></p>
+<p><img data-src="assets/eda_iv_regression.png" style="width:100.0%"></p>
 </div></div>
 <ul>
-<li>The strongest IV signals for win/loss come from <strong>Total Days Identified Through Qualified</strong>, <strong>Elapsed Days In Sales Stage</strong>, and the stage-ratio variables.</li>
-<li>Both time-to-close and amount distributions are skewed, so the analysis should avoid over-interpreting averages without context.</li>
+<li>The left chart shows IVs against the <strong>win/loss target</strong>, while the right chart shows IVs against the <strong>amount target</strong>, using the full set of variables that enter the models.</li>
+<li>Process-time variables and stage-ratio features remain among the strongest signals for classification, while the amount target keeps a broader but still process-heavy IV profile.</li>
 </ul>
 </section></section>
 <section>
@@ -364,16 +364,16 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>This simulation is based on held-out test-set predictions. [^1]: We still do not recommend the higher-scoring XGBoost variants for deployment here because of their black-box nature and because they were not part of the covered modelling stack.</p>
+<p>This simulation is based on held-out test-set predictions. [^1]: We still do not recommend the higher-scoring tree-based variants for deployment here (Random Forest and XGBoost) because of their black-box nature and because they were not part of the covered modelling stack.</p>
 </div></aside></section>
-<section id="use-amount-model-for-portfolio-forecasting-not-deal-decisions" class="slide level2">
-<h2>Use amount model for portfolio forecasting, not deal decisions</h2>
+<section id="use-the-amount-model-for-per-opportunity-sizing-and-ranking-not-deal-level-precision" class="slide level2">
+<h2>Use the amount model for per-opportunity sizing and ranking, not deal-level precision</h2>
 <div class="columns">
 <div class="column" style="width:54%;">
 <ul>
 <li>Target: <strong>Opportunity Amount USD</strong>.</li>
-<li>Business use: <strong>sizing and aggregate forecasting</strong>.</li>
-<li>Selected final regression model: <strong>XGBoost regressor</strong> (<code>xgboost</code>).</li>
+<li>Business use: <strong>sizing and directional forecasting</strong>.</li>
+<li>Selected final regression model: <strong>Box-Cox transformed XGBoost regressor</strong> (<code>xgboost_boxcox</code>), selected by lowest CV Median APE.</li>
 </ul>
 <div style="font-size: 80%;">
 <p><strong>CV</strong></p>
@@ -391,16 +391,16 @@ Strategic Analysis Group
 <tr class="odd">
 <td>Selected</td>
 <td style="text-align: right;">CV</td>
-<td style="text-align: right;">0.156</td>
-<td style="text-align: right;">72.3k USD</td>
-<td style="text-align: right;">77.7%</td>
+<td style="text-align: right;">0.062</td>
+<td style="text-align: right;">65.1k USD</td>
+<td style="text-align: right;">61.7%</td>
 </tr>
 <tr class="even">
 <td>Selected</td>
 <td style="text-align: right;">Held-out test</td>
-<td style="text-align: right;">0.161</td>
-<td style="text-align: right;">71.9k USD</td>
-<td style="text-align: right;">76.9%</td>
+<td style="text-align: right;">0.067</td>
+<td style="text-align: right;">65.0k USD</td>
+<td style="text-align: right;">61.5%</td>
 </tr>
 <tr class="odd">
 <td>Mean baseline</td>
@@ -476,20 +476,20 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="leverage-the-opportunity-sizing-model-for-accurate-aggregate-forecasting-not-individual-deal-sizing" class="slide level2">
-<h2>Leverage the opportunity sizing model for accurate aggregate forecasting, not individual deal sizing</h2>
+<section id="use-the-amount-model-for-directional-sizing-and-ranking-not-committed-aggregate-forecasting" class="slide level2">
+<h2>Use the amount model for directional sizing and ranking, not committed aggregate forecasting</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
 <p><img data-src="assets/sim_forecasting.png" style="width:100.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>Model is better at forecasting aggregate sales than individual-opportunity amounts, which is common in this type of data.
+<li>Model is more useful for relative sizing than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
 <ul>
 <li>Aggregate actual amount: <strong>2.138B USD</strong> on the held-out test set.</li>
-<li>Aggregate predicted amount: <strong>2.142B USD</strong> on the held-out test set.</li>
-<li>Mean absolute error per opportunity: <strong>71.9k USD</strong>.</li>
+<li>Aggregate predicted amount: <strong>1.309B USD</strong> on the held-out test set.</li>
+<li>Mean absolute error per opportunity: <strong>65.0k USD</strong>.</li>
 </ul></li>
-<li>We propose automatically calculating and adding this to the CRM at opportunity creation for aggregate planning and scenario analysis, but not for precise opportunity-level decisions because its value is strongest at the portfolio level.</li>
+<li>We propose using this prediction as a sizing input for prioritization and scenario analysis, but not as a committed portfolio forecast without a separate bias-correction step.</li>
 </ul>
 </div></div>
 
@@ -506,8 +506,8 @@ Strategic Analysis Group
 <li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
 <ul>
 <li>At top 10%, expected-value ranking captures 45.3% of won revenue vs 34.8% with propensity-only.</li>
-<li>At top 25%, the comparison is 71.7% vs 66.8%, so deal-size information matters most when capacity is tight.</li>
-<li>While overoptimistic, rankings remain directionally valid and can be calibrated in-model in follow-up iterations.</li>
+<li>At top 25%, the comparison is 71.4% vs 66.8%, so deal-size information matters most when capacity is tight.</li>
+<li>Because the selected amount model under-forecasts the total portfolio, this expected-value ranking should be read as a directional prioritization tool rather than a revenue commitment.</li>
 </ul></li>
 <li>We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.</li>
 </ul>
@@ -545,9 +545,9 @@ Strategic Analysis Group
 </ul>
 <h3 id="management-view">Management view</h3>
 <ul>
-<li><strong>Forecast = sum of predicted values</strong> across the active pipeline.</li>
+<li><strong>Directional forecast = sum of predicted values</strong> across the active pipeline, with a separate bias-correction step before using it as a committed number.</li>
 <li>Leadership can compare forecast by region, route to market, owner, or priority tier.</li>
-<li>This connects daily triage decisions to portfolio-level revenue planning.</li>
+<li>This connects daily triage decisions to directional portfolio planning, with explicit bias correction before forecast commitment.</li>
 </ul>
 </div></div>
 </section></section>
@@ -564,9 +564,9 @@ Strategic Analysis Group
 <li>Win/loss model (AUROC 0.88) improves sales focus.</li>
 <li>Top 20% of opportunities → conversion ~22.7% → ~67%.</li>
 </ul></li>
-<li>Forecast at the portfolio level, not the deal level
+<li>Use the amount model as a directional sizing layer, not as a committed forecast
 <ul>
-<li>Amount model is not reliable per deal, but supports aggregate forecasting and planning.</li>
+<li>Amount model is not reliable per deal, and it under-forecasts the held-out portfolio by roughly 39%, so it needs bias correction before forecast use.</li>
 </ul></li>
 <li>Expected value is the strongest prioritization lever
 <ul>
@@ -576,7 +576,7 @@ Strategic Analysis Group
 <li>Recommendation
 <ul>
 <li>Pilot prioritization first (embed in CRM).</li>
-<li>Use forecasting for planning.</li>
+<li>Use the amount model for sizing and ranking first.</li>
 <li>Then combine into expected-value prioritization to guide focus and resource allocation.</li>
 </ul></li>
 </ul>
@@ -639,104 +639,111 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
+<td>random_forest_classifier</td>
+<td style="text-align: right;">0.914 ± 0.004</td>
+<td style="text-align: right;">0.773 ± 0.011</td>
+<td style="text-align: right;">0.847 ± 0.006</td>
+<td style="text-align: right;">0.707 ± 0.010</td>
+</tr>
+<tr class="even">
 <td>xgboost_balanced</td>
 <td style="text-align: right;">0.912 ± 0.003</td>
 <td style="text-align: right;">0.783 ± 0.007</td>
 <td style="text-align: right;">0.830 ± 0.005</td>
 <td style="text-align: right;">0.691 ± 0.007</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>xgboost</td>
 <td style="text-align: right;">0.912 ± 0.003</td>
 <td style="text-align: right;">0.786 ± 0.006</td>
 <td style="text-align: right;">0.871 ± 0.003</td>
 <td style="text-align: right;">0.682 ± 0.008</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elasticnet_binned_ohe_balanced</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.698 ± 0.005</td>
 <td style="text-align: right;">0.794 ± 0.008</td>
 <td style="text-align: right;">0.643 ± 0.011</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_ohe_balanced</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.698 ± 0.005</td>
 <td style="text-align: right;">0.794 ± 0.008</td>
 <td style="text-align: right;">0.643 ± 0.010</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_binned_ohe_balanced_calibrated</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.698 ± 0.005</td>
 <td style="text-align: right;">0.840 ± 0.003</td>
 <td style="text-align: right;">0.588 ± 0.010</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_ohe</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.700 ± 0.005</td>
 <td style="text-align: right;">0.842 ± 0.003</td>
 <td style="text-align: right;">0.596 ± 0.011</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elasticnet_binned_ohe</td>
 <td style="text-align: right;">0.881 ± 0.004</td>
 <td style="text-align: right;">0.700 ± 0.005</td>
 <td style="text-align: right;">0.842 ± 0.003</td>
 <td style="text-align: right;">0.594 ± 0.010</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_elastic_binned_woe_balanced</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.692 ± 0.003</td>
 <td style="text-align: right;">0.790 ± 0.006</td>
 <td style="text-align: right;">0.636 ± 0.007</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elastic_binned_woe</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.693 ± 0.004</td>
 <td style="text-align: right;">0.838 ± 0.002</td>
 <td style="text-align: right;">0.570 ± 0.009</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_woe</td>
 <td style="text-align: right;">0.877 ± 0.004</td>
 <td style="text-align: right;">0.693 ± 0.004</td>
 <td style="text-align: right;">0.838 ± 0.002</td>
 <td style="text-align: right;">0.570 ± 0.008</td>
 </tr>
-<tr class="odd">
-<td>logit_elasticnet_standard_scaler_balanced</td>
+<tr class="even">
+<td>logit_elasticnet_robust_scaler_balanced</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.669 ± 0.011</td>
 <td style="text-align: right;">0.787 ± 0.007</td>
 <td style="text-align: right;">0.629 ± 0.011</td>
 </tr>
-<tr class="even">
-<td>logit_elasticnet_standard_scaler</td>
+<tr class="odd">
+<td>logit_elasticnet_robust_scaler</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.675 ± 0.011</td>
 <td style="text-align: right;">0.828 ± 0.002</td>
 <td style="text-align: right;">0.546 ± 0.008</td>
 </tr>
-<tr class="odd">
-<td>classic_logit_standard_scaler</td>
+<tr class="even">
+<td>classic_logit_robust_scaler</td>
 <td style="text-align: right;">0.868 ± 0.006</td>
 <td style="text-align: right;">0.675 ± 0.011</td>
 <td style="text-align: right;">0.828 ± 0.002</td>
 <td style="text-align: right;">0.547 ± 0.008</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>random_classifier</td>
 <td style="text-align: right;">0.502 ± 0.002</td>
 <td style="text-align: right;">0.228 ± 0.001</td>
 <td style="text-align: right;">0.654 ± 0.001</td>
 <td style="text-align: right;">0.227 ± 0.003</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>always_true_classifier</td>
 <td style="text-align: right;">0.500 ± 0.000</td>
 <td style="text-align: right;">0.227 ± 0.000</td>
@@ -770,14 +777,84 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
+<td>xgboost_boxcox</td>
+<td style="text-align: right;">0.062 ± 0.010</td>
+<td style="text-align: right;">65.1k ± 1.5k</td>
+<td style="text-align: right;">164.1% ± 31.2%</td>
+<td style="text-align: right;">61.7%</td>
+</tr>
+<tr class="even">
+<td>xgboost_log1p</td>
+<td style="text-align: right;">0.015 ± 0.009</td>
+<td style="text-align: right;">65.9k ± 1.5k</td>
+<td style="text-align: right;">131.3% ± 26.1%</td>
+<td style="text-align: right;">61.8%</td>
+</tr>
+<tr class="odd">
+<td>xgboost_yeojohnson</td>
+<td style="text-align: right;">0.062 ± 0.010</td>
+<td style="text-align: right;">65.1k ± 1.5k</td>
+<td style="text-align: right;">165.2% ± 32.3%</td>
+<td style="text-align: right;">61.8%</td>
+</tr>
+<tr class="even">
+<td>linear_power_scaler_binned_ohe</td>
+<td style="text-align: right;">0.043 ± 0.009</td>
+<td style="text-align: right;">66.7k ± 1.4k</td>
+<td style="text-align: right;">180.5% ± 37.7%</td>
+<td style="text-align: right;">63.6%</td>
+</tr>
+<tr class="odd">
+<td>classic_linear_yeojohnson_robust_scaler</td>
+<td style="text-align: right;">0.041 ± 0.007</td>
+<td style="text-align: right;">66.8k ± 1.4k</td>
+<td style="text-align: right;">176.1% ± 34.3%</td>
+<td style="text-align: right;">63.8%</td>
+</tr>
+<tr class="even">
+<td>classic_linear_boxcox_robust_scaler</td>
+<td style="text-align: right;">0.041 ± 0.007</td>
+<td style="text-align: right;">66.8k ± 1.4k</td>
+<td style="text-align: right;">176.2% ± 34.3%</td>
+<td style="text-align: right;">63.9%</td>
+</tr>
+<tr class="odd">
+<td>classic_linear_log1p_robust_scaler</td>
+<td style="text-align: right;">-0.006 ± 0.006</td>
+<td style="text-align: right;">67.7k ± 1.5k</td>
+<td style="text-align: right;">148.3% ± 30.7%</td>
+<td style="text-align: right;">64.1%</td>
+</tr>
+<tr class="even">
+<td>median_regressor</td>
+<td style="text-align: right;">-0.108 ± 0.002</td>
+<td style="text-align: right;">75.0k ± 1.5k</td>
+<td style="text-align: right;">124.7% ± 28.4%</td>
+<td style="text-align: right;">74.6%</td>
+</tr>
+<tr class="odd">
+<td>random_forest_regressor</td>
+<td style="text-align: right;">0.147 ± 0.009</td>
+<td style="text-align: right;">72.7k ± 0.9k</td>
+<td style="text-align: right;">292.2% ± 65.4%</td>
+<td style="text-align: right;">75.5%</td>
+</tr>
+<tr class="even">
 <td>xgboost</td>
 <td style="text-align: right;">0.156 ± 0.008</td>
 <td style="text-align: right;">72.3k ± 0.9k</td>
 <td style="text-align: right;">294.6% ± 54.5%</td>
 <td style="text-align: right;">77.8%</td>
 </tr>
+<tr class="odd">
+<td>xgboost_pseudohubererror</td>
+<td style="text-align: right;">-0.477 ± 0.012</td>
+<td style="text-align: right;">92.7k ± 1.5k</td>
+<td style="text-align: right;">458.8% ± 94.4%</td>
+<td style="text-align: right;">96.9%</td>
+</tr>
 <tr class="even">
-<td>classic_linear_standard_scaler</td>
+<td>classic_linear_robust_scaler</td>
 <td style="text-align: right;">0.134 ± 0.006</td>
 <td style="text-align: right;">74.3k ± 1.1k</td>
 <td style="text-align: right;">297.1% ± 54.9%</td>
@@ -798,39 +875,11 @@ Strategic Analysis Group
 <td style="text-align: right;">79.3%</td>
 </tr>
 <tr class="odd">
-<td>linear_binned_woe_standard_scaler</td>
+<td>linear_binned_woe_robust_scaler</td>
 <td style="text-align: right;">0.131 ± 0.008</td>
 <td style="text-align: right;">74.3k ± 1.1k</td>
 <td style="text-align: right;">298.7% ± 58.7%</td>
 <td style="text-align: right;">79.3%</td>
-</tr>
-<tr class="even">
-<td>elasticnet_standard_scaler</td>
-<td style="text-align: right;">0.066 ± 0.003</td>
-<td style="text-align: right;">79.6k ± 1.2k</td>
-<td style="text-align: right;">261.3% ± 57.9%</td>
-<td style="text-align: right;">97.4%</td>
-</tr>
-<tr class="odd">
-<td>linear_power_scaler_binned_ohe</td>
-<td style="text-align: right;">0.043 ± 0.009</td>
-<td style="text-align: right;">66.7k ± 1.4k</td>
-<td style="text-align: right;">180.5% ± 37.7%</td>
-<td style="text-align: right;">63.6%</td>
-</tr>
-<tr class="even">
-<td>classic_linear_boxcox_standard_scaler</td>
-<td style="text-align: right;">0.041 ± 0.007</td>
-<td style="text-align: right;">66.8k ± 1.4k</td>
-<td style="text-align: right;">176.2% ± 34.3%</td>
-<td style="text-align: right;">63.9%</td>
-</tr>
-<tr class="odd">
-<td>classic_linear_yeojohnson_standard_scaler</td>
-<td style="text-align: right;">0.041 ± 0.007</td>
-<td style="text-align: right;">66.8k ± 1.4k</td>
-<td style="text-align: right;">176.1% ± 34.3%</td>
-<td style="text-align: right;">63.8%</td>
 </tr>
 <tr class="even">
 <td>mean_regressor</td>
@@ -840,29 +889,22 @@ Strategic Analysis Group
 <td style="text-align: right;">88.3%</td>
 </tr>
 <tr class="odd">
-<td>classic_linear_log1p_standard_scaler</td>
-<td style="text-align: right;">-0.006 ± 0.006</td>
-<td style="text-align: right;">67.7k ± 1.5k</td>
-<td style="text-align: right;">148.3% ± 30.7%</td>
-<td style="text-align: right;">64.1%</td>
-</tr>
-<tr class="even">
-<td>median_regressor</td>
-<td style="text-align: right;">-0.108 ± 0.002</td>
-<td style="text-align: right;">75.0k ± 1.5k</td>
-<td style="text-align: right;">124.7% ± 28.4%</td>
-<td style="text-align: right;">74.6%</td>
-</tr>
-<tr class="odd">
 <td>random_regressor</td>
 <td style="text-align: right;">-1.053 ± 0.057</td>
 <td style="text-align: right;">115.0k ± 2.1k</td>
 <td style="text-align: right;">164.1% ± 65.3%</td>
 <td style="text-align: right;">90.4%</td>
 </tr>
+<tr class="even">
+<td>elasticnet_robust_scaler</td>
+<td style="text-align: right;">0.066 ± 0.003</td>
+<td style="text-align: right;">79.7k ± 1.3k</td>
+<td style="text-align: right;">260.6% ± 58.1%</td>
+<td style="text-align: right;">97.6%</td>
+</tr>
 </tbody>
 </table>
-<p>Selected model in main deck: <strong>xgboost</strong>.</p>
+<p>Selected model in main deck: <strong>xgboost_boxcox</strong> by CV Median APE, tie-broken by MAE.</p>
 </div>
 </section>
 <section id="annex-calibration-comparison-for-the-selected-classifier" class="slide level2">
@@ -965,8 +1007,8 @@ Strategic Analysis Group
 </div><div class="column" style="width:42%;">
 <ul>
 <li>The comparison shows where model error changes most across deal-size bands, instead of averaging everything into one MAE figure.</li>
-<li><strong>XGBoost</strong> is strongest on aggregate, but the transformed linear variants remain competitive in smaller bins.</li>
-<li>The log-transform and power-transform variants reduce relative error in lower-value bands, while absolute error still rises materially for the largest opportunities.</li>
+<li>The transformed XGBoost variants dominate the relative-error ranking, with <strong>XGBoost Box-Cox</strong> narrowly leading overall.</li>
+<li>The main gain comes from reducing typical proportional error, while the largest opportunities still drive a gap between per-deal accuracy and total-portfolio forecasting.</li>
 </ul>
 </div></div>
 </section>
@@ -974,7 +1016,7 @@ Strategic Analysis Group
 <h2>Annex: incremental revenue from effort reallocation on the hold-out set</h2>
 <div class="smallest">
 <p>Baseline conversion across the hold-out set: <strong>overall win rate = 22.7%</strong>.</p>
-<p><strong>Expected-value ranking</strong> (<code>predicted win probability × realized amount</code>)</p>
+<p><strong>Expected-value ranking</strong> (<code>predicted win probability × predicted amount</code>)</p>
 <table class="caption-top">
 <colgroup>
 <col style="width: 9%">
@@ -1002,32 +1044,32 @@ Strategic Analysis Group
 <tr class="odd">
 <td>10%</td>
 <td style="text-align: right;">2,275</td>
-<td style="text-align: right;">306.1M</td>
-<td style="text-align: right;">66.9%</td>
-<td style="text-align: right;">44.2 pts</td>
-<td style="text-align: right;">13.3 pts</td>
-<td style="text-align: right;">27.1M</td>
-<td style="text-align: right;">40.6M</td>
+<td style="text-align: right;">187.3M</td>
+<td style="text-align: right;">63.3%</td>
+<td style="text-align: right;">40.6 pts</td>
+<td style="text-align: right;">12.2 pts</td>
+<td style="text-align: right;">15.2M</td>
+<td style="text-align: right;">22.8M</td>
 </tr>
 <tr class="even">
 <td>25%</td>
 <td style="text-align: right;">5,686</td>
-<td style="text-align: right;">616.4M</td>
-<td style="text-align: right;">54.6%</td>
-<td style="text-align: right;">31.9 pts</td>
-<td style="text-align: right;">9.6 pts</td>
-<td style="text-align: right;">39.3M</td>
-<td style="text-align: right;">58.9M</td>
+<td style="text-align: right;">361.8M</td>
+<td style="text-align: right;">53.0%</td>
+<td style="text-align: right;">30.3 pts</td>
+<td style="text-align: right;">9.1 pts</td>
+<td style="text-align: right;">21.9M</td>
+<td style="text-align: right;">32.9M</td>
 </tr>
 <tr class="odd">
 <td>50%</td>
 <td style="text-align: right;">11,373</td>
-<td style="text-align: right;">1.129B</td>
-<td style="text-align: right;">39.7%</td>
-<td style="text-align: right;">17.0 pts</td>
+<td style="text-align: right;">664.4M</td>
+<td style="text-align: right;">39.6%</td>
+<td style="text-align: right;">16.9 pts</td>
 <td style="text-align: right;">5.1 pts</td>
-<td style="text-align: right;">38.3M</td>
-<td style="text-align: right;">57.4M</td>
+<td style="text-align: right;">22.4M</td>
+<td style="text-align: right;">33.7M</td>
 </tr>
 </tbody>
 </table>
@@ -1059,39 +1101,39 @@ Strategic Analysis Group
 <tr class="odd">
 <td>10%</td>
 <td style="text-align: right;">2,275</td>
-<td style="text-align: right;">186.5M</td>
+<td style="text-align: right;">98.9M</td>
 <td style="text-align: right;">80.0%</td>
 <td style="text-align: right;">57.2 pts</td>
 <td style="text-align: right;">17.2 pts</td>
-<td style="text-align: right;">21.3M</td>
-<td style="text-align: right;">32.0M</td>
+<td style="text-align: right;">11.3M</td>
+<td style="text-align: right;">17.0M</td>
 </tr>
 <tr class="even">
 <td>25%</td>
 <td style="text-align: right;">5,686</td>
-<td style="text-align: right;">462.0M</td>
+<td style="text-align: right;">248.6M</td>
 <td style="text-align: right;">61.4%</td>
 <td style="text-align: right;">38.7 pts</td>
 <td style="text-align: right;">11.6 pts</td>
-<td style="text-align: right;">35.7M</td>
-<td style="text-align: right;">53.6M</td>
+<td style="text-align: right;">19.2M</td>
+<td style="text-align: right;">28.8M</td>
 </tr>
 <tr class="odd">
 <td>50%</td>
 <td style="text-align: right;">11,373</td>
-<td style="text-align: right;">967.5M</td>
+<td style="text-align: right;">542.0M</td>
 <td style="text-align: right;">41.6%</td>
 <td style="text-align: right;">18.9 pts</td>
 <td style="text-align: right;">5.7 pts</td>
-<td style="text-align: right;">36.5M</td>
-<td style="text-align: right;">54.7M</td>
+<td style="text-align: right;">20.4M</td>
+<td style="text-align: right;">30.7M</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li><strong>Top 10%</strong>: EV ranking leads by <strong>+8.6M</strong> incremental revenue at the base assumption (<code>λ = 0.3</code>), because the top slice concentrates much more forecasted value even though its win rate is lower than the probability-only slice.</li>
-<li><strong>Top 25%</strong>: EV ranking still leads by <strong>+5.3M</strong> at the base assumption, showing that forecasted amount continues to matter once the slice widens.</li>
-<li><strong>Top 50%</strong>: EV ranking leads by <strong>+2.7M</strong> at the base assumption; the two strategies become much closer once coverage broadens.</li>
+<li><strong>Top 10%</strong>: EV ranking leads by <strong>+5.8M</strong> incremental revenue at the base assumption (<code>λ = 0.3</code>), because the top slice still concentrates much more forecasted value even though its win rate is lower than the probability-only slice.</li>
+<li><strong>Top 25%</strong>: EV ranking still leads by <strong>+4.1M</strong> at the base assumption, showing that deal-size information continues to matter once the slice widens.</li>
+<li><strong>Top 50%</strong>: EV ranking leads by <strong>+3.0M</strong> at the base assumption; the two strategies become closer once coverage broadens.</li>
 </ul>
 <p>Interpretation note: this is still a <strong>scenario-sizing exercise</strong>, but it is now closer to an operational story: ranking uses forecasted amount, and the intervention is modeled as an additive improvement in segment win rate rather than a multiplicative probability shock.</p>
 </div>
