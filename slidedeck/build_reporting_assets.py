@@ -558,7 +558,7 @@ def build_assets(
     )
     ax.set_xlabel("Mean predicted win probability")
     ax.set_ylabel("Observed win rate")
-    ax.set_title("Hold-out calibration: calibrated vs non-calibrated logit")
+    ax.set_title("Hold-out calibration: calibrated vs non-calibrated logit variants")
     ax.xaxis.set_major_formatter(FuncFormatter(pct_fmt))
     ax.yaxis.set_major_formatter(FuncFormatter(pct_fmt))
     ax.legend(frameon=False, loc="upper left")
@@ -575,10 +575,11 @@ def build_assets(
         CLASSIFICATION_PATH, sheet_name="comparison_test_predictions"
     )
     class_metadata = pd.read_excel(CLASSIFICATION_PATH, sheet_name="metadata")
+    selected_experiment = str(class_metadata.loc[0, "selected_experiment"])
     train_selected_threshold = float(class_metadata.loc[0, "train_selected_threshold"])
     comparison_rows = []
     label_map = {
-        "logit_binned_ohe_balanced_calibrated": "Selected @ optimal threshold",
+        selected_experiment: "Selected @ optimal threshold",
         "random_classifier": "Random classifier",
         "always_true_classifier": "Always true",
     }
@@ -586,7 +587,7 @@ def build_assets(
         subset = class_threshold_compare.loc[
             class_threshold_compare["experiment"] == experiment_name
         ].copy()
-        if experiment_name == "logit_binned_ohe_balanced_calibrated":
+        if experiment_name == selected_experiment:
             predicted = (
                 subset["predicted_win_probability"] >= train_selected_threshold
             ).astype(int)

@@ -1,0 +1,76 @@
+<svg width="1600" height="640" viewBox="0 0 1600 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="40" x2="1480" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EEF2FF"/>
+    </linearGradient>
+    <linearGradient id="blueCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#DBEAFE"/>
+      <stop offset="1" stop-color="#BFDBFE"/>
+    </linearGradient>
+    <linearGradient id="tealCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#CCFBF1"/>
+      <stop offset="1" stop-color="#99F6E4"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="2000" height="1200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="640" rx="36" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="55" y="42" width="455" height="540" rx="34" fill="url(#blueCard)"/>
+    <circle cx="123" cy="108" r="32" fill="#1D4ED8" opacity="0.12"/>
+    <text x="123" y="118" text-anchor="middle" fill="#1D4ED8" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="700">1</text>
+    <text x="176" y="106" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="700">Process prioritization</text>
+    <text x="176" y="140" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">Rank opportunities by win propensity</text>
+    <text x="176" y="166" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">and expected value</text>
+
+    <text x="80" y="261" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="21" font-weight="700">What it enables</text>
+    <text x="80" y="298" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">• Focus sales effort on the top-scored deals first</text>
+    <text x="80" y="332" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">• Support pipeline reviews with explicit thresholds</text>
+    <text x="80" y="366" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">• Power simulations on concentration and staffing</text>
+
+    <rect x="95" y="442" width="375" height="120" rx="24" fill="#FFFFFF" opacity="0.9"/>
+    <text x="124" y="478" fill="#1D4ED8" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">Primary output</text>
+    <text x="124" y="512" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Opportunity ranking</text>
+    <text x="124" y="538" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="18">for action and CRM routing</text>
+
+    <rect x="572" y="42" width="455" height="540" rx="34" fill="url(#tealCard)"/>
+    <circle cx="640" cy="108" r="32" fill="#0F766E" opacity="0.12"/>
+    <text x="640" y="118" text-anchor="middle" fill="#0F766E" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="700">2</text>
+    <text x="693" y="100" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Opportunity sizing</text>
+    <text x="693" y="133" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">&amp; forecasting</text>
+    <text x="693" y="166" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">Estimate deal value</text>
+    <text x="693" y="192" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">and support aggregate planning views</text>
+
+    <text x="592" y="261" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="21" font-weight="700">What it enables</text>
+    <text x="592" y="298" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">• Relative sizing for expected-value prioritization</text>
+    <text x="592" y="332" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">• Portfolio-level forecasting and scenario planning</text>
+    <text x="592" y="366" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="19">• Better budget visibility across the pipeline</text>
+
+    <rect x="612" y="442" width="375" height="120" rx="24" fill="#FFFFFF" opacity="0.9"/>
+    <text x="640" y="478" fill="#0F766E" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">Primary output</text>
+    <text x="640" y="512" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Sizing signal in CRM</text>
+    <text x="640" y="538" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="18">and planning visibility</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1088" y="42" width="457" height="540" rx="34" fill="#FFFFFF"/>
+    <text x="1124" y="102" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="29" font-weight="700">Additional opportunities</text>
+    <text x="1124" y="136" fill="#475569" font-family="Helvetica, Arial, sans-serif" font-size="18">Natural extensions identified in the data</text>
+
+    <rect x="1124" y="188" width="385" height="66" rx="22" fill="#EFF6FF"/>
+    <text x="1152" y="228" fill="#1E40AF" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Channel optimization</text>
+
+    <rect x="1124" y="274" width="385" height="66" rx="22" fill="#F0FDFA"/>
+    <text x="1152" y="314" fill="#0F766E" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Secondary segmentation</text>
+
+    <rect x="1124" y="360" width="385" height="66" rx="22" fill="#FEF3C7"/>
+    <text x="1152" y="400" fill="#B45309" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Early warning systems</text>
+
+    <rect x="1124" y="446" width="385" height="66" rx="22" fill="#F5F3FF"/>
+    <text x="1152" y="486" fill="#6D28D9" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Budget allocation</text>
+  </g>
+</svg>

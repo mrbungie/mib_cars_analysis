@@ -38,8 +38,18 @@ def main() -> None:
     )
 
     for idx, value in enumerate(plot_df["lift"]):
+        y_pos = value - 0.10 if value >= 0.35 else value + 0.06
+        va = "top" if value >= 0.35 else "bottom"
+        color = "white" if value >= 0.35 else "#0F172A"
         ax.text(
-            idx, value + 0.06, f"{value:.2f}×", ha="center", va="bottom", fontsize=9
+            idx,
+            y_pos,
+            f"{value:.1f}×",
+            ha="center",
+            va=va,
+            fontsize=9.5,
+            fontweight="bold",
+            color=color,
         )
 
     ax.set_title("Held-out lift by propensity decile", fontsize=13, weight="bold")

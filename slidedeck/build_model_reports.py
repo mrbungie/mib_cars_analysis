@@ -144,6 +144,10 @@ class IntegerTargetClassifier(BaseEstimator, ClassifierMixin):
         return self.estimator_.predict_proba(X)
 
     @property
+    def classes_(self):
+        return self.estimator_.classes_
+
+    @property
     def feature_importances_(self):
         return self.estimator_.feature_importances_
 
@@ -509,6 +513,27 @@ def build_classification_reports() -> None:
                         RandomForestClassifier(
                             n_estimators=400,
                             min_samples_leaf=5,
+                            n_jobs=-1,
+                            random_state=42,
+                        )
+                    ),
+                ),
+            ]
+        ),
+        "random_forest_classifier_balanced": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    IntegerTargetClassifier(
+                        RandomForestClassifier(
+                            n_estimators=400,
+                            min_samples_leaf=5,
                             class_weight="balanced_subsample",
                             n_jobs=-1,
                             random_state=42,
@@ -795,7 +820,7 @@ def build_classification_reports() -> None:
         .reset_index()
     )
 
-    selected_experiment = "logit_binned_ohe_balanced_calibrated"
+    selected_experiment = "random_forest_classifier_balanced"
     if selected_experiment not in summary_df["experiment"].values:
         raise ValueError(
             f"Selected classification experiment missing: {selected_experiment}"
@@ -813,6 +838,7 @@ def build_classification_reports() -> None:
     baseline_pipeline = clone(experiment_grid[baseline_experiment])
     baseline_pipeline.fit(X, y)
     classification_comparison_experiments = [
+        selected_experiment,
         "logit_binned_ohe_balanced",
         "logit_binned_ohe_balanced_calibrated",
         "random_classifier",
@@ -836,9 +862,6 @@ def build_classification_reports() -> None:
             )
         )
 
-    test_proba = final_pipeline.predict_proba(X_test)[:, 1]
-    test_label = (test_proba >= 0.5).astype(int)
-
     train_oof_proba = cross_val_predict(
         clone(experiment_grid[selected_experiment]),
         X,
@@ -861,6 +884,9 @@ def build_classification_reports() -> None:
     best_train_precision = precision_score(y, train_threshold_pred, zero_division=0)
     best_train_recall = recall_score(y, train_threshold_pred, zero_division=0)
 
+    test_proba = final_pipeline.predict_proba(X_test)[:, 1]
+    test_label = (test_proba >= best_train_threshold).astype(int)
+
     baseline_test_proba = baseline_pipeline.predict_proba(X_test)[:, 1]
     baseline_test_label = (baseline_test_proba >= 0.5).astype(int)
 
@@ -875,7 +901,7 @@ def build_classification_reports() -> None:
                 "f1": f1_score(y_test, test_label),
                 "precision": precision_score(y_test, test_label, zero_division=0),
                 "recall": recall_score(y_test, test_label, zero_division=0),
-                "threshold": 0.5,
+                "threshold": best_train_threshold,
                 "n_rows": len(y_test),
             },
             {
@@ -944,7 +970,7 @@ def build_classification_reports() -> None:
                 "target": "Opportunity Result",
                 "selected_experiment": selected_experiment,
                 "baseline_experiment": baseline_experiment,
-                "selection_rule": "Best logistic model by CV ROC AUC",
+                "selection_rule": "Selected classification model with threshold optimized on train OOF F1",
                 "cv_roc_auc_mean": float(selected_cv_metrics.loc[0, "roc_auc_mean"]),
                 "cv_pr_auc_mean": float(selected_cv_metrics.loc[0, "pr_auc_mean"]),
                 "cv_accuracy_mean": float(selected_cv_metrics.loc[0, "accuracy_mean"]),
