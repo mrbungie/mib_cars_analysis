@@ -528,26 +528,26 @@ def build_assets(
     fig.savefig(ASSET_DIR / "sim_forecasting.png", dpi=220, bbox_inches="tight")
     plt.close(fig)
 
-    class_compare = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="comparison_test_predictions"
+    selected_predictions = pd.read_excel(
+        CLASSIFICATION_PATH, sheet_name="test_predictions"
     )
+    class_metadata = pd.read_excel(CLASSIFICATION_PATH, sheet_name="metadata")
+    selected_experiment = str(class_metadata.loc[0, "selected_experiment"])
     fig, ax = plt.subplots(figsize=(7.2, 5))
-    for experiment_name, color, label in [
-        ("logit_binned_ohe_balanced", "#0F172A", "Non-calibrated"),
-        ("logit_binned_ohe_balanced_calibrated", "#2563EB", "Calibrated"),
-    ]:
-        subset = class_compare.loc[
-            class_compare["experiment"] == experiment_name
-        ].copy()
-        frac_pos, mean_pred = calibration_curve(
-            subset["actual_result"],
-            subset["predicted_win_probability"],
-            n_bins=10,
-            strategy="quantile",
-        )
-        ax.plot(
-            mean_pred, frac_pos, marker="o", linewidth=2.2, label=label, color=color
-        )
+    frac_pos, mean_pred = calibration_curve(
+        selected_predictions["actual_result"],
+        selected_predictions["predicted_win_probability"],
+        n_bins=10,
+        strategy="quantile",
+    )
+    ax.plot(
+        mean_pred,
+        frac_pos,
+        marker="o",
+        linewidth=2.4,
+        label="Selected classifier",
+        color="#2563EB",
+    )
     ax.plot(
         [0, 1],
         [0, 1],
@@ -558,7 +558,7 @@ def build_assets(
     )
     ax.set_xlabel("Mean predicted win probability")
     ax.set_ylabel("Observed win rate")
-    ax.set_title("Hold-out calibration: calibrated vs non-calibrated logit variants")
+    ax.set_title(f"Hold-out calibration: {selected_experiment}")
     ax.xaxis.set_major_formatter(FuncFormatter(pct_fmt))
     ax.yaxis.set_major_formatter(FuncFormatter(pct_fmt))
     ax.legend(frameon=False, loc="upper left")
@@ -568,14 +568,9 @@ def build_assets(
     )
     plt.close(fig)
 
-    selected_predictions = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="test_predictions"
-    )
     class_threshold_compare = pd.read_excel(
         CLASSIFICATION_PATH, sheet_name="comparison_test_predictions"
     )
-    class_metadata = pd.read_excel(CLASSIFICATION_PATH, sheet_name="metadata")
-    selected_experiment = str(class_metadata.loc[0, "selected_experiment"])
     train_selected_threshold = float(class_metadata.loc[0, "train_selected_threshold"])
     comparison_rows = []
     label_map = {

@@ -1,0 +1,71 @@
+<svg width="1600" height="640" viewBox="0 0 1600 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="30" x2="1520" y2="610" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EEF2FF"/>
+    </linearGradient>
+    <linearGradient id="card1" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#DBEAFE"/>
+      <stop offset="1" stop-color="#BFDBFE"/>
+    </linearGradient>
+    <linearGradient id="card2" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#CCFBF1"/>
+      <stop offset="1" stop-color="#99F6E4"/>
+    </linearGradient>
+    <linearGradient id="card3" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FEF3C7"/>
+      <stop offset="1" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="card4" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F5F3FF"/>
+      <stop offset="1" stop-color="#DDD6FE"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="2000" height="1000" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="640" rx="34" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="48" width="700" height="240" rx="30" fill="url(#card1)"/>
+    <circle cx="130" cy="100" r="26" fill="#1D4ED8" opacity="0.14"/>
+    <text x="130" y="109" text-anchor="middle" fill="#1D4ED8" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">1</text>
+    <text x="174" y="94" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Operational flow</text>
+    <text x="174" y="128" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="18">Opportunity created → score + expected value generated</text>
+    <text x="108" y="182" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Win-propensity score</text>
+    <text x="108" y="216" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Predicted amount</text>
+    <text x="108" y="250" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Expected value = E[Amount] × P(Win)</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="830" y="48" width="700" height="240" rx="30" fill="url(#card2)"/>
+    <circle cx="890" cy="100" r="26" fill="#0F766E" opacity="0.14"/>
+    <text x="890" y="109" text-anchor="middle" fill="#0F766E" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">2</text>
+    <text x="934" y="94" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">CRM displays</text>
+    <text x="934" y="128" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="18">Simple operating signals without exposing model internals</text>
+    <text x="868" y="182" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Priority tier: Top 10%, Top 25%, Top 50%</text>
+    <text x="868" y="216" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Suggested action: focus / monitor / deprioritize</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="338" width="700" height="240" rx="30" fill="url(#card3)"/>
+    <circle cx="130" cy="390" r="26" fill="#B45309" opacity="0.14"/>
+    <text x="130" y="399" text-anchor="middle" fill="#B45309" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">3</text>
+    <text x="174" y="384" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Weekly pipeline reviews</text>
+    <text x="174" y="418" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="18">Turn model outputs into routine review rules</text>
+    <text x="108" y="472" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Review only opportunities above agreed propensity</text>
+    <text x="108" y="506" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">  or expected-value thresholds</text>
+    <text x="108" y="540" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Use cutoffs to focus rep attention, escalation, and follow-up</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="830" y="338" width="700" height="240" rx="30" fill="url(#card4)"/>
+    <circle cx="890" cy="390" r="26" fill="#6D28D9" opacity="0.14"/>
+    <text x="890" y="399" text-anchor="middle" fill="#6D28D9" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700">4</text>
+    <text x="934" y="384" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Management view</text>
+    <text x="934" y="418" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="18">A directional planning layer on top of the active pipeline</text>
+    <text x="868" y="472" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Directional forecast = sum of predicted values</text>
+    <text x="868" y="506" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Compare by region, route to market, owner, or priority tier</text>
+  </g>
+</svg>

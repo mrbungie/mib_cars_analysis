@@ -8,10 +8,13 @@ format:
     transition: fade
     background-transition: fade
     scrollable: true
+    hash: false
+    history: false
+    respond-to-hash-changes: false
     css: styles.css
     logo: assets/hero.png
-    footer: "MIB Cars Analysis"
     center: false
+    print-number: false
     width: 1920
     height: 1080
   pptx:
@@ -25,23 +28,22 @@ format:
 ## Executive Summary
 
 - This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e. CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.
-- We propose two models: a win/loss classifier (**AUROC 91.2%**) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal).
-- Focusing on the top 20% of opportunities lifts conversion from 22.7% to ~74%; the top 10% captures ~46% of total pipeline value.
+- We propose two models: a win/loss classifier (**AUROC 91.2%**) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal) with an **61.7% MdAPE**.
+- We show that focusing on the **top 20% of most likely opportunities lifts win rates from the 22.7% baseline to ~74%**; while focusing on the **top 25% expected-value ranked opportunities captures ~76% of total opportunity revenue**.
 - We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.
-- We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven prioritization can improve commercial efficiency.
+- We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven decisions can improve commercial efficiency.
 
 ## Agenda
 
 1. Business framing and process assumptions
-2. Dataset and target overview
-3. EDA findings that matter for prioritization and forecasting
-4. Modelling approach and model outputs
-5. Application simulations
-6. Conclusions and next steps
+2. EDA findings that matter for prioritization and forecasting
+3. Modelling approach
+4. Application scenarios
+5. Conclusions and next steps
 
 # Business framing {background-color="#0F172A"}
 
-## The sales process is non-linear, and the data captures its current state
+## The pipeline is non-linear, so the data reflects a moving sales process
 
 ::: {.columns}
 ::: {.column width="56%"}
@@ -64,20 +66,21 @@ format:
 ![](assets/eda_amount_win_rate.png){width=94%}
 :::
 ::: {.column width="44%"}
-- The pipeline is high-volume but low-yield: only 22.7% of opportunities convert, meaning most effort is currently misallocated.
-- Value is highly concentrated: the majority of opportunities are low-amount, but win rates increase materially with deal size, signaling where commercial focus should shift.
-- This creates a clear opportunity: → Move from volume-driven selling to value-driven prioritization, combining win propensity + deal size.
-- The implication is direct: → Not all opportunities should be pursued equally — targeting the right deals can lift conversion and revenue without increasing pipeline size.
+- Low efficiency: only 22.7% conversion, indicating misallocated effort
+- Skewed deal mix: $94K avg vs $50K median → long tail of large deals
+- Value concentration: bigger deals win more → focus should shift
+- Clear opportunity: prioritize by win probability and deal size, ideally both
+- Implication: focus on the right deals, not more deals
 :::
 :::
 
-## Therefore, we propose two modelling use cases: prioritization and forecasting, plus additional data-driven commercial opportunities.
+## We focus on two modelling use cases: prioritization and forecasting
 
 ![](assets/model_use_cases_overview.svg){width=100%}
 
 # Exploratory data analysis {background-color="#0F172A"}
 
-## The dataset was analyzed and prepared with the two use cases in mind, which shaped the EDA focus and modelling choices
+## The data is sufficient for prioritization and directional forecasting, despite quality issues
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -98,7 +101,7 @@ format:
 - **What it is not**: a full event history of every sales-stage movement.
 - The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
 
-## Align coverage and service models to client size, focusing scalable playbooks on small clients and dedicated effort on high-value accounts.
+## Tailor commercial treatment by client size: scale small, focus high-value
 
 ::: {.columns}
 ::: {.column width="58%"}
@@ -106,24 +109,33 @@ format:
 ![](assets/eda_client_segmentation.png){width=100%}
 :::
 ::: {.column width="42%"}
-- The portfolio is heavily concentrated in **100K or less** clients, so this segment should drive base operating playbooks and coverage models.
-- Conversion is relatively similar across most size bands, which means client size is more useful for **commercial treatment and value management** than for win-rate targeting alone.
-- Larger accounts still matter because deal economics improve materially with size, so client-size segmentation should inform account prioritization, service model, and sales effort allocation.
+- Most volume is ≤100K → scale this segment
+- Win rates are similar across sizes → use size for treatment, not targeting
+- Larger deals drive value → prioritize high-value accounts
 :::
 :::
+
+::: aside
+Further causal work is needed to distinguish demand from historical sales focus.
+:::
+
 
 ## Treat acquisition and expansion as distinct growth engines, each with its own playbook and resource model.
 
 ::: {.columns}
 ::: {.column width="42%"}
-- **(Re)Acquisition** / no business in the past two years: 69,208 opportunities with a **17.3%** observed win rate.
-- **Engagement / upselling**: 8,817 opportunities with a **63.9%** observed win rate.
-- This is a practical first-layer funnel split for go-to-market operations because it separates low-history acquisition work from higher-propensity expansion opportunities.
+- **(Re)Acquisition** (no activity in 2 years): 69,208 opportunities, 17.3% win rate
+- **Engagement / upselling**: 8,817 opportunities, 63.9% win rate
+- A practical first split: separates low-history acquisition from higher-propensity expansion.
 :::
 ::: {.column width="58%"}
 ###### Opportunity counts and win rates by funnel stage:
 ![](assets/eda_two_phase_funnel.png){width=100%}
 :::
+:::
+
+::: aside
+Further causal work is needed to distinguish demand from historical sales focus.
 :::
 
 ## Performance differences are driven by product mix, not geography
@@ -134,31 +146,38 @@ format:
 ![](assets/eda_distribution_by_type_subtype_region.png){width=98%}
 
 :::
-::: {.column width="30%" style="font-size: 82%;"}
+::: {.column width="30%" style="font-size: 95%;"}
 - Region is not a strong driver of conversion or deal size
 - Type and subtype drive meaningful variation in both outcomes
 - Prioritization should be product-driven, not geography-driven
-  - Challenging experiments should be run because this may reflect historical sales focus rather than true underlying demand differences.
 :::
 :::
 
-## Eventually an automated IV ranking was ran to identify the strongest predictors for both win/loss and amount
+::: aside
+Further causal work is needed to distinguish demand from historical sales focus.
+:::
+
+## The strongest predictors of win and amount emerge in the IV analysis
 
 ::: {.columns}
-::: {.column width="52%"}
-![](assets/eda_iv_classification.png){width=100%}
+::: {.column width="48%" style="text-align:center;"}
+![](assets/eda_iv_classification.png){width=70%}
 :::
-::: {.column width="48%"}
-![](assets/eda_iv_regression.png){width=100%}
+::: {.column width="48%" style="text-align:center;"}
+![](assets/eda_iv_regression.png){width=70%}
 :::
 :::
 
 - The left chart shows IVs against the **win/loss target**, while the right chart shows IVs against the **amount target**, using the full set of variables that enter the models.
-- Process-time variables and stage-ratio features remain among the strongest signals for classification, while the amount target keeps a broader but still process-heavy IV profile.
+- Process-time variables and stage-ratio features remain among the strongest signals for classification, while the amount target includes product and client-size descriptors as strong predictors.
+
+::: aside
+Further causal work is needed to distinguish demand from historical sales focus.
+:::
 
 # Modelling {background-color="#0F172A"}
 
-## We have two modelling setups in mind for different stages of the sales process but just the most complete one is shown here
+## We prioritize dynamic models because sales-state information adds the most signal
 
 ::: {.columns}
 ::: {.column width="50%"}
@@ -180,22 +199,18 @@ format:
 ![](assets/process22.png)
 
 ::: aside
-Both setups would improve with better covariates, especially  outcomes and process variables from previous process runs for the same client.
+Both approaches could use richer covariates, especially prior outcomes and process history per client.
 :::
 
-## For both classification and regression, we used an stratified train/test split to ensure realistic evaluation
+## Model performance was tested on a realistic held-out sample
 
 ::: {.columns}
 ::: {.column width="50%"}
 - **Train / test split**: **70% / 30%**
-  - Train: **53,073** rows
-  - Test: **22,746** rows
-- The split was **stratified jointly** on:
-  - win/loss target
-  - amount buckets
-- This keeps both outcome balance and deal-size mix stable across train and test.
-- In the final models, different preprocessing techniques were used for both the X and the y, but the same train/test split was used for a fair performance estimate.
-- All models were trained with 5-fold cross-validation on the train set, and the final selected models were evaluated on the held-out test set for a realistic performance estimate.
+  - Train: 53,073 | Test: 22,746
+- Stratified on win/loss and amount, keeping outcome balance and deal mix stable
+- 5-fold CV on train, final evaluation on hold-out
+- Different preprocessing for X and y depending on model, same split for fair evaluation
 :::
 ::: {.column width="46%"}
 ###### Set distribution treemap:
@@ -221,7 +236,7 @@ Both setups would improve with better covariates, especially  outcomes and proce
 :::
 
 ::: aside
-We selected the balanced random forest because it combines top-tier ranking performance with the strongest thresholded operating profile among the models we tested, accepting less interpretability than the logistic alternatives.
+Selected balanced random forest for top ranking + best threshold performance, trading off interpretability.
 :::
 
 ## Prioritization classification model enables immediate and precise reallocation of sales effort (cont., with performance metrics)
@@ -256,7 +271,7 @@ Conclusions:
 :::
 
 ::: aside
-The annex contains more details about model selection, calibration, threshold selection, and the full classification report at the selected threshold. Best threshold for the selected model = 58.1%, chosen on train out-of-fold predictions. Baselines are computed at the observed base win rate.
+Annex details model selection, calibration, thresholding (58.1% OOF); baselines use observed win rate.
 :::
 
 
@@ -280,6 +295,7 @@ The annex contains more details about model selection, calibration, threshold se
 ## Use the amount model for per-opportunity sizing and ranking, not deal-level precision (cont., with performance metrics)
 
 ::: {.columns}
+
 ::: {.column width="54%"}
 ::: {style="font-size: 80%;"}
 
@@ -295,20 +311,16 @@ The following table shows the selected model's performance on both CV and held-o
 
 <br> 
 
-::: {style="font-size: 90%;"}
 ###### Conclusions:
 
-- Model is more useful for relative sizing than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
+- Model is more useful for relative sizing and ranking than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
   - Aggregate actual amount: **2.138B USD** on the held-out test set.
   - Aggregate predicted amount: **1.309B USD** on the held-out test set.
   - Mean absolute error per opportunity: **65.0k USD**.
-- We propose using this prediction as a sizing input for prioritization and scenario analysis, but not as a committed portfolio forecast without a separate bias-correction step.
-
-:::
-
 
 :::
 :::
+
 ::: {.column width="46%"}
 ###### Forecast vs actual scatter plot:
 ![](assets/sim_forecasting.png){width=100%}
@@ -321,15 +333,14 @@ The following table shows the selected model's performance on both CV and held-o
 The annex contains more details about model selection, and per bin performance metrics.
 :::
 
-# Applications {background-color="#1E293B"}
+# Application scenarios {background-color="#1E293B"}
 
 ## Tripling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size
 
 ::: {.columns}
 ::: {.column width="44%"}
-- Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can materially raise conversion efficiency.
+- Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can raise conversion efficiency.
   - **Top 20%** of opportunities: **74.3%** conversion vs **22.7%** baseline (**3.27× lift**).
-- We propose to automatically embed this in the CRM at opportunity creation to prioritize high-propensity deals (e.g. top 1-2 deciles) and set clear thresholds for pipeline reviews and resource allocation.
 
 ::: aside
 This simulation is based on held-out test-set predictions.
@@ -350,51 +361,39 @@ This simulation is based on held-out test-set predictions.
 
 ::: {.column width="44%"}
 - Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
-- At top 10%, expected-value ranking captures 45.7% of won revenue vs 31.2% with propensity-only.
-  - This expected-value ranking should be read as a directional prioritization tool rather than a revenue commitment.
+  - At top 10%, expected-value ranking captures 45.7% of won revenue vs 31.2% with propensity-only.
   - After 25% threshold, the incremental value capture flattens.
-- We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.
 
 :::
 :::
 
 ::: aside
-This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.
+Based on held-out test-set predictions; assumes opportunity amount reflects final deal value, which may not hold.
+:::
+
+## Combining model outputs creates actionable commercial segments 
+
+::: {.columns}
+::: {.column width="62%"}
+![](assets/annex_ev_probability_quadrants.png){width=100%}
+:::
+::: {.column width="38%"}
+- Simple split, strong signal: Combining expected value and win probability cleanly separates opportunities into distinct commercial tiers.
+- Clear performance differences: Each segment shows different conversion rates and revenue contribution.
+- Direct CRM translation: Segments map to actions like intervene, focus, accelerate, or deprioritize.
+- Operational, not theoretical: This provides a practical decision layer for sales, not just model output.
+:::
+:::
+
+::: aside
+Based on held-out test-set predictions; assumes opportunity amount reflects final deal value, which may not hold. 
 :::
 
 ## Model outputs should be automatically embedded in the CRM
 
-::: {.columns}
-::: {.column width="52%"}
-### Operational flow
+![](assets/crm_embedding_quadrants.svg){width=100%}
 
-**Opportunity created** → **score + expected value generated**
-
-- As soon as a new opportunity enters the CRM, the workflow generates:
-  - **win-propensity score**
-  - **predicted amount**
-  - **expected value = E[Amount] × P(Win)**
-
-### CRM displays
-
-- **Priority tier**: Top 10%, Top 25%, Top 50%, etc.
-- **Suggested action**: focus / monitor / deprioritize
-- This gives frontline teams a simple operating signal without exposing model internals.
-:::
-::: {.column width="48%"}
-### Weekly pipeline reviews
-
-- Review only opportunities above agreed propensity or expected-value thresholds.
-- Use those cutoffs to focus rep attention, escalation, and follow-up.
-
-### Management view
-
-- **Directional forecast = sum of predicted values** across the active pipeline.
-- Management can compare it by region, route to market, owner, or priority tier.
-:::
-:::
-
-## Model outputs can also be used for strategic decision-making
+## Model outputs can inform broader commercial strategy
 
 ::: {.columns}
 ::: {.column width="58%"}
@@ -410,10 +409,10 @@ This simulation is based on held-out test-set predictions. This analysis assumes
 :::
 
 ::: aside
-Both simulations use held-out test-set predictions. Lever 1 assumes a focus-gain multiplier that decays from λ_max = 1.5× at the smallest slice to 1.0× at the full pipeline; Lever 2 uses $120K OTE as the label, $180K fully-loaded cost per rep in the economics and assumes a rep can do 100 opportunities from the holdout set.
+Held-out predictions; Lever 1 uses a decaying focus gain (1.5×→1.0×), Lever 2 assumes $120K OTE / $180K cost and 100 opps per rep.
 :::
 
-## The previous simulations are subject to constraints and are intended as a demonstration of potential business uses and impacts
+## These simulations show business potential, not final operating estimates
 
 ::: {.columns}
 ::: {.column width="52%"}
@@ -423,7 +422,7 @@ Both simulations use held-out test-set predictions. Lever 1 assumes a focus-gain
 :::
 ::: {.column width="48%"}
 - **Simulations are based on held-out observational predictions**, results are based on held-out predictions, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.
-- **Missing business context**: factors like sales capacity, operational constraints, and CRM integration are not missing and we're not able to consult them to business stakeholders, affecting real-world applicability.
+- **Missing business context**: key factors such as sales capacity, cost structure, pricing, and CRM integration were not incorporated or validated with business stakeholders, limiting real-world applicability.
 :::
 :::
 
@@ -431,37 +430,26 @@ Both simulations use held-out test-set predictions. Lever 1 assumes a focus-gain
 
 ## Key takeaways for commercial decision-making
 
-- Prioritization is the highest-impact use case
-  - Win/loss model (**AUROC 91.2%**) improves sales focus.
-  - Top 20% of opportunities → conversion ~22.7% → ~74%.
-- Use the amount model as a directional sizing layer, not as a committed forecast
-  - Amount model is not reliable per deal, and it under-forecasts the held-out portfolio by roughly 39%, so it needs bias correction before forecast use.
-- Expected value is the strongest prioritization lever
-  - Combines win propensity × deal size.
-- Value is concentrated: ~46% in top 10%, ~76% in top 25%.
-- Recommendation
-  - Pilot prioritization first (embed in CRM).
-  - Use the amount model for sizing and ranking first.
-  - Then combine into expected-value prioritization to guide focus and resource allocation.
-  - Post-pilot, consider strategic levers such as pipeline optimization and salesforce adjustments to improve commercial efficiency.
+- Prioritization is the highest-impact, low-effort lever
+  - Win/loss model (strong scoring performance, AUROC 91.2%) improves focus
+  - Top 20% opportunities go from **~22.7% win rate (baseline) to ~74%**
+- Use the amount model directionally, not for forecasting
+  - 61.7% MdAPE per deal and ~39% under-forecast at portfolio level
+- Expected value is the strongest prioritization approach
+  - Outperforms individual models for value capture
+  - Revenues are concentrated **(~46% top 10% opp., ~76% top 25% opp.)** and should be prioritized accordingly
+- Implications for commercial strategy:
+  - Focus efforts on the best opportunities first
+  - Eventually optimize salesforce size and structure
+- Recommendations for implementing model-driven sales:
+  - Always embed through CRM.
+  - [1] Pilot prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.
+  - **(Optional but recommended)** Keep an experimental mindset and run A/B tests continuously to validate the impact of acting on model outputs, and also to collect contrafactual data to improve the models over time.
+
 
 ## Next steps: how to operationalize model-driven sales
 
-- Pilot deployment (4–6 weeks):
-  - Embed prioritization scores into CRM workflows
-  - Run A/B test vs. current sales process and measure lift in conversion and revenue
-- Define operating model (after pilot early results):
-  - Incorporate funnel/client segmentation into the process
-  - Potentially include product-level segmentation if it makes sense.
-  - Set clear thresholds and actions (e.g., top deciles = sales focus)
-  - Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively
-- Monitor performance (starting after deployment):
-  - Track conversion lift, cycle time, and revenue per opportunity
-  - Continuously recalibrate thresholds and retrain models
-- Scale and integrate (after pilot success):
-  - Extend to full pipeline and embed in forecasting cadence
-  - Incorporate into commercial planning and resource allocation
-  - Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights
+![](assets/next_steps_operationalize_timeline.svg){width=100%}
 
 # Thank you {background-color="#0F172A"}
 Questions, comments, and feedback are welcome!
@@ -525,16 +513,16 @@ Selected model in main deck: **xgboost_boxcox** by CV Median APE, tie-broken by 
 
 :::
 
-## Annex: calibration comparison for the logit variants
+## Annex: hold-out calibration of the selected classifier
 
 ::: {.columns}
 ::: {.column width="58%"}
 ![](assets/annex_calibration_comparison.png){width=100%}
 :::
 ::: {.column width="42%"}
-- The calibrated and non-calibrated logit variants have almost identical ROC / PR ranking performance, but calibration changes how raw probabilities line up with observed win rates.
-- The calibrated curve tracks the 45-degree reference more closely through the middle probability range, which is the part used most often for thresholding and expected-value calculations.
-- This remains useful as a benchmark for probability quality, even though the main-deck selected classifier is now the balanced random forest.
+- This chart now shows the **selected classifier itself** on the held-out set: `random_forest_classifier_balanced`.
+- It compares the model's mean predicted win probability to the observed win rate across quantile bins.
+- The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.
 :::
 :::
 
@@ -603,6 +591,19 @@ Diagnostic note: the threshold is selected on train-side OOF predictions, then e
 - Source of truth: `notebooks/1_data_validation_and_cleaning/01_basic_validation.ipynb`, which builds `problem_tags`, `problem_count`, and the row-level validation flags before exporting `cleaned_data.parquet`.
 - The row-count distribution shows that most records have **0–1 detected issues**, while the issue-type breakdown shows that the main burden comes from **stage-ratio inconsistencies**, **amount weirdness**, and **only-identified-stage** records.
 - This supports the data-prep choice used throughout the deck: remove clearly unusable rows (duplicates, invalid targets) but retain many imperfect rows with explicit flags because the modeling task is ranking and prioritization, not accounting-grade reconciliation.
+
+## Annex: numeric variable correlation heatmap
+
+::: {.columns}
+::: {.column width="50%"}
+![](assets/annex_numeric_correlation_heatmap.png){width=100%}
+:::
+::: {.column width="50%"}
+- Most numeric relationships are weak, suggesting limited linear redundancy across variables.
+- Process-duration variables are highly correlated (e.g. identified→closing vs identified→qualified), so they likely capture overlapping timing effects.
+- Stage-ratio variables show expected inverse relationships, reflecting how progress through the funnel mechanically shifts the composition of stage shares.
+:::
+:::
 
 ## Annex: strategic lever 1 — focus the same team on fewer, better-ranked deals
 
@@ -747,6 +748,21 @@ Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cos
 
 :::
 
+## Annex: how to read IV charts — regression / amount
+
+::: {.smaller}
+
+- The **regression / amount** chart does **not** use the same IV definition as the win/loss chart.
+- It comes from `ContinuousOptimalBinning`, where IV is a **surrogate separation metric based on differences in bin means**.
+- So the regression IV values are useful for **relative ranking within that chart**, but they should **not** be read with the binary-IV table and should **not** be compared numerically to the classification IV values.
+- Practical reading rule:
+  - use the **classification IV chart** with the standard heuristic bands
+  - use the **regression IV chart** only to see which variables separate amount behavior the most within that chart
+- This is why regression IV values can look numerically much larger: they are on a **different scale**, not evidence of impossible predictive power.
+
+:::
+
+
 ## Annex: original text version of the modelling use-cases slide
 
 ::: {.columns}
@@ -766,16 +782,52 @@ Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cos
 :::
 :::
 
-## Annex: how to read IV charts — regression / amount
+## Annex: original text version of the CRM embedding slide
 
-::: {.smaller}
+::: {.columns}
+::: {.column width="52%"}
+### Operational flow
 
-- The **regression / amount** chart does **not** use the same IV definition as the win/loss chart.
-- It comes from `ContinuousOptimalBinning`, where IV is a **surrogate separation metric based on differences in bin means**.
-- So the regression IV values are useful for **relative ranking within that chart**, but they should **not** be read with the binary-IV table and should **not** be compared numerically to the classification IV values.
-- Practical reading rule:
-  - use the **classification IV chart** with the standard heuristic bands
-  - use the **regression IV chart** only to see which variables separate amount behavior the most within that chart
-- This is why regression IV values can look numerically much larger: they are on a **different scale**, not evidence of impossible predictive power.
+**Opportunity created** → **score + expected value generated**
 
+- As soon as a new opportunity enters the CRM, the workflow generates:
+  - **win-propensity score**
+  - **predicted amount**
+  - **expected value = E[Amount] × P(Win)**
+
+### CRM displays
+
+- **Priority tier**: Top 10%, Top 25%, Top 50%, etc.
+- **Suggested action**: focus / monitor / deprioritize
+- This gives frontline teams a simple operating signal without exposing model internals.
 :::
+::: {.column width="48%"}
+### Weekly pipeline reviews
+
+- Review only opportunities above agreed propensity or expected-value thresholds.
+- Use those cutoffs to focus rep attention, escalation, and follow-up.
+
+### Management view
+
+- **Directional forecast = sum of predicted values** across the active pipeline.
+- Management can compare it by region, route to market, owner, or priority tier.
+:::
+:::
+
+## Annex: original text version of the Next steps slide
+
+- Pilot deployment (4–6 weeks):
+  - Embed prioritization scores into CRM workflows
+  - Run A/B test vs. current sales process and measure lift in conversion and revenue
+- Define operating model (after pilot early results):
+  - Incorporate funnel/client segmentation into the process
+  - Potentially include product-level segmentation if it makes sense.
+  - Set clear thresholds and actions (e.g., top deciles = sales focus)
+  - Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively
+- Monitor performance (starting after deployment):
+  - Track conversion lift, cycle time, and revenue per opportunity
+  - Continuously recalibrate thresholds and retrain models
+- Scale and integrate (after pilot success):
+  - Extend to full pipeline and embed in forecasting cadence
+  - Incorporate into commercial planning and resource allocation
+  - Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights

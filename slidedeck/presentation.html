@@ -145,20 +145,19 @@ Strategic Analysis Group
 <h2>Executive Summary</h2>
 <ul>
 <li>This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e.&nbsp;CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.</li>
-<li>We propose two models: a win/loss classifier (<strong>AUROC 91.2%</strong>) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal).</li>
-<li>Focusing on the top 20% of opportunities lifts conversion from 22.7% to ~74%; the top 10% captures ~46% of total pipeline value.</li>
+<li>We propose two models: a win/loss classifier (<strong>AUROC 91.2%</strong>) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal) with an <strong>61.7% MdAPE</strong>.</li>
+<li>We show that focusing on the <strong>top 20% of most likely opportunities lifts win rates from the 22.7% baseline to ~74%</strong>; while focusing on the <strong>top 25% expected-value ranked opportunities captures ~76% of total opportunity revenue</strong>.</li>
 <li>We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.</li>
-<li>We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven prioritization can improve commercial efficiency.</li>
+<li>We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven decisions can improve commercial efficiency.</li>
 </ul>
 </section>
 <section id="agenda" class="slide level2 scrollable">
 <h2>Agenda</h2>
 <ol type="1">
 <li>Business framing and process assumptions</li>
-<li>Dataset and target overview</li>
 <li>EDA findings that matter for prioritization and forecasting</li>
-<li>Modelling approach and model outputs</li>
-<li>Application simulations</li>
+<li>Modelling approach</li>
+<li>Application scenarios</li>
 <li>Conclusions and next steps</li>
 </ol>
 </section>
@@ -167,8 +166,8 @@ Strategic Analysis Group
 <h1>Business framing</h1>
 
 </section>
-<section id="the-sales-process-is-non-linear-and-the-data-captures-its-current-state" class="slide level2">
-<h2>The sales process is non-linear, and the data captures its current state</h2>
+<section id="the-pipeline-is-non-linear-so-the-data-reflects-a-moving-sales-process" class="slide level2">
+<h2>The pipeline is non-linear, so the data reflects a moving sales process</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
 <ul>
@@ -192,15 +191,16 @@ Strategic Analysis Group
 <p><img data-src="assets/eda_amount_win_rate.png" style="width:94.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>The pipeline is high-volume but low-yield: only 22.7% of opportunities convert, meaning most effort is currently misallocated.</li>
-<li>Value is highly concentrated: the majority of opportunities are low-amount, but win rates increase materially with deal size, signaling where commercial focus should shift.</li>
-<li>This creates a clear opportunity: → Move from volume-driven selling to value-driven prioritization, combining win propensity + deal size.</li>
-<li>The implication is direct: → Not all opportunities should be pursued equally — targeting the right deals can lift conversion and revenue without increasing pipeline size.</li>
+<li>Low efficiency: only 22.7% conversion, indicating misallocated effort</li>
+<li>Skewed deal mix: $94K avg vs $50K median → long tail of large deals</li>
+<li>Value concentration: bigger deals win more → focus should shift</li>
+<li>Clear opportunity: prioritize by win probability and deal size, ideally both</li>
+<li>Implication: focus on the right deals, not more deals</li>
 </ul>
 </div></div>
 </section>
-<section id="therefore-we-propose-two-modelling-use-cases-prioritization-and-forecasting-plus-additional-data-driven-commercial-opportunities." class="slide level2">
-<h2>Therefore, we propose two modelling use cases: prioritization and forecasting, plus additional data-driven commercial opportunities.</h2>
+<section id="we-focus-on-two-modelling-use-cases-prioritization-and-forecasting" class="slide level2">
+<h2>We focus on two modelling use cases: prioritization and forecasting</h2>
 
 <img data-src="assets/model_use_cases_overview.svg" style="width:100.0%" class="r-stretch"></section></section>
 <section>
@@ -208,8 +208,8 @@ Strategic Analysis Group
 <h1>Exploratory data analysis</h1>
 
 </section>
-<section id="the-dataset-was-analyzed-and-prepared-with-the-two-use-cases-in-mind-which-shaped-the-eda-focus-and-modelling-choices" class="slide level2">
-<h2>The dataset was analyzed and prepared with the two use cases in mind, which shaped the EDA focus and modelling choices</h2>
+<section id="the-data-is-sufficient-for-prioritization-and-directional-forecasting-despite-quality-issues" class="slide level2">
+<h2>The data is sufficient for prioritization and directional forecasting, despite quality issues</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <ul>
@@ -230,71 +230,80 @@ Strategic Analysis Group
 - **What it is not**: a full event history of every sales-stage movement.
 - The dataset should therefore be read as a **current-state commercial view** of the pipeline. -->
 </section>
-<section id="align-coverage-and-service-models-to-client-size-focusing-scalable-playbooks-on-small-clients-and-dedicated-effort-on-high-value-accounts." class="slide level2">
-<h2>Align coverage and service models to client size, focusing scalable playbooks on small clients and dedicated effort on high-value accounts.</h2>
+<section id="tailor-commercial-treatment-by-client-size-scale-small-focus-high-value" class="slide level2">
+<h2>Tailor commercial treatment by client size: scale small, focus high-value</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <h6 id="opportunity-counts-and-win-rates-by-client-size-segment">Opportunity counts and win rates by client-size segment:</h6>
 <p><img data-src="assets/eda_client_segmentation.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>The portfolio is heavily concentrated in <strong>100K or less</strong> clients, so this segment should drive base operating playbooks and coverage models.</li>
-<li>Conversion is relatively similar across most size bands, which means client size is more useful for <strong>commercial treatment and value management</strong> than for win-rate targeting alone.</li>
-<li>Larger accounts still matter because deal economics improve materially with size, so client-size segmentation should inform account prioritization, service model, and sales effort allocation.</li>
+<li>Most volume is ≤100K → scale this segment</li>
+<li>Win rates are similar across sizes → use size for treatment, not targeting</li>
+<li>Larger deals drive value → prioritize high-value accounts</li>
 </ul>
 </div></div>
-</section>
+
+<aside><div>
+<p>Further causal work is needed to distinguish demand from historical sales focus.</p>
+</div></aside></section>
 <section id="treat-acquisition-and-expansion-as-distinct-growth-engines-each-with-its-own-playbook-and-resource-model." class="slide level2">
 <h2>Treat acquisition and expansion as distinct growth engines, each with its own playbook and resource model.</h2>
 <div class="columns">
 <div class="column" style="width:42%;">
 <ul>
-<li><strong>(Re)Acquisition</strong> / no business in the past two years: 69,208 opportunities with a <strong>17.3%</strong> observed win rate.</li>
-<li><strong>Engagement / upselling</strong>: 8,817 opportunities with a <strong>63.9%</strong> observed win rate.</li>
-<li>This is a practical first-layer funnel split for go-to-market operations because it separates low-history acquisition work from higher-propensity expansion opportunities.</li>
+<li><strong>(Re)Acquisition</strong> (no activity in 2 years): 69,208 opportunities, 17.3% win rate</li>
+<li><strong>Engagement / upselling</strong>: 8,817 opportunities, 63.9% win rate</li>
+<li>A practical first split: separates low-history acquisition from higher-propensity expansion.</li>
 </ul>
 </div><div class="column" style="width:58%;">
 <h6 id="opportunity-counts-and-win-rates-by-funnel-stage">Opportunity counts and win rates by funnel stage:</h6>
 <p><img data-src="assets/eda_two_phase_funnel.png" style="width:100.0%"></p>
 </div></div>
-</section>
+
+<aside><div>
+<p>Further causal work is needed to distinguish demand from historical sales focus.</p>
+</div></aside></section>
 <section id="performance-differences-are-driven-by-product-mix-not-geography" class="slide level2">
 <h2>Performance differences are driven by product mix, not geography</h2>
 <div class="columns">
 <div class="column" style="width:70%;">
 <h6 id="distribution-of-amount-and-win-rates-by-type-subtype-and-region">Distribution of amount and win rates by type, subtype, and region:</h6>
 <p><img data-src="assets/eda_distribution_by_type_subtype_region.png" style="width:98.0%"></p>
-</div><div class="column" style="font-size: 82%;">
+</div><div class="column" style="font-size: 95%;">
 <ul>
 <li>Region is not a strong driver of conversion or deal size</li>
 <li>Type and subtype drive meaningful variation in both outcomes</li>
-<li>Prioritization should be product-driven, not geography-driven
-<ul>
-<li>Challenging experiments should be run because this may reflect historical sales focus rather than true underlying demand differences.</li>
-</ul></li>
+<li>Prioritization should be product-driven, not geography-driven</li>
 </ul>
 </div></div>
-</section>
-<section id="eventually-an-automated-iv-ranking-was-ran-to-identify-the-strongest-predictors-for-both-winloss-and-amount" class="slide level2">
-<h2>Eventually an automated IV ranking was ran to identify the strongest predictors for both win/loss and amount</h2>
+
+<aside><div>
+<p>Further causal work is needed to distinguish demand from historical sales focus.</p>
+</div></aside></section>
+<section id="the-strongest-predictors-of-win-and-amount-emerge-in-the-iv-analysis" class="slide level2">
+<h2>The strongest predictors of win and amount emerge in the IV analysis</h2>
 <div class="columns">
-<div class="column" style="width:52%;">
-<p><img data-src="assets/eda_iv_classification.png" style="width:100.0%"></p>
-</div><div class="column" style="width:48%;">
-<p><img data-src="assets/eda_iv_regression.png" style="width:100.0%"></p>
+<div class="column" style="text-align:center;">
+<p><img data-src="assets/eda_iv_classification.png" style="width:70.0%"></p>
+</div><div class="column" style="text-align:center;">
+<p><img data-src="assets/eda_iv_regression.png" style="width:70.0%"></p>
 </div></div>
 <ul>
 <li>The left chart shows IVs against the <strong>win/loss target</strong>, while the right chart shows IVs against the <strong>amount target</strong>, using the full set of variables that enter the models.</li>
-<li>Process-time variables and stage-ratio features remain among the strongest signals for classification, while the amount target keeps a broader but still process-heavy IV profile.</li>
+<li>Process-time variables and stage-ratio features remain among the strongest signals for classification, while the amount target includes product and client-size descriptors as strong predictors.</li>
 </ul>
-</section></section>
+
+<aside><div>
+<p>Further causal work is needed to distinguish demand from historical sales focus.</p>
+</div></aside></section></section>
 <section>
 <section id="modelling" class="title-slide slide level1 center" data-background-color="#0F172A">
 <h1>Modelling</h1>
 
 </section>
-<section id="we-have-two-modelling-setups-in-mind-for-different-stages-of-the-sales-process-but-just-the-most-complete-one-is-shown-here" class="slide level2">
-<h2>We have two modelling setups in mind for different stages of the sales process but just the most complete one is shown here</h2>
+<section id="we-prioritize-dynamic-models-because-sales-state-information-adds-the-most-signal" class="slide level2">
+<h2>We prioritize dynamic models because sales-state information adds the most signal</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <h3 id="static-pre-sales-process-model">Static / pre-sales process model</h3>
@@ -314,26 +323,20 @@ Strategic Analysis Group
 <p><img data-src="assets/process22.png"></p>
 
 <aside><div>
-<p>Both setups would improve with better covariates, especially outcomes and process variables from previous process runs for the same client.</p>
+<p>Both approaches could use richer covariates, especially prior outcomes and process history per client.</p>
 </div></aside></section>
-<section id="for-both-classification-and-regression-we-used-an-stratified-traintest-split-to-ensure-realistic-evaluation" class="slide level2">
-<h2>For both classification and regression, we used an stratified train/test split to ensure realistic evaluation</h2>
+<section id="model-performance-was-tested-on-a-realistic-held-out-sample" class="slide level2">
+<h2>Model performance was tested on a realistic held-out sample</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <ul>
 <li><strong>Train / test split</strong>: <strong>70% / 30%</strong>
 <ul>
-<li>Train: <strong>53,073</strong> rows</li>
-<li>Test: <strong>22,746</strong> rows</li>
+<li>Train: 53,073 | Test: 22,746</li>
 </ul></li>
-<li>The split was <strong>stratified jointly</strong> on:
-<ul>
-<li>win/loss target</li>
-<li>amount buckets</li>
-</ul></li>
-<li>This keeps both outcome balance and deal-size mix stable across train and test.</li>
-<li>In the final models, different preprocessing techniques were used for both the X and the y, but the same train/test split was used for a fair performance estimate.</li>
-<li>All models were trained with 5-fold cross-validation on the train set, and the final selected models were evaluated on the held-out test set for a realistic performance estimate.</li>
+<li>Stratified on win/loss and amount, keeping outcome balance and deal mix stable</li>
+<li>5-fold CV on train, final evaluation on hold-out</li>
+<li>Different preprocessing for X and y depending on model, same split for fair evaluation</li>
 </ul>
 </div><div class="column" style="width:46%;">
 <h6 id="set-distribution-treemap">Set distribution treemap:</h6>
@@ -360,7 +363,7 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>We selected the balanced random forest because it combines top-tier ranking performance with the strongest thresholded operating profile among the models we tested, accepting less interpretability than the logistic alternatives.</p>
+<p>Selected balanced random forest for top ranking + best threshold performance, trading off interpretability.</p>
 </div></aside></section>
 <section id="prioritization-classification-model-enables-immediate-and-precise-reallocation-of-sales-effort-cont.-with-performance-metrics" class="slide level2">
 <h2>Prioritization classification model enables immediate and precise reallocation of sales effort (cont., with performance metrics)</h2>
@@ -457,7 +460,7 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>The annex contains more details about model selection, calibration, threshold selection, and the full classification report at the selected threshold. Best threshold for the selected model = 58.1%, chosen on train out-of-fold predictions. Baselines are computed at the observed base win rate.</p>
+<p>Annex details model selection, calibration, thresholding (58.1% OOF); baselines use observed win rate.</p>
 </div></aside></section>
 <section id="use-the-amount-model-for-per-opportunity-sizing-and-ranking-not-deal-level-precision" class="slide level2">
 <h2>Use the amount model for per-opportunity sizing and ranking, not deal-level precision</h2>
@@ -533,18 +536,15 @@ Strategic Analysis Group
 </tbody>
 </table>
 <p><br></p>
-<section id="conclusions" style="font-size: 90%;">
-<h6>Conclusions:</h6>
+<h6 id="conclusions">Conclusions:</h6>
 <ul>
-<li>Model is more useful for relative sizing than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
+<li>Model is more useful for relative sizing and ranking than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
 <ul>
 <li>Aggregate actual amount: <strong>2.138B USD</strong> on the held-out test set.</li>
 <li>Aggregate predicted amount: <strong>1.309B USD</strong> on the held-out test set.</li>
 <li>Mean absolute error per opportunity: <strong>65.0k USD</strong>.</li>
 </ul></li>
-<li>We propose using this prediction as a sizing input for prioritization and scenario analysis, but not as a committed portfolio forecast without a separate bias-correction step.</li>
 </ul>
-</section>
 </div>
 </div><div class="column" style="width:46%;">
 <h6 id="forecast-vs-actual-scatter-plot">Forecast vs actual scatter plot:</h6>
@@ -555,8 +555,8 @@ Strategic Analysis Group
 <p>The annex contains more details about model selection, and per bin performance metrics.</p>
 </div></aside></section></section>
 <section>
-<section id="applications" class="title-slide slide level1 center" data-background-color="#1E293B">
-<h1>Applications</h1>
+<section id="application-scenarios" class="title-slide slide level1 center" data-background-color="#1E293B">
+<h1>Application scenarios</h1>
 
 </section>
 <section id="tripling-conversion-is-achievable-by-focusing-on-the-top-20-of-opportunities-without-increasing-pipeline-size" class="slide level2">
@@ -564,11 +564,10 @@ Strategic Analysis Group
 <div class="columns">
 <div class="column" style="width:44%;">
 <ul>
-<li>Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can materially raise conversion efficiency.
+<li>Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can raise conversion efficiency.
 <ul>
 <li><strong>Top 20%</strong> of opportunities: <strong>74.3%</strong> conversion vs <strong>22.7%</strong> baseline (<strong>3.27× lift</strong>).</li>
 </ul></li>
-<li>We propose to automatically embed this in the CRM at opportunity creation to prioritize high-propensity deals (e.g.&nbsp;top 1-2 deciles) and set clear thresholds for pipeline reviews and resource allocation.</li>
 </ul>
 
 </div><div class="column" style="width:56%;">
@@ -584,54 +583,40 @@ Strategic Analysis Group
 <p><img data-src="assets/sim_expected_value_threshold.png" style="width:80.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.</li>
-<li>At top 10%, expected-value ranking captures 45.7% of won revenue vs 31.2% with propensity-only.
+<li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
 <ul>
-<li>This expected-value ranking should be read as a directional prioritization tool rather than a revenue commitment.</li>
+<li>At top 10%, expected-value ranking captures 45.7% of won revenue vs 31.2% with propensity-only.</li>
 <li>After 25% threshold, the incremental value capture flattens.</li>
 </ul></li>
-<li>We propose to set clear thresholds (e.g., top 10% = high priority) and embed in the CRM to guide sales focus with a more economically relevant ranking than win propensity alone.</li>
 </ul>
 </div></div>
 
 <aside><div>
-<p>This simulation is based on held-out test-set predictions. This analysis assumes that the opportunity amount is actually related to the final deal amount, which is not necessarily the case.</p>
+<p>Based on held-out test-set predictions; assumes opportunity amount reflects final deal value, which may not hold.</p>
+</div></aside></section>
+<section id="combining-model-outputs-creates-actionable-commercial-segments" class="slide level2">
+<h2>Combining model outputs creates actionable commercial segments</h2>
+<div class="columns">
+<div class="column" style="width:62%;">
+<p><img data-src="assets/annex_ev_probability_quadrants.png" style="width:100.0%"></p>
+</div><div class="column" style="width:38%;">
+<ul>
+<li>Simple split, strong signal: Combining expected value and win probability cleanly separates opportunities into distinct commercial tiers.</li>
+<li>Clear performance differences: Each segment shows different conversion rates and revenue contribution.</li>
+<li>Direct CRM translation: Segments map to actions like intervene, focus, accelerate, or deprioritize.</li>
+<li>Operational, not theoretical: This provides a practical decision layer for sales, not just model output.</li>
+</ul>
+</div></div>
+
+<aside><div>
+<p>Based on held-out test-set predictions; assumes opportunity amount reflects final deal value, which may not hold.</p>
 </div></aside></section>
 <section id="model-outputs-should-be-automatically-embedded-in-the-crm" class="slide level2">
 <h2>Model outputs should be automatically embedded in the CRM</h2>
-<div class="columns">
-<div class="column" style="width:52%;">
-<h3 id="operational-flow">Operational flow</h3>
-<p><strong>Opportunity created</strong> → <strong>score + expected value generated</strong></p>
-<ul>
-<li>As soon as a new opportunity enters the CRM, the workflow generates:
-<ul>
-<li><strong>win-propensity score</strong></li>
-<li><strong>predicted amount</strong></li>
-<li><strong>expected value = E[Amount] × P(Win)</strong></li>
-</ul></li>
-</ul>
-<h3 id="crm-displays">CRM displays</h3>
-<ul>
-<li><strong>Priority tier</strong>: Top 10%, Top 25%, Top 50%, etc.</li>
-<li><strong>Suggested action</strong>: focus / monitor / deprioritize</li>
-<li>This gives frontline teams a simple operating signal without exposing model internals.</li>
-</ul>
-</div><div class="column" style="width:48%;">
-<h3 id="weekly-pipeline-reviews">Weekly pipeline reviews</h3>
-<ul>
-<li>Review only opportunities above agreed propensity or expected-value thresholds.</li>
-<li>Use those cutoffs to focus rep attention, escalation, and follow-up.</li>
-</ul>
-<h3 id="management-view">Management view</h3>
-<ul>
-<li><strong>Directional forecast = sum of predicted values</strong> across the active pipeline.</li>
-<li>Management can compare it by region, route to market, owner, or priority tier.</li>
-</ul>
-</div></div>
-</section>
-<section id="model-outputs-can-also-be-used-for-strategic-decision-making" class="slide level2">
-<h2>Model outputs can also be used for strategic decision-making</h2>
+
+<img data-src="assets/crm_embedding_quadrants.svg" style="width:100.0%" class="r-stretch"></section>
+<section id="model-outputs-can-inform-broader-commercial-strategy" class="slide level2">
+<h2>Model outputs can inform broader commercial strategy</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <div class="quarto-figure quarto-figure-center">
@@ -655,10 +640,10 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>Both simulations use held-out test-set predictions. Lever 1 assumes a focus-gain multiplier that decays from λ_max = 1.5× at the smallest slice to 1.0× at the full pipeline; Lever 2 uses $120K OTE as the label, $180K fully-loaded cost per rep in the economics and assumes a rep can do 100 opportunities from the holdout set.</p>
+<p>Held-out predictions; Lever 1 uses a decaying focus gain (1.5×→1.0×), Lever 2 assumes $120K OTE / $180K cost and 100 opps per rep.</p>
 </div></aside></section>
-<section id="the-previous-simulations-are-subject-to-constraints-and-are-intended-as-a-demonstration-of-potential-business-uses-and-impacts" class="slide level2">
-<h2>The previous simulations are subject to constraints and are intended as a demonstration of potential business uses and impacts</h2>
+<section id="these-simulations-show-business-potential-not-final-operating-estimates" class="slide level2">
+<h2>These simulations show business potential, not final operating estimates</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <ul>
@@ -669,7 +654,7 @@ Strategic Analysis Group
 </div><div class="column" style="width:48%;">
 <ul>
 <li><strong>Simulations are based on held-out observational predictions</strong>, results are based on held-out predictions, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.</li>
-<li><strong>Missing business context</strong>: factors like sales capacity, operational constraints, and CRM integration are not missing and we’re not able to consult them to business stakeholders, affecting real-world applicability.</li>
+<li><strong>Missing business context</strong>: key factors such as sales capacity, cost structure, pricing, and CRM integration were not incorporated or validated with business stakeholders, limiting real-world applicability.</li>
 </ul>
 </div></div>
 </section></section>
@@ -681,57 +666,37 @@ Strategic Analysis Group
 <section id="key-takeaways-for-commercial-decision-making" class="slide level2">
 <h2>Key takeaways for commercial decision-making</h2>
 <ul>
-<li>Prioritization is the highest-impact use case
+<li>Prioritization is the highest-impact, low-effort lever
 <ul>
-<li>Win/loss model (<strong>AUROC 91.2%</strong>) improves sales focus.</li>
-<li>Top 20% of opportunities → conversion ~22.7% → ~74%.</li>
+<li>Win/loss model (strong scoring performance, AUROC 91.2%) improves focus</li>
+<li>Top 20% opportunities go from <strong>~22.7% win rate (baseline) to ~74%</strong></li>
 </ul></li>
-<li>Use the amount model as a directional sizing layer, not as a committed forecast
+<li>Use the amount model directionally, not for forecasting
 <ul>
-<li>Amount model is not reliable per deal, and it under-forecasts the held-out portfolio by roughly 39%, so it needs bias correction before forecast use.</li>
+<li>61.7% MdAPE per deal and ~39% under-forecast at portfolio level</li>
 </ul></li>
-<li>Expected value is the strongest prioritization lever
+<li>Expected value is the strongest prioritization approach
 <ul>
-<li>Combines win propensity × deal size.</li>
+<li>Outperforms individual models for value capture</li>
+<li>Revenues are concentrated <strong>(~46% top 10% opp., ~76% top 25% opp.)</strong> and should be prioritized accordingly</li>
 </ul></li>
-<li>Value is concentrated: ~46% in top 10%, ~76% in top 25%.</li>
-<li>Recommendation
+<li>Implications for commercial strategy:
 <ul>
-<li>Pilot prioritization first (embed in CRM).</li>
-<li>Use the amount model for sizing and ranking first.</li>
-<li>Then combine into expected-value prioritization to guide focus and resource allocation.</li>
-<li>Post-pilot, consider strategic levers such as pipeline optimization and salesforce adjustments to improve commercial efficiency.</li>
+<li>Focus efforts on the best opportunities first</li>
+<li>Eventually optimize salesforce size and structure</li>
+</ul></li>
+<li>Recommendations for implementing model-driven sales:
+<ul>
+<li>Always embed through CRM.</li>
+<li>[1] Pilot prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.</li>
+<li><strong>(Optional but recommended)</strong> Keep an experimental mindset and run A/B tests continuously to validate the impact of acting on model outputs, and also to collect contrafactual data to improve the models over time.</li>
 </ul></li>
 </ul>
 </section>
 <section id="next-steps-how-to-operationalize-model-driven-sales" class="slide level2">
 <h2>Next steps: how to operationalize model-driven sales</h2>
-<ul>
-<li>Pilot deployment (4–6 weeks):
-<ul>
-<li>Embed prioritization scores into CRM workflows</li>
-<li>Run A/B test vs.&nbsp;current sales process and measure lift in conversion and revenue</li>
-</ul></li>
-<li>Define operating model (after pilot early results):
-<ul>
-<li>Incorporate funnel/client segmentation into the process</li>
-<li>Potentially include product-level segmentation if it makes sense.</li>
-<li>Set clear thresholds and actions (e.g., top deciles = sales focus)</li>
-<li>Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively</li>
-</ul></li>
-<li>Monitor performance (starting after deployment):
-<ul>
-<li>Track conversion lift, cycle time, and revenue per opportunity</li>
-<li>Continuously recalibrate thresholds and retrain models</li>
-</ul></li>
-<li>Scale and integrate (after pilot success):
-<ul>
-<li>Extend to full pipeline and embed in forecasting cadence</li>
-<li>Incorporate into commercial planning and resource allocation</li>
-<li>Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights</li>
-</ul></li>
-</ul>
-</section></section>
+
+<img data-src="assets/next_steps_operationalize_timeline.svg" style="width:100.0%" class="r-stretch"></section></section>
 <section id="thank-you" class="title-slide slide level1 center" data-background-color="#0F172A">
 <h1>Thank you</h1>
 <p>Questions, comments, and feedback are welcome!</p>
@@ -1077,16 +1042,16 @@ Strategic Analysis Group
 <p>Selected model in main deck: <strong>xgboost_boxcox</strong> by CV Median APE, tie-broken by MAE.</p>
 </div>
 </section>
-<section id="annex-calibration-comparison-for-the-logit-variants" class="slide level2">
-<h2>Annex: calibration comparison for the logit variants</h2>
+<section id="annex-hold-out-calibration-of-the-selected-classifier" class="slide level2">
+<h2>Annex: hold-out calibration of the selected classifier</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <p><img data-src="assets/annex_calibration_comparison.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>The calibrated and non-calibrated logit variants have almost identical ROC / PR ranking performance, but calibration changes how raw probabilities line up with observed win rates.</li>
-<li>The calibrated curve tracks the 45-degree reference more closely through the middle probability range, which is the part used most often for thresholding and expected-value calculations.</li>
-<li>This remains useful as a benchmark for probability quality, even though the main-deck selected classifier is now the balanced random forest.</li>
+<li>This chart now shows the <strong>selected classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced</code>.</li>
+<li>It compares the model’s mean predicted win probability to the observed win rate across quantile bins.</li>
+<li>The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.</li>
 </ul>
 </div></div>
 </section>
@@ -1224,6 +1189,19 @@ Strategic Analysis Group
 <li>The row-count distribution shows that most records have <strong>0–1 detected issues</strong>, while the issue-type breakdown shows that the main burden comes from <strong>stage-ratio inconsistencies</strong>, <strong>amount weirdness</strong>, and <strong>only-identified-stage</strong> records.</li>
 <li>This supports the data-prep choice used throughout the deck: remove clearly unusable rows (duplicates, invalid targets) but retain many imperfect rows with explicit flags because the modeling task is ranking and prioritization, not accounting-grade reconciliation.</li>
 </ul>
+</section>
+<section id="annex-numeric-variable-correlation-heatmap" class="slide level2">
+<h2>Annex: numeric variable correlation heatmap</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><img data-src="assets/annex_numeric_correlation_heatmap.png" style="width:100.0%"></p>
+</div><div class="column" style="width:50%;">
+<ul>
+<li>Most numeric relationships are weak, suggesting limited linear redundancy across variables.</li>
+<li>Process-duration variables are highly correlated (e.g.&nbsp;identified→closing vs identified→qualified), so they likely capture overlapping timing effects.</li>
+<li>Stage-ratio variables show expected inverse relationships, reflecting how progress through the funnel mechanically shifts the composition of stage shares.</li>
+</ul>
+</div></div>
 </section>
 <section id="annex-strategic-lever-1-focus-the-same-team-on-fewer-better-ranked-deals" class="slide level2">
 <h2>Annex: strategic lever 1 — focus the same team on fewer, better-ranked deals</h2>
@@ -1420,6 +1398,22 @@ Strategic Analysis Group
 </ul>
 </div>
 </section>
+<section id="annex-how-to-read-iv-charts-regression-amount" class="slide level2">
+<h2>Annex: how to read IV charts — regression / amount</h2>
+<div class="smaller">
+<ul>
+<li>The <strong>regression / amount</strong> chart does <strong>not</strong> use the same IV definition as the win/loss chart.</li>
+<li>It comes from <code>ContinuousOptimalBinning</code>, where IV is a <strong>surrogate separation metric based on differences in bin means</strong>.</li>
+<li>So the regression IV values are useful for <strong>relative ranking within that chart</strong>, but they should <strong>not</strong> be read with the binary-IV table and should <strong>not</strong> be compared numerically to the classification IV values.</li>
+<li>Practical reading rule:
+<ul>
+<li>use the <strong>classification IV chart</strong> with the standard heuristic bands</li>
+<li>use the <strong>regression IV chart</strong> only to see which variables separate amount behavior the most within that chart</li>
+</ul></li>
+<li>This is why regression IV values can look numerically much larger: they are on a <strong>different scale</strong>, not evidence of impossible predictive power.</li>
+</ul>
+</div>
+</section>
 <section id="annex-original-text-version-of-the-modelling-use-cases-slide" class="slide level2">
 <h2>Annex: original text version of the modelling use-cases slide</h2>
 <div class="columns">
@@ -1439,28 +1433,73 @@ Strategic Analysis Group
 </ul>
 </div></div>
 </section>
-<section id="annex-how-to-read-iv-charts-regression-amount" class="slide level2">
-<h2>Annex: how to read IV charts — regression / amount</h2>
-<div class="smaller">
+<section id="annex-original-text-version-of-the-crm-embedding-slide" class="slide level2">
+<h2>Annex: original text version of the CRM embedding slide</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<h3 id="operational-flow">Operational flow</h3>
+<p><strong>Opportunity created</strong> → <strong>score + expected value generated</strong></p>
 <ul>
-<li>The <strong>regression / amount</strong> chart does <strong>not</strong> use the same IV definition as the win/loss chart.</li>
-<li>It comes from <code>ContinuousOptimalBinning</code>, where IV is a <strong>surrogate separation metric based on differences in bin means</strong>.</li>
-<li>So the regression IV values are useful for <strong>relative ranking within that chart</strong>, but they should <strong>not</strong> be read with the binary-IV table and should <strong>not</strong> be compared numerically to the classification IV values.</li>
-<li>Practical reading rule:
+<li>As soon as a new opportunity enters the CRM, the workflow generates:
 <ul>
-<li>use the <strong>classification IV chart</strong> with the standard heuristic bands</li>
-<li>use the <strong>regression IV chart</strong> only to see which variables separate amount behavior the most within that chart</li>
+<li><strong>win-propensity score</strong></li>
+<li><strong>predicted amount</strong></li>
+<li><strong>expected value = E[Amount] × P(Win)</strong></li>
 </ul></li>
-<li>This is why regression IV values can look numerically much larger: they are on a <strong>different scale</strong>, not evidence of impossible predictive power.</li>
 </ul>
-</div>
+<h3 id="crm-displays">CRM displays</h3>
+<ul>
+<li><strong>Priority tier</strong>: Top 10%, Top 25%, Top 50%, etc.</li>
+<li><strong>Suggested action</strong>: focus / monitor / deprioritize</li>
+<li>This gives frontline teams a simple operating signal without exposing model internals.</li>
+</ul>
+</div><div class="column" style="width:48%;">
+<h3 id="weekly-pipeline-reviews">Weekly pipeline reviews</h3>
+<ul>
+<li>Review only opportunities above agreed propensity or expected-value thresholds.</li>
+<li>Use those cutoffs to focus rep attention, escalation, and follow-up.</li>
+</ul>
+<h3 id="management-view">Management view</h3>
+<ul>
+<li><strong>Directional forecast = sum of predicted values</strong> across the active pipeline.</li>
+<li>Management can compare it by region, route to market, owner, or priority tier.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-original-text-version-of-the-next-steps-slide" class="slide level2">
+<h2>Annex: original text version of the Next steps slide</h2>
+<ul>
+<li>Pilot deployment (4–6 weeks):
+<ul>
+<li>Embed prioritization scores into CRM workflows</li>
+<li>Run A/B test vs.&nbsp;current sales process and measure lift in conversion and revenue</li>
+</ul></li>
+<li>Define operating model (after pilot early results):
+<ul>
+<li>Incorporate funnel/client segmentation into the process</li>
+<li>Potentially include product-level segmentation if it makes sense.</li>
+<li>Set clear thresholds and actions (e.g., top deciles = sales focus)</li>
+<li>Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively</li>
+</ul></li>
+<li>Monitor performance (starting after deployment):
+<ul>
+<li>Track conversion lift, cycle time, and revenue per opportunity</li>
+<li>Continuously recalibrate thresholds and retrain models</li>
+</ul></li>
+<li>Scale and integrate (after pilot success):
+<ul>
+<li>Extend to full pipeline and embed in forecasting cadence</li>
+<li>Incorporate into commercial planning and resource allocation</li>
+<li>Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights</li>
+</ul></li>
+</ul>
 
 </section></section>
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
 <p><img src="assets/hero.png" class="slide-logo"></p>
 <div class="footer footer-default">
-<p>MIB Cars Analysis</p>
+
 </div>
 </div></div>
 
@@ -1520,16 +1559,16 @@ Strategic Analysis Group
 
         // Add the current slide number to the URL hash so that reloading the
         // page/copying the URL will return you to the same slide
-        hash: true,
+        hash: false,
 
         // Start with 1 for the hash rather than 0
         hashOneBasedIndex: false,
 
         // Flags if we should monitor the hash and change slides accordingly
-        respondToHashChanges: true,
+        respondToHashChanges: false,
 
         // Push each slide change to the browser history
-        history: true,
+        history: false,
 
         // Enable keyboard shortcuts for navigation
         keyboard: true,

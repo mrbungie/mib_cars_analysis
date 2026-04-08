@@ -1,0 +1,24 @@
+<script>
+(function () {
+  const isPrintMode =
+    window.location.search.indexOf("print-pdf") !== -1 ||
+    window.location.search.indexOf("view=print") !== -1;
+
+  if (!isPrintMode) return;
+
+  if (window.location.hash && window.location.search.indexOf("printreset=1") === -1) {
+    const sep = window.location.search ? "&" : "?";
+    const cleanUrl = `${window.location.pathname}${window.location.search}${sep}printreset=1`;
+    window.location.replace(cleanUrl);
+    return;
+  }
+
+  try {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  } catch (e) {}
+
+  window.scrollTo(0, 0);
+})();
+</script>

@@ -1,0 +1,32 @@
+<script>
+window.addEventListener("load", () => {
+  const isPrintMode =
+    window.location.search.includes("print-pdf") ||
+    window.location.search.includes("view=print");
+
+  const stripHash = () => {
+    if (window.location.hash) {
+      const cleanUrl = `${window.location.pathname}${window.location.search}`;
+      window.history.replaceState(null, "", cleanUrl);
+    }
+  };
+
+  const resetToFirstSlide = () => {
+    if (window.Reveal && typeof window.Reveal.slide === "function") {
+      window.Reveal.slide(0, 0, 0);
+    }
+  };
+
+  if (isPrintMode) {
+    stripHash();
+    setTimeout(resetToFirstSlide, 50);
+    window.addEventListener("beforeprint", resetToFirstSlide);
+    if (window.Reveal && typeof window.Reveal.on === "function") {
+      window.Reveal.on("ready", () => {
+        stripHash();
+        resetToFirstSlide();
+      });
+    }
+  }
+});
+</script>

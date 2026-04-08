@@ -1,0 +1,109 @@
+<svg width="1600" height="620" viewBox="0 0 1600 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="30" x2="1540" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EEF2FF"/>
+    </linearGradient>
+    <linearGradient id="step1" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#DBEAFE"/>
+      <stop offset="1" stop-color="#BFDBFE"/>
+    </linearGradient>
+    <linearGradient id="step2" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#CCFBF1"/>
+      <stop offset="1" stop-color="#99F6E4"/>
+    </linearGradient>
+    <linearGradient id="step3" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FEF3C7"/>
+      <stop offset="1" stop-color="#FDE68A"/>
+    </linearGradient>
+    <linearGradient id="step4" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F5F3FF"/>
+      <stop offset="1" stop-color="#DDD6FE"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="2000" height="1000" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="620" rx="34" fill="url(#bg)"/>
+
+  <line x1="210" y1="110" x2="1390" y2="110" stroke="#CBD5E1" stroke-width="6" stroke-linecap="round"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="150" width="330" height="390" rx="28" fill="url(#step1)"/>
+    <circle cx="235" cy="110" r="32" fill="#1D4ED8"/>
+    <text x="235" y="120" text-anchor="middle" fill="#FFFFFF" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="700">1</text>
+    <text x="105" y="205" fill="#1D4ED8" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">Pilot deployment • 4–6 weeks</text>
+    <text x="105" y="246" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Pilot deployment</text>
+    <text x="105" y="302" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="105" dy="0">• Embed prioritization scores</tspan>
+      <tspan x="105" dy="24">  into CRM workflows</tspan>
+    </text>
+    <text x="105" y="350" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="105" dy="0">• Run A/B test vs current</tspan>
+      <tspan x="105" dy="24">  sales process</tspan>
+    </text>
+    <text x="105" y="398" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="105" dy="0">• Measure lift in</tspan>
+      <tspan x="105" dy="24">  conversion and revenue</tspan>
+    </text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="440" y="150" width="330" height="390" rx="28" fill="url(#step2)"/>
+    <circle cx="605" cy="110" r="32" fill="#0F766E"/>
+    <text x="605" y="120" text-anchor="middle" fill="#FFFFFF" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="700">2</text>
+    <text x="475" y="205" fill="#0F766E" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">After pilot early results</text>
+    <text x="475" y="246" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Set operating model</text>
+    <text x="475" y="300" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="475" dy="0">• Incorporate funnel / client</tspan>
+      <tspan x="475" dy="24">  segmentation into the process</tspan>
+    </text>
+    <text x="475" y="348" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="475" dy="0">• Optionally add product-level</tspan>
+      <tspan x="475" dy="24">  segmentation</tspan>
+      <tspan x="475" dy="24">  if useful</tspan>
+    </text>
+    <text x="475" y="420" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="475" dy="0">• Set thresholds and actions</tspan>
+      <tspan x="475" dy="24">  by decile</tspan>
+    </text>
+    <text x="475" y="468" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="475" dy="0">• Align incentives and</tspan>
+      <tspan x="475" dy="24">  review routines</tspan>
+    </text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="810" y="150" width="330" height="390" rx="28" fill="url(#step3)"/>
+    <circle cx="975" cy="110" r="32" fill="#B45309"/>
+    <text x="975" y="120" text-anchor="middle" fill="#FFFFFF" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="700">3</text>
+    <text x="845" y="205" fill="#B45309" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">Starting after deployment</text>
+    <text x="845" y="246" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Monitor performance</text>
+    <text x="845" y="302" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Track conversion lift</text>
+    <text x="845" y="338" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Track cycle time</text>
+    <text x="845" y="374" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Track revenue per opportunity</text>
+    <text x="845" y="410" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="845" dy="0">• Recalibrate thresholds and</tspan>
+      <tspan x="845" dy="24">  retrain models</tspan>
+    </text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1180" y="150" width="330" height="390" rx="28" fill="url(#step4)"/>
+    <circle cx="1345" cy="110" r="32" fill="#6D28D9"/>
+    <text x="1345" y="120" text-anchor="middle" fill="#FFFFFF" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="700">4</text>
+    <text x="1215" y="205" fill="#6D28D9" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">After pilot success</text>
+    <text x="1215" y="246" fill="#0F172A" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="700">Scale and integrate</text>
+    <text x="1215" y="302" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Extend to the full pipeline</text>
+    <text x="1215" y="338" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">• Embed in forecasting cadence</text>
+    <text x="1215" y="374" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="1215" dy="0">• Incorporate into commercial</tspan>
+      <tspan x="1215" dy="24">  planning and resource allocation</tspan>
+    </text>
+    <text x="1215" y="434" fill="#334155" font-family="Helvetica, Arial, sans-serif" font-size="20">
+      <tspan x="1215" dy="0">• Explore strategic levers from</tspan>
+      <tspan x="1215" dy="24">  model insights</tspan>
+    </text>
+  </g>
+</svg>
