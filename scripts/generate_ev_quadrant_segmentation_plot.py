@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -6,11 +7,16 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter
 
+from reporting_variant_paths import asset_path, model_report_path, validate_variant
+
 
 ROOT = Path(__file__).resolve().parents[1]
-CLASSIFICATION_PATH = ROOT / "slidedeck/data/classification_model_report.xlsx"
-REGRESSION_PATH = ROOT / "slidedeck/data/regression_model_report.xlsx"
-ASSET_PATH = ROOT / "slidedeck/assets/annex_ev_probability_quadrants.png"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--variant", choices=["dynamic", "static"], default="dynamic")
+    return parser.parse_args()
 
 
 def usd_compact(value: float, _position: float = 0.0) -> str:
@@ -27,9 +33,14 @@ def pct_fmt(value: float, _position: float = 0.0) -> str:
     return f"{value:.0%}"
 
 
-def load_df() -> pd.DataFrame:
-    classification = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_predictions")
-    regression = pd.read_excel(REGRESSION_PATH, sheet_name="test_predictions")
+def load_df(variant: str) -> pd.DataFrame:
+    classification = pd.read_excel(
+        model_report_path(ROOT, "classification", variant),
+        sheet_name="test_predictions",
+    )
+    regression = pd.read_excel(
+        model_report_path(ROOT, "regression", variant), sheet_name="test_predictions"
+    )
     df = classification.merge(
         regression, on="row_id", how="inner", validate="one_to_one"
     )
@@ -69,7 +80,10 @@ def summarize_quadrants(df: pd.DataFrame) -> tuple[pd.DataFrame, float, float]:
 
 
 def main() -> None:
-    df = load_df()
+    args = parse_args()
+    variant = validate_variant(args.variant)
+    output_path = asset_path(ROOT, "annex_ev_probability_quadrants.png", variant)
+    df = load_df(variant)
     summary, p_threshold, ev_threshold = summarize_quadrants(df)
 
     sns.set_theme(style="white")
@@ -226,10 +240,10 @@ def main() -> None:
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    ASSET_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(ASSET_PATH, dpi=220, bbox_inches="tight")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
-    print(f"saved: {ASSET_PATH}")
+    print(f"saved ({variant}): {output_path}")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -5,9 +6,15 @@ import matplotlib.ticker as mticker
 import pandas as pd
 import seaborn as sns
 
+from reporting_variant_paths import asset_path, data_path, validate_variant
+
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "slidedeck/data"
-ASSET_DIR = ROOT / "slidedeck/assets"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--variant", choices=["dynamic", "static"], default="dynamic")
+    return parser.parse_args()
 
 
 def usd_compact(value: float, _position: float = 0.0) -> str:
@@ -24,8 +31,8 @@ def pct_fmt(value: float, _position: float) -> str:
     return f"{value:.0%}"
 
 
-def build_focus_plot() -> None:
-    df = pd.read_csv(DATA_DIR / "sim_focus_gain_main.csv")
+def build_focus_plot(variant: str) -> None:
+    df = pd.read_csv(data_path(ROOT, "sim_focus_gain_main.csv", variant))
     peak = df.loc[df["focus_revenue"].idxmax()]
 
     sns.set_theme(style="whitegrid")
@@ -80,14 +87,14 @@ def build_focus_plot() -> None:
     ax.set_ylabel("USD")
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(pct_fmt))
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(usd_compact))
-    fig.savefig(
-        ASSET_DIR / "strategic_lever_focus_summary.png", dpi=220, bbox_inches="tight"
-    )
+    output_path = asset_path(ROOT, "strategic_lever_focus_summary.png", variant)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
 
-def build_sales_plot() -> None:
-    df = pd.read_csv(DATA_DIR / "sim_salesforce_reduction.csv")
+def build_sales_plot(variant: str) -> None:
+    df = pd.read_csv(data_path(ROOT, "sim_salesforce_reduction.csv", variant))
     peak = df.loc[df["net_margin"].idxmax()]
     baseline = float(df["net_margin"].iloc[0])
 
@@ -115,22 +122,23 @@ def build_sales_plot() -> None:
         weight="bold",
         arrowprops={"arrowstyle": "-", "color": "#DC2626", "lw": 0.8},
     )
-    ax.set_title("Lever 2 — Net margin by headcount", fontsize=12, weight="bold")
+    ax.set_title(
+        "Lever 2 — Contribution margin by headcount", fontsize=12, weight="bold"
+    )
     ax.set_xlabel("Sales reps (headcount)")
     ax.set_ylabel("USD")
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(usd_compact))
-    fig.savefig(
-        ASSET_DIR / "strategic_lever_salesforce_summary.png",
-        dpi=220,
-        bbox_inches="tight",
-    )
+    output_path = asset_path(ROOT, "strategic_lever_salesforce_summary.png", variant)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
 
 def main() -> None:
-    ASSET_DIR.mkdir(parents=True, exist_ok=True)
-    build_focus_plot()
-    build_sales_plot()
+    args = parse_args()
+    variant = validate_variant(args.variant)
+    build_focus_plot(variant)
+    build_sales_plot(variant)
 
 
 if __name__ == "__main__":

@@ -28,10 +28,10 @@ format:
 ## Executive Summary
 
 - This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e. CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.
-- We propose two models: a win/loss classifier (**AUROC 90.9%**) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal) with an **61.7% MdAPE**.
-- We show that focusing on the **top 20% of most likely opportunities lifts win rates from the 22.7% baseline to ~74%**; while focusing on the **top 25% expected-value ranked opportunities captures ~78% of total opportunity revenue**.
+- We propose two **static / at-creation** models: a win/loss classifier (**AUROC 73.6%**) for early opportunity prioritization, and a regression model for deal sizing with **63.0% MdAPE** on held-out test data.
+- We show that focusing on the **top 20% of most likely opportunities lifts win rates from the 22.7% baseline to 51.7%**; while focusing on the **top 25% expected-value ranked opportunities captures 55.6% of total won revenue**.
 - We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.
-- We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven decisions can improve commercial efficiency.
+- We also simulate strategic levers under the static setup and find only modest upside, which reinforces that better process-history data is needed before using the models for bigger operating decisions.
 
 ## Agenda
 
@@ -177,7 +177,7 @@ Further causal work is needed to distinguish demand from historical sales focus.
 
 # Modelling {background-color="#0F172A"}
 
-## We prioritize dynamic models because sales-state information adds the most signal
+## We prioritize static models because snapshot timing is uncertain
 
 ::: {.columns}
 ::: {.column width="50%"}
@@ -185,14 +185,15 @@ Further causal work is needed to distinguish demand from historical sales focus.
 
 - Used for **early decisions** at opportunity creation especially around prioritization and sizing.
 - Uses only **at-creation variables**: product / route / region / client-size / past-revenue descriptors.
-- Best for **early triage** before any stage history exists.
+- **This is the setup used here.** It is the safer operational choice when we cannot verify when the snapshot was taken.
 :::
 ::: {.column width="50%"}
 ### Dynamic / during sales process model
 
 - Used for **ongoing re-prioritization and re-sizing** during the process.
 - Uses the static variables **plus process-state variables**: elapsed time, stage changes, cumulative timing, and stage ratios.
-- **This is the setup used here.**
+- It scores much better, but it is more exposed to timing leakage if the dataset snapshot is close to closure.
+- We keep that version in the **annex as an old benchmark**, not as the main recommendation.
 :::
 :::
 
@@ -218,28 +219,28 @@ Both approaches could use richer covariates, especially prior outcomes and proce
 :::
 :::
 
-## Prioritization classification model enables immediate and precise reallocation of sales effort
+## Static prioritization model supports earlier, safer reallocation of sales effort
 
 ::: {.columns}
 ::: {.column width="54%"}
 - Target: **Opportunity Result**.
-- Business use: **process prioritization** and ranking the pipeline by win propensity.
+- Business use: **early prioritization** and ranking the pipeline by win propensity at opportunity creation.
   - Therefore we focused on ranking metrics such as ROC AUC and PR AUC.
-- We used all the variables except for the amount target and deal size.
+- We used only **at-creation variables**, excluding process-timing fields and the amount target.
 - Selected final classifier: **Calibrated Balanced Random Forest over the classic preprocessed feature set** (`random_forest_classifier_balanced_calibrated`).
-- This model has strong performance (**AUROC 90.9%, Accuracy 86.0% @ 39.4% threshold**) versus the baselines (**AUROC 50.0%, Accuracy 77.3%** for the always-false classifier).
+- This model has **moderate but usable** performance for early triage (**AUROC 73.6%, Accuracy 81.0% @ 54.5% threshold**) versus the baselines (**AUROC 50.0%, Accuracy 77.3%** for the always-false classifier).
 :::
 ::: {.column width="50%"}
 ###### Classification model feature importances:
-![](assets/classification_importance.png){width=100%}
+![](assets/classification_importance_static.png){width=100%}
 :::
 :::
 
 ::: aside
-Selected calibrated balanced random forest for stronger probability quality while preserving top-tier ranking performance.
+Selected calibrated balanced random forest for stronger probability quality under the safer static feature set.
 :::
 
-## Prioritization classification model enables immediate and precise reallocation of sales effort (cont., with performance metrics)
+## Static prioritization model supports earlier, safer reallocation of sales effort (cont., with performance metrics)
 
 ::: {.columns}
 ::: {.column width="57%"}
@@ -249,8 +250,8 @@ The following table shows the selected model's performance on both CV and held-o
 
 | Model | Split | ROC AUC | PR AUC | Accuracy | Precision | Recall | F1 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Selected | CV | 91.2% | 76.7% | 86.9% | 73.2% | 66.6% | 69.7% |
-| Selected | Held-out test | 90.9% | 76.2% | 86.0% | 67.6% | 73.7% | 70.5% |
+| Selected | CV | 74.0% | 52.6% | 80.9% | 73.4% | 25.0% | 37.3% |
+| Selected | Held-out test | 73.6% | 52.8% | 81.0% | 73.5% | 25.3% | 37.6% |
 | Random baseline | Held-out test | 50.5% | 22.9% | 65.1% | 23.5% | 23.6% | 23.5% |
 | Always false baseline | Held-out test | 50.0% | 22.7% | 77.3% | 0.0% | 0.0% | 0.0% |
 | Always true baseline | Held-out test | 50.0% | 22.7% | 22.7% | 22.7% | 100.0% | 37.0% |
@@ -260,18 +261,18 @@ The following table shows the selected model's performance on both CV and held-o
 ::: {style="font-size: 80%;"}
 Conclusions:
 
-- The model has strong ranking performance (**AUROC 90.9% on hold-out**) and good precision/recall balance at the selected threshold, which makes it a good candidate for prioritization.
+- The model has enough ranking signal (**AUROC 73.6% on hold-out**) to support early screening, and we now use a more precision-oriented operating threshold because the business action is to focus scarce sales effort.
 :::
 
 :::
 :::
 ::: {.column width="43%"}
-![](assets/classification_roc.png){width=100%}
+![](assets/classification_roc_static.png){width=100%}
 :::
 :::
 
 ::: aside
-Annex details model selection, calibration, thresholding (39.4% OOF); baselines use observed win rate.
+Selected threshold is **54.5%** on training OOF predictions, chosen to maximize precision subject to at least **25% recall**; the old dynamic calibration and hold-out diagnostics are kept in the annex for reference.
 :::
 
 
@@ -282,13 +283,13 @@ Annex details model selection, calibration, thresholding (39.4% OOF); baselines 
 - Target: **Opportunity Amount USD**.
 - Business use: **sizing and directional forecasting**.
   - Therefore we focused on error metrics such as MAE and especially MAPE since it is scale-invariant and better captures the relative error across the wide deal-size distribution.
-- We used all the variables except for the win/loss target and the deal-size descriptors.
-- Selected final regression model: **Box-Cox transformed XGBoost regressor** (`xgboost_boxcox`), selected by lowest CV Median APE.
-- The model beats simple baselines on MAPE and MAE, **but with R² ≈ 0.06, MAE ≈ 65k USD, and Median APE ≈ 62%**, deal-level precision remains weak, so the best use case is for directional sizing and ranking rather than exact deal-level forecasts.
+- We used only **at-creation variables**, excluding process-timing fields and the win/loss target.
+- Selected final regression model: **Yeo-Johnson transformed XGBoost regressor** (`xgboost_yeojohnson`), selected by lowest CV Median APE.
+- The model beats simple baselines on MAE and Median APE, **but with R² ≈ 0.04, MAE ≈ 66.7k USD, and Median APE ≈ 63%**, deal-level precision remains weak, so the best use case is directional sizing and ranking rather than exact deal-level forecasts.
 :::
 ::: {.column width="46%"}
 ###### Amount model feature importances:
-![](assets/regression_importance.png){width=100%}
+![](assets/regression_importance_static.png){width=100%}
 :::
 :::
 
@@ -303,8 +304,8 @@ The following table shows the selected model's performance on both CV and held-o
 
 | Model | Split | R² | MAE | Median APE |
 | --- | ---: | ---: | ---: | ---: |
-| Selected | CV | 0.062 | 65.1k USD | 61.7% |
-| Selected | Held-out test | 0.067 | 65.0k USD | 61.5% |
+| Selected | CV | 0.041 | 66.7k USD | 63.1% |
+| Selected | Held-out test | 0.044 | 66.7k USD | 63.0% |
 | Mean baseline | Held-out test | -0.000 | 84.9k USD | 88.3% |
 | Median baseline | Held-out test | -0.108 | 74.9k USD | 75.0% |
 | Random baseline | Held-out test | -0.972 | 113.4k USD | 90.1% |
@@ -313,34 +314,34 @@ The following table shows the selected model's performance on both CV and held-o
 
 ###### Conclusions:
 
-- Model is more useful for relative sizing and ranking than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
+- Model is more useful for relative sizing and ranking than for exact portfolio totals, which remains the tradeoff from selecting by Median APE.
   - Aggregate actual amount: **2.138B USD** on the held-out test set.
-  - Aggregate predicted amount: **1.309B USD** on the held-out test set.
-  - Mean absolute error per opportunity: **65.0k USD**.
+  - Aggregate predicted amount: **1.279B USD** on the held-out test set.
+  - Mean absolute error per opportunity: **66.7k USD**.
 
 :::
 :::
 
 ::: {.column width="46%"}
 ###### Forecast vs actual scatter plot:
-![](assets/sim_forecasting.png){width=100%}
+![](assets/sim_forecasting_static.png){width=100%}
 
 
 :::
 :::
 
 ::: aside
-The annex contains more details about model selection, and per bin performance metrics.
+The annex keeps the old dynamic validation artifacts for comparison; the main takeaway here is that the static amount model is still directional, not precise.
 :::
 
 # Application scenarios {background-color="#1E293B"}
 
-## Tripling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size
+## More than doubling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size
 
 ::: {.columns}
 ::: {.column width="44%"}
 - Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can raise conversion efficiency.
-  - **Top 20%** of opportunities: **73.8%** conversion vs **22.7%** baseline (**3.25× lift**).
+  - **Top 20%** of opportunities: **51.7%** conversion vs **22.7%** baseline (**2.27× lift**).
 
 ::: aside
 This simulation is based on held-out test-set predictions.
@@ -348,21 +349,21 @@ This simulation is based on held-out test-set predictions.
 
 :::
 ::: {.column width="56%"}
-![](assets/sim_prioritization.png){width=100%}
+![](assets/sim_prioritization_static.png){width=100%}
 :::
 :::
 
-## Concentration (~49% value capture at top 10%) makes expected-value prioritization a key revenue lever
+## Concentration (~38% value capture at top 10%) still makes expected-value prioritization useful
 
 ::: {.columns}
 ::: {.column width="56%"}
-![](assets/sim_expected_value_threshold.png){width=80%}
+![](assets/sim_expected_value_threshold_static.png){width=80%}
 :::
 
 ::: {.column width="44%"}
 - Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
-  - At top 10%, expected-value ranking captures 48.6% of won revenue vs 30.6% with propensity-only.
-  - After 25% threshold, the incremental value capture flattens.
+  - At top 10%, expected-value ranking captures **37.9%** of won revenue vs **31.4%** with propensity-only.
+  - By top 25%, expected-value ranking captures **56.0%** of won revenue, after which the curve starts to flatten.
 
 :::
 :::
@@ -375,11 +376,11 @@ Based on held-out test-set predictions; assumes opportunity amount reflects fina
 
 ::: {.columns}
 ::: {.column width="62%"}
-![](assets/annex_ev_probability_quadrants.png){width=100%}
+![](assets/annex_ev_probability_quadrants_static.png){width=100%}
 :::
 ::: {.column width="38%"}
-- Simple split, strong signal: Combining expected value and win probability cleanly separates opportunities into distinct commercial tiers.
-- Clear performance differences: Each segment shows different conversion rates and revenue contribution.
+- Simple split, still useful: Combining expected value and win probability separates opportunities into workable commercial tiers even with the weaker static model.
+- Clear but more modest performance differences: each segment still shows different conversion rates and revenue contribution.
 - Direct CRM translation: Segments map to actions like intervene, focus, accelerate, or deprioritize.
 - Operational, not theoretical: This provides a practical decision layer for sales, not just model output.
 :::
@@ -397,31 +398,32 @@ Based on held-out test-set predictions; assumes opportunity amount reflects fina
 
 ::: {.columns}
 ::: {.column width="58%"}
-![](assets/strategic_lever_focus_summary.png){fig-align="center" width=50%}
+![](assets/strategic_lever_focus_summary_static.png){fig-align="center" width=50%}
 
-![](assets/strategic_lever_salesforce_summary.png){fig-align="center" width=50%}
+![](assets/strategic_lever_salesforce_summary_static.png){fig-align="center" width=50%}
 :::
 ::: {.column width="42%"}
-- **Lever 1, Focus the team:** Assuming higher effort on top-ranked opportunities improves conversion, we might achieve better results per deal. Best simulated point is **top ~43%** of the ranked pipeline, reaching **$462M** in revenue, or **+$77M vs. baseline**.
-- **Lever 2, Optimize salesforce size:** With better prioritization, we might achieve higher efficiency. Best simulated point is **143 reps**, retaining **$376M** of revenue (97.7%) and improving net margin by **+$6M** vs. full staffing.
+- **Lever 1, Focus the team:** Under the static ranking with a stronger focus-gain assumption (**λ_max = 2.0×**), the upside becomes more visible. Best simulated point is **top ~56%** of the ranked pipeline, reaching **$436M** in revenue, or about **+$51M vs. baseline**.
+- **Lever 2, Optimize salesforce size:** With a richer contribution formula and a more realistic comp structure, the headcount signal is still modest but more realistic. Best simulated point is **221 reps**, retaining **99.7%** of revenue and improving contribution margin by **~+$1.2M** vs. baseline.
   - Another option is segmenting the salesforce, with a specialized team focused on high-value opportunities/accounts and another team managing the rest.
 :::
 :::
 
 ::: aside
-Held-out predictions; Lever 1 uses a decaying focus gain (1.5×→1.0×), Lever 2 assumes $120K OTE / $180K cost and 100 opps per rep.
+Held-out predictions; Lever 1 now uses a decaying focus gain (**2.0×→1.0×**), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.
 :::
 
 ## These simulations show business potential, not final operating estimates
 
 ::: {.columns}
 ::: {.column width="52%"}
-- **No true pre-process static model is shown here**: due to time constraints, current models used in the simulation use evolving lifecycle features; an early-stage model is still needed.
+- **The main deck now focuses on the static setup**: this is the safer operational choice when snapshot timing is uncertain and we cannot fully rule out timing leakage in process variables.
 - **Potentially relevant covariates are missing**: the dataset lacks important drivers such as richer account history, rep behavior, pricing context, and external market conditions.
 - **Snapshot data limits process interpretation**: the dataset reflects a single recorded state, without full event history or detailed timing of interactions.
 :::
 ::: {.column width="48%"}
-- **Simulations are based on held-out observational predictions**, results are based on held-out predictions, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.
+- **Dynamic results are kept in the annex as an old benchmark**, because they are stronger but also more exposed to timing leakage if the snapshot was taken late in the sales process.
+- **Simulations are based on held-out observational predictions**, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.
 - **Missing business context**: key factors such as sales capacity, cost structure, pricing, and CRM integration were not incorporated or validated with business stakeholders, limiting real-world applicability.
 :::
 :::
@@ -431,19 +433,19 @@ Held-out predictions; Lever 1 uses a decaying focus gain (1.5×→1.0×), Lever 
 ## Key takeaways for commercial decision-making
 
 - Prioritization is the highest-impact, low-effort lever
-- Win/loss model (strong scoring performance, AUROC 90.9%) improves focus
-  - Top 20% opportunities go from **~22.7% win rate (baseline) to ~74%**
+- Win/loss model (moderate scoring performance, AUROC 73.6%) still improves focus early in the process
+  - Top 20% opportunities go from **~22.7% win rate (baseline) to ~51.7%**
 - Use the amount model directionally, not for forecasting
-  - 61.7% MdAPE per deal and ~39% under-forecast at portfolio level
+  - 63.0% MdAPE per deal and ~40% under-forecast at portfolio level
 - Expected value is the strongest prioritization approach
   - Outperforms individual models for value capture
-- Revenues are concentrated **(~49% top 10% opp., ~78% top 25% opp.)** and should be prioritized accordingly
+- Revenues are still concentrated **(~38% top 10% opp., ~56% top 25% opp.)** and should be prioritized accordingly
 - Implications for commercial strategy:
   - Focus efforts on the best opportunities first
-  - Eventually optimize salesforce size and structure
+  - Treat bigger strategic levers cautiously until richer process-history data is available
 - Recommendations for implementing model-driven sales:
   - Always embed through CRM.
-  - [1] Pilot prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.
+  - [1] Pilot static prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.
   - **(Optional but recommended)** Keep an experimental mindset and run A/B tests continuously to validate the impact of acting on model outputs, and also to collect contrafactual data to improve the models over time.
 
 
@@ -456,93 +458,93 @@ Questions, comments, and feedback are welcome!
 
 # Annex {background-color="#0F172A"}
 
-## Annex: classification CV leaderboard
+## Annex: static classification CV leaderboard
 
 ::: {style="font-size: 80%;"}
 
 | Model | ROC AUC | PR AUC | Accuracy | Precision | Recall | F1 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| random_forest_classifier | **91.7% ± 0.4%** | 78.4% ± 0.9% | **87.2% ± 0.2%** | **77.8% ± 0.7%** | 61.1% ± 1.1% | 68.5% ± 0.8% |
-| random_forest_classifier_balanced | 91.4% ± 0.4% | 77.3% ± 1.1% | 84.7% ± 0.6% | 62.7% ± 1.1% | 81.0% ± 0.7% | **70.7% ± 1.0%** |
-| random_forest_classifier_balanced_calibrated | 91.2% ± 0.4% | 76.7% ± 1.1% | 86.9% ± 0.4% | 73.2% ± 1.1% | 66.6% ± 0.9% | 69.7% ± 0.8% |
-| xgboost_balanced | 91.2% ± 0.3% | 78.3% ± 0.7% | 83.0% ± 0.5% | 58.8% ± 1.0% | **83.9% ± 0.4%** | 69.1% ± 0.7% |
-| xgboost | 91.2% ± 0.3% | **78.6% ± 0.6%** | 87.1% ± 0.3% | 77.6% ± 0.8% | 60.9% ± 1.1% | 68.2% ± 0.8% |
-| logit_elasticnet_binned_ohe_balanced | 88.1% ± 0.4% | 69.8% ± 0.5% | 79.4% ± 0.8% | 53.0% ± 1.2% | 81.8% ± 0.8% | 64.3% ± 1.1% |
-| logit_binned_ohe_balanced | 88.1% ± 0.4% | 69.8% ± 0.5% | 79.4% ± 0.8% | 53.0% ± 1.1% | 81.8% ± 0.8% | 64.3% ± 1.0% |
-| logit_binned_ohe_balanced_calibrated | 88.1% ± 0.4% | 69.8% ± 0.5% | 84.0% ± 0.3% | 71.1% ± 0.7% | 50.1% ± 1.2% | 58.8% ± 1.0% |
-| logit_binned_ohe | 88.1% ± 0.4% | 70.0% ± 0.5% | 84.2% ± 0.3% | 71.1% ± 0.9% | 51.3% ± 1.3% | 59.6% ± 1.1% |
-| logit_elasticnet_binned_ohe | 88.1% ± 0.4% | 70.0% ± 0.5% | 84.2% ± 0.3% | 71.3% ± 0.8% | 51.0% ± 1.2% | 59.4% ± 1.0% |
-| logit_elastic_binned_woe_balanced | 87.7% ± 0.4% | 69.2% ± 0.3% | 79.0% ± 0.6% | 52.4% ± 0.9% | 80.9% ± 0.6% | 63.6% ± 0.7% |
-| logit_elastic_binned_woe | 87.7% ± 0.4% | 69.3% ± 0.4% | 83.8% ± 0.2% | 71.7% ± 0.9% | 47.3% ± 1.1% | 57.0% ± 0.9% |
-| logit_binned_woe | 87.7% ± 0.4% | 69.3% ± 0.4% | 83.8% ± 0.2% | 71.8% ± 0.8% | 47.3% ± 0.9% | 57.0% ± 0.8% |
-| logit_elasticnet_robust_scaler_balanced | 86.8% ± 0.6% | 66.9% ± 1.1% | 78.7% ± 0.7% | 52.0% ± 1.0% | 79.6% ± 1.1% | 62.9% ± 1.1% |
-| logit_elasticnet_robust_scaler | 86.8% ± 0.6% | 67.5% ± 1.1% | 82.8% ± 0.2% | 68.4% ± 0.6% | 45.5% ± 1.1% | 54.6% ± 0.8% |
-| classic_logit_robust_scaler | 86.8% ± 0.6% | 67.5% ± 1.1% | 82.8% ± 0.2% | 68.4% ± 0.6% | 45.5% ± 1.1% | 54.7% ± 0.8% |
+| random_forest_classifier_balanced_calibrated | **74.0% ± 0.6%** | **52.6% ± 1.3%** | **81.0% ± 0.4%** | 70.5% ± 1.8% | 28.0% ± 1.1% | 40.1% ± 1.4% |
+| random_forest_classifier | 73.9% ± 0.7% | 52.5% ± 1.3% | 72.1% ± 0.4% | 41.9% ± 0.8% | **58.7% ± 1.3%** | **48.8% ± 0.9%** |
+| random_forest_classifier_balanced | 73.9% ± 0.7% | 52.5% ± 1.3% | 72.1% ± 0.4% | 41.9% ± 0.8% | **58.7% ± 1.3%** | **48.8% ± 0.9%** |
+| xgboost | 73.5% ± 0.6% | 51.8% ± 1.5% | 80.8% ± 0.5% | **71.5% ± 1.4%** | 26.4% ± 2.3% | 38.8% ± 2.6% |
+| xgboost_balanced | 73.3% ± 0.8% | 51.7% ± 1.5% | 71.2% ± 0.7% | 40.3% ± 0.8% | 58.2% ± 1.6% | 47.6% ± 0.5% |
+| logit_elasticnet_robust_scaler_balanced | 72.5% ± 0.5% | 50.9% ± 1.2% | 71.1% ± 0.7% | 40.4% ± 0.6% | 56.7% ± 2.4% | 47.1% ± 0.8% |
+| logit_elasticnet_robust_scaler | 72.4% ± 0.5% | 50.9% ± 1.2% | 80.9% ± 0.4% | 70.9% ± 1.6% | 26.7% ± 1.7% | 38.8% ± 2.0% |
+| classic_logit_robust_scaler | 72.4% ± 0.5% | 50.9% ± 1.2% | 80.9% ± 0.4% | 70.9% ± 1.6% | 26.8% ± 1.6% | 38.8% ± 1.9% |
+| logit_elasticnet_binned_ohe_balanced | 72.4% ± 0.5% | 50.1% ± 0.9% | 70.5% ± 0.6% | 39.7% ± 0.5% | 57.3% ± 2.4% | 46.9% ± 0.7% |
+| logit_binned_ohe_balanced | 72.4% ± 0.5% | 50.1% ± 0.9% | 70.5% ± 0.6% | 39.7% ± 0.5% | 57.4% ± 2.4% | 46.9% ± 0.7% |
+| logit_binned_ohe_balanced_calibrated | 72.4% ± 0.5% | 50.1% ± 0.9% | 80.6% ± 0.3% | 68.2% ± 2.5% | 27.5% ± 3.1% | 39.0% ± 2.9% |
+| logit_elasticnet_binned_ohe | 72.3% ± 0.4% | 50.1% ± 0.9% | 80.6% ± 0.4% | 68.3% ± 2.5% | 27.8% ± 3.3% | 39.4% ± 3.1% |
+| logit_binned_ohe | 72.3% ± 0.4% | 50.1% ± 0.9% | 80.6% ± 0.4% | 68.2% ± 2.4% | 27.8% ± 3.2% | 39.4% ± 3.1% |
+| logit_elastic_binned_woe_balanced | 71.2% ± 0.5% | 49.7% ± 0.8% | 69.5% ± 0.8% | 38.4% ± 0.6% | 56.7% ± 2.2% | 45.8% ± 0.3% |
+| logit_elastic_binned_woe | 71.2% ± 0.5% | 49.7% ± 0.8% | 80.7% ± 0.4% | 68.3% ± 3.2% | 28.2% ± 4.3% | 39.7% ± 4.0% |
+| logit_binned_woe | 71.2% ± 0.5% | 49.7% ± 0.8% | 80.6% ± 0.3% | 68.3% ± 3.2% | 28.2% ± 4.3% | 39.7% ± 4.0% |
 | random_classifier | 50.2% ± 0.2% | 22.8% ± 0.1% | 65.4% ± 0.1% | 23.0% ± 0.3% | 22.4% ± 0.3% | 22.7% ± 0.3% |
 | always_true_classifier | 50.0% ± 0.0% | 22.7% ± 0.0% | 22.7% ± 0.0% | 22.7% ± 0.0% | 100.0% ± 0.0% | 37.0% ± 0.0% |
 
-Selected model in main deck: **random_forest_classifier_balanced_calibrated**.
+Selected model in the current main deck: **random_forest_classifier_balanced_calibrated**.
 
 :::
 
-## Annex: regression CV leaderboard
+## Annex: static regression CV leaderboard
 
 ::: {style="font-size: 80%;"}
 
 | Model | R² | MAE (USD) | MAPE | Median APE |
 | --- | ---: | ---: | ---: | ---: |
-| xgboost_boxcox | 0.062 ± 0.010 | 65.1k ± 1.5k | 164.1% ± 31.2% | 61.7% |
-| xgboost_log1p | 0.015 ± 0.009 | 65.9k ± 1.5k | 131.3% ± 26.1% | 61.8% |
-| xgboost_yeojohnson | 0.062 ± 0.010 | 65.1k ± 1.5k | 165.2% ± 32.3% | 61.8% |
-| linear_power_scaler_binned_ohe | 0.043 ± 0.009 | 66.7k ± 1.4k | 180.5% ± 37.7% | 63.6% |
-| classic_linear_yeojohnson_robust_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.1% ± 34.3% | 63.8% |
-| classic_linear_boxcox_robust_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.2% ± 34.3% | 63.9% |
-| classic_linear_log1p_robust_scaler | -0.006 ± 0.006 | 67.7k ± 1.5k | 148.3% ± 30.7% | 64.1% |
+| xgboost_yeojohnson | 0.041 ± 0.009 | 66.7k ± 1.5k | 158.4% ± 22.3% | 63.1% |
+| xgboost_boxcox | 0.041 ± 0.009 | 66.7k ± 1.5k | 158.7% ± 23.9% | 63.1% |
+| xgboost_log1p | -0.007 ± 0.009 | 67.6k ± 1.6k | 126.4% ± 19.5% | 63.5% |
+| classic_linear_boxcox_robust_scaler | 0.031 ± 0.009 | 67.4k ± 1.5k | 173.5% ± 28.9% | 63.8% |
+| classic_linear_yeojohnson_robust_scaler | 0.031 ± 0.009 | 67.4k ± 1.5k | 173.4% ± 28.9% | 63.8% |
+| linear_power_scaler_binned_ohe | 0.029 ± 0.009 | 67.5k ± 1.5k | 176.8% ± 30.4% | 63.9% |
+| classic_linear_log1p_robust_scaler | -0.017 ± 0.008 | 68.3k ± 1.6k | 144.6% ± 24.8% | 64.4% |
 | median_regressor | -0.108 ± 0.002 | 75.0k ± 1.5k | 124.7% ± 28.4% | 74.6% |
-| random_forest_regressor | 0.147 ± 0.009 | 72.7k ± 0.9k | 292.2% ± 65.4% | 75.5% |
-| xgboost | 0.156 ± 0.008 | 72.3k ± 0.9k | 294.6% ± 54.5% | 77.8% |
-| xgboost_pseudohubererror | -0.477 ± 0.012 | 92.7k ± 1.5k | 458.8% ± 94.4% | 96.9% |
-| classic_linear_robust_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | 78.9% |
-| linear_binned_ohe | 0.134 ± 0.007 | 74.3k ± 1.0k | 300.4% ± 55.2% | 78.9% |
-| elastic_binned_woe | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
-| linear_binned_woe_robust_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
+| random_forest_regressor | 0.124 ± 0.009 | 74.2k ± 1.1k | 283.4% ± 44.4% | 77.5% |
+| xgboost | 0.136 ± 0.008 | 73.8k ± 1.0k | 289.3% ± 46.0% | 78.6% |
+| linear_binned_ohe | 0.127 ± 0.008 | 74.7k ± 1.0k | 298.7% ± 52.5% | 78.6% |
+| classic_linear_robust_scaler | 0.128 ± 0.007 | 74.7k ± 1.1k | 295.1% ± 50.2% | 78.7% |
+| linear_binned_woe_robust_scaler | 0.124 ± 0.008 | 74.8k ± 1.1k | 298.7% ± 56.6% | 79.1% |
+| elastic_binned_woe | 0.124 ± 0.008 | 74.8k ± 1.1k | 298.7% ± 56.6% | 79.1% |
 | mean_regressor | -0.000 ± 0.000 | 84.9k ± 1.3k | 235.0% ± 53.9% | 88.3% |
 | random_regressor | -1.053 ± 0.057 | 115.0k ± 2.1k | 164.1% ± 65.3% | 90.4% |
-| elasticnet_robust_scaler | 0.066 ± 0.003 | 79.7k ± 1.3k | 260.6% ± 58.1% | 97.6% |
+| xgboost_pseudohubererror | -0.473 ± 0.011 | 92.3k ± 2.0k | 5.3% ± 1.2% | 96.1% |
+| elasticnet_robust_scaler | 0.058 ± 0.003 | 80.2k ± 1.2k | 260.0% ± 54.5% | 99.0% |
 
-Selected model in main deck: **xgboost_boxcox** by CV Median APE, tie-broken by MAE.
+Selected model in the current main deck: **xgboost_yeojohnson** by CV Median APE.
 
 :::
 
-## Annex: hold-out calibration of the selected classifier
+## Annex: static hold-out calibration of the selected classifier
 
 ::: {.columns}
 ::: {.column width="58%"}
-![](assets/annex_calibration_comparison.png){width=100%}
+![](assets/annex_calibration_comparison_static.png){width=100%}
 :::
 ::: {.column width="42%"}
-- This chart now shows the **selected classifier itself** on the held-out set: `random_forest_classifier_balanced_calibrated`.
+- This chart shows the **selected static classifier itself** on the held-out set: `random_forest_classifier_balanced_calibrated`.
 - It compares the model's mean predicted win probability to the observed win rate across quantile bins.
 - The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.
 :::
 :::
 
-## Annex: hold-out classification report at the selected model's optimal threshold
+## Annex: static hold-out classification report at the selected model's optimal threshold
 
 ::: {.smallest}
 
-Threshold chosen on **training out-of-fold predictions** by maximizing **F1** for the selected model: **39.4%** predicted win probability.
+Threshold chosen on **training out-of-fold predictions** to maximize **precision subject to recall ≥ 25%** for the selected model: **54.5%** predicted win probability.
 
 | Model | Threshold | Accuracy | Precision | Recall | F1 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Selected @ optimal threshold | 39.4% | 86.0% | 67.6% | 73.7% | 70.5% |
+| Selected @ optimal threshold | 54.5% | 81.0% | 73.5% | 25.3% | 37.6% |
 | Random classifier | n/a | 65.1% | 23.5% | 23.6% | 23.5% |
 | Always false | n/a | 77.3% | 0.0% | 0.0% | 0.0% |
 | Always true | n/a | 22.7% | 22.7% | 100.0% | 37.0% |
 
 | Model | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
-| Selected @ optimal threshold | 15,751 | 1,825 | 1,359 | 3,811 |
+| Selected @ optimal threshold | 17,104 | 472 | 3,860 | 1,310 |
 | Random classifier | 13,597 | 3,979 | 3,951 | 1,219 |
 | Always false | 17,576 | 0 | 5,170 | 0 |
 | Always true | 0 | 17,576 | 0 | 5,170 |
@@ -551,30 +553,30 @@ Diagnostic note: the threshold is selected on train-side OOF predictions, then e
 
 :::
 
-## Annex: regression error by amount bin on the hold-out set
+## Annex: static regression error by amount bin on the hold-out set
 
 ::: {.columns}
 ::: {.column width="58%"}
-![](assets/annex_regression_error_bins.png){width=100%}
+![](assets/annex_regression_error_bins_static.png){width=100%}
 :::
 ::: {.column width="42%"}
 - The comparison shows where model error changes most across deal-size bands, instead of averaging everything into one MAE figure.
-- The transformed XGBoost variants dominate the relative-error ranking, with **XGBoost Box-Cox** narrowly leading overall.
-- The main gain comes from reducing typical proportional error, while the largest opportunities still drive a gap between per-deal accuracy and total-portfolio forecasting.
+- Under the static setup, the transformed XGBoost variants still lead the relative-error ranking, with **XGBoost Yeo-Johnson** narrowly selected overall.
+- The main gain still comes from controlling typical proportional error, while the largest opportunities continue to create a gap between deal-level accuracy and total-portfolio forecasting.
 :::
 :::
 
-## Annex: held-out forecast bias of the selected amount model
+## Annex: static held-out forecast bias of the selected amount model
 
 ::: {.columns}
 ::: {.column width="56%"}
-![](assets/annex_forecast_bias.png){width=100%}
+![](assets/annex_forecast_bias_static.png){width=100%}
 :::
 ::: {.column width="44%"}
-- The selected amount model under-forecasts the held-out portfolio: **$1.31B predicted** vs **$2.14B actual**.
-- That is a gap of about **$830M**, or roughly **39% below** the realized total on the test set.
+- The selected static amount model under-forecasts the held-out portfolio: **$1.28B predicted** vs **$2.14B actual**.
+- That is a gap of about **$859M**, or roughly **40% below** the realized total on the test set.
 - This is why the main deck uses the amount model for **directional sizing and ranking**, not as a committed aggregate forecast without an explicit bias-correction layer.
-- The same hold-out evaluation still supports the model for per-opportunity ordering because **MAE ≈ $65K** and **Median APE ≈ 61%** are judged at deal level, not portfolio-total calibration.
+- The same hold-out evaluation still supports the model for per-opportunity ordering because **MAE ≈ $66.7K** and **Median APE ≈ 63%** are judged at deal level, not portfolio-total calibration.
 :::
 :::
 
@@ -610,12 +612,12 @@ Diagnostic note: the threshold is selected on train-side OOF predictions, then e
 
 ::: {.columns}
 ::: {.column width="55%"}
-![](assets/sim_focus_gain_main.png){width=88%}
+![](assets/sim_focus_gain_main_static.png){width=88%}
 :::
 ::: {.column width="45%"}
 - Same salesforce, fewer deals — dropped opportunities go unworked.
-- Focus gain grows as the slice shrinks (λ_max = 1.5× at top slice → 1.0× at full pipeline).
-- Break-even at **top ~21%**; optimal at **top ~43%** → **$462M** (+$77M vs. baseline).
+- Focus gain grows as the slice shrinks (λ_max = 2.0× at top slice → 1.0× at full pipeline).
+- Break-even at **top ~28%**; optimal at **top ~56%** → **$436M** (+$51M vs. baseline).
 :::
 :::
 
@@ -628,46 +630,67 @@ Focus-gain λ_max is a scenario assumption, not an empirically estimated causal 
 
 ::: {.columns}
 ::: {.column width="58%"}
-![](assets/sim_focus_gain_sweep.png){width=100%}
+![](assets/sim_focus_gain_sweep_static.png){width=100%}
 :::
 ::: {.column width="42%"}
 - Each curve shows the **net revenue delta in USD** vs. the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.
 - λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.
-- Break-even shifts left as λ_max increases: at λ_max = 1.5 the top ~21% of the pipeline already matches full-pipeline revenue; at λ_max = 3.0 even a very small slice generates a large surplus.
-- The main deck uses **λ_max = 1.50** as the base scenario.
+- Break-even shifts left as λ_max increases: under the static model, the base scenario now breaks even at about **top 28%** of the ranked pipeline when **λ_max = 2.0**.
+- The current static deck uses **λ_max = 2.00** as the base scenario.
 :::
+:::
+
+## Annex: strategic lever 2 — practical contribution formula
+
+::: {.smaller}
+
+We replace the old `revenue − rep cost` shortcut with a more realistic contribution measure:
+
+`Contribution = RealizedRevenue × margin_pct − SalesEffortCost − CommissionCost − AcquisitionCost − ServingCost`
+
+- **Realized revenue**: `amount_i` if won, else `0`
+- **Margin %**: product-group proxy used as a COGS fallback
+  - Car Accessories `68%`, Performance & Non-auto `62%`, Tires & Wheels `55%`, Car Electronics `58%`, default `63%`
+- **Sales effort cost**: team base+overhead allocated from rep capacity
+- **Commission cost**: `7%` of realized revenue
+- **Acquisition cost**: route-to-market proxy
+  - Fields Sales `2.4k`, Reseller `1.6k`, Telesales `0.85k`, Telecoverage `0.65k`, Other/default lower values
+- **Serving cost**: `8%` of realized won amount
+
+Why this matters: it keeps the earlier sales-effort framing, but now separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.
+
 :::
 
 ## Annex: Strategic lever 2: Reduce the salesforce and let the model pick the best opportunities
 
 ::: {.columns}
 ::: {.column width="55%"}
-![](assets/sim_salesforce_reduction_main.png){width=100%}
+![](assets/sim_salesforce_reduction_main_static.png){width=100%}
 :::
 ::: {.column width="45%"}
-- Baseline: **228 reps** × $120K OTE = **$41M** fully-loaded salesforce cost, covering 22,746 opportunities.
+- Baseline: **228 reps**, **$385M** realized revenue, and about **$121M** contribution after margin, base+overhead, commission, acquisition, and serving costs.
 - Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.
-- **Optimal headcount: 143 reps** → $376M revenue retained (97.7%) at $26M cost → net margin **+$6M** vs. full staffing.
-- Last individually break-even rep batch: **rep #225** — reps 226–228 generate less revenue than their fully-loaded cost.
+- **Optimal headcount: 221 reps** → **$384M** revenue retained (99.7%) and **+$1.2M** contribution vs. baseline.
+- Last individually positive rep batch is around **rep #221** — beyond that, incremental contribution no longer covers incremental operating cost.
 :::
 :::
 
 ::: aside
-Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cost estimated at $180K (1.5× OTE, including benefits, payroll taxes, tech stack, and overhead). Simulation uses held-out test-set predictions.
+Headcount model assumes 100 opps/rep/period. Contribution now uses product-margin proxies, **$135K base+overhead per rep**, **7% commission on realized revenue**, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.
 :::
 
-## Annex: salesforce reduction — marginal revenue per rep batch
+## Annex: salesforce reduction — marginal contribution per rep batch
 
 ::: {.columns}
 ::: {.column width="58%"}
-![](assets/sim_salesforce_reduction_marginal.png){width=100%}
+![](assets/sim_salesforce_reduction_marginal_static.png){width=100%}
 
 :::
 ::: {.column width="42%"}
-- Each bar shows the **marginal revenue** contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.
-- The dashed line marks the **cost of one rep batch** (~$1.44M at $120K OTE).
-- **Blue bars** are ROI-positive: the batch earns more than it costs. **Red bars** are ROI-negative: cutting those reps improves net margin.
-- The crossover point is around rep #225 — reps beyond that generate less revenue than their **fully-loaded cost** ($180K), making reduction unambiguously value-accretive.
+- Each bar shows the **marginal contribution** contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.
+- The comparison line now represents the **incremental operating cost** of the same batch, not a flat rep-cost shortcut.
+- **Blue bars** are ROI-positive: the batch adds more contribution than cost. **Red bars** are ROI-negative: cutting those reps improves contribution margin.
+- Under the static ranking, the crossover is still late in the curve, which is why the contribution upside from resizing remains modest.
 :::
 :::
 
@@ -763,7 +786,6 @@ Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cos
 
 :::
 
-
 ## Annex: original text version of the modelling use-cases slide
 
 ::: {.columns}
@@ -832,3 +854,190 @@ Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cos
   - Extend to full pipeline and embed in forecasting cadence
   - Incorporate into commercial planning and resource allocation
   - Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights
+
+## Annex: classification CV leaderboard
+
+::: {style="font-size: 80%;"}
+
+| Model | ROC AUC | PR AUC | Accuracy | Precision | Recall | F1 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| xgboost | **92.9% ± 0.4%** | **82.2% ± 0.5%** | **88.3% ± 0.4%** | **78.5% ± 0.9%** | 66.8% ± 1.2% | 72.2% ± 0.9% |
+| xgboost_balanced | 92.8% ± 0.4% | 82.0% ± 0.6% | 86.2% ± 0.6% | 65.7% ± 1.3% | **82.0% ± 0.5%** | **72.9% ± 0.9%** |
+| random_forest_classifier | 91.4% ± 0.4% | 77.3% ± 1.0% | 84.7% ± 0.6% | 62.6% ± 1.1% | 80.9% ± 0.6% | 70.6% ± 1.0% |
+| random_forest_classifier_balanced | 91.4% ± 0.4% | 77.3% ± 1.0% | 84.7% ± 0.6% | 62.6% ± 1.1% | 80.9% ± 0.6% | 70.6% ± 1.0% |
+| random_forest_classifier_balanced_calibrated | 91.2% ± 0.4% | 76.7% ± 1.2% | 86.9% ± 0.4% | 73.2% ± 1.1% | 66.6% ± 1.0% | 69.8% ± 0.8% |
+| logit_elasticnet_binned_ohe_balanced | 88.1% ± 0.4% | 69.8% ± 0.5% | 79.4% ± 0.8% | 53.0% ± 1.2% | 81.8% ± 0.8% | 64.3% ± 1.1% |
+| logit_binned_ohe_balanced | 88.1% ± 0.4% | 69.8% ± 0.5% | 79.4% ± 0.8% | 53.0% ± 1.1% | 81.8% ± 0.8% | 64.3% ± 1.0% |
+| logit_binned_ohe_balanced_calibrated | 88.1% ± 0.4% | 69.8% ± 0.5% | 84.0% ± 0.3% | 71.1% ± 0.7% | 50.1% ± 1.2% | 58.8% ± 1.0% |
+| logit_binned_ohe | 88.1% ± 0.4% | 70.0% ± 0.5% | 84.2% ± 0.3% | 71.1% ± 0.9% | 51.3% ± 1.3% | 59.6% ± 1.1% |
+| logit_elasticnet_binned_ohe | 88.1% ± 0.4% | 70.0% ± 0.5% | 84.2% ± 0.3% | 71.3% ± 0.8% | 51.0% ± 1.2% | 59.4% ± 1.0% |
+| logit_elastic_binned_woe_balanced | 87.7% ± 0.4% | 69.2% ± 0.3% | 79.0% ± 0.6% | 52.4% ± 0.9% | 80.9% ± 0.6% | 63.6% ± 0.7% |
+| logit_elastic_binned_woe | 87.7% ± 0.4% | 69.3% ± 0.4% | 83.8% ± 0.2% | 71.7% ± 0.9% | 47.3% ± 1.1% | 57.0% ± 0.9% |
+| logit_binned_woe | 87.7% ± 0.4% | 69.3% ± 0.4% | 83.8% ± 0.2% | 71.8% ± 0.8% | 47.3% ± 0.9% | 57.0% ± 0.8% |
+| logit_elasticnet_robust_scaler_balanced | 86.8% ± 0.6% | 66.9% ± 1.1% | 78.7% ± 0.7% | 52.0% ± 1.0% | 79.6% ± 1.1% | 62.9% ± 1.1% |
+| logit_elasticnet_robust_scaler | 86.8% ± 0.6% | 67.5% ± 1.1% | 82.8% ± 0.2% | 68.4% ± 0.6% | 45.5% ± 1.1% | 54.6% ± 0.8% |
+| classic_logit_robust_scaler | 86.8% ± 0.6% | 67.5% ± 1.1% | 82.8% ± 0.2% | 68.4% ± 0.6% | 45.5% ± 1.1% | 54.7% ± 0.8% |
+| random_classifier | 50.2% ± 0.2% | 22.8% ± 0.1% | 65.4% ± 0.1% | 23.0% ± 0.3% | 22.4% ± 0.3% | 22.7% ± 0.3% |
+| always_true_classifier | 50.0% ± 0.0% | 22.7% ± 0.0% | 22.7% ± 0.0% | 22.7% ± 0.0% | 100.0% ± 0.0% | 37.0% ± 0.0% |
+
+Selected model in main deck: **random_forest_classifier_balanced_calibrated**.
+
+:::
+
+## Annex: regression CV leaderboard
+
+::: {style="font-size: 80%;"}
+
+| Model | R² | MAE (USD) | MAPE | Median APE |
+| --- | ---: | ---: | ---: | ---: |
+| xgboost_boxcox | 0.062 ± 0.010 | 65.1k ± 1.5k | 164.1% ± 31.2% | 61.7% |
+| xgboost_log1p | 0.015 ± 0.009 | 65.9k ± 1.5k | 131.3% ± 26.1% | 61.8% |
+| xgboost_yeojohnson | 0.062 ± 0.010 | 65.1k ± 1.5k | 165.2% ± 32.3% | 61.8% |
+| linear_power_scaler_binned_ohe | 0.043 ± 0.009 | 66.7k ± 1.4k | 180.5% ± 37.7% | 63.6% |
+| classic_linear_yeojohnson_robust_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.1% ± 34.3% | 63.8% |
+| classic_linear_boxcox_robust_scaler | 0.041 ± 0.007 | 66.8k ± 1.4k | 176.2% ± 34.3% | 63.9% |
+| classic_linear_log1p_robust_scaler | -0.006 ± 0.006 | 67.7k ± 1.5k | 148.3% ± 30.7% | 64.1% |
+| median_regressor | -0.108 ± 0.002 | 75.0k ± 1.5k | 124.7% ± 28.4% | 74.6% |
+| random_forest_regressor | 0.147 ± 0.009 | 72.7k ± 0.9k | 292.2% ± 65.4% | 75.5% |
+| xgboost | 0.156 ± 0.008 | 72.3k ± 0.9k | 294.6% ± 54.5% | 77.8% |
+| xgboost_pseudohubererror | -0.477 ± 0.012 | 92.7k ± 1.5k | 458.8% ± 94.4% | 96.9% |
+| classic_linear_robust_scaler | 0.134 ± 0.006 | 74.3k ± 1.1k | 297.1% ± 54.9% | 78.9% |
+| linear_binned_ohe | 0.134 ± 0.007 | 74.3k ± 1.0k | 300.4% ± 55.2% | 78.9% |
+| elastic_binned_woe | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
+| linear_binned_woe_robust_scaler | 0.131 ± 0.008 | 74.3k ± 1.1k | 298.7% ± 58.7% | 79.3% |
+| mean_regressor | -0.000 ± 0.000 | 84.9k ± 1.3k | 235.0% ± 53.9% | 88.3% |
+| random_regressor | -1.053 ± 0.057 | 115.0k ± 2.1k | 164.1% ± 65.3% | 90.4% |
+| elasticnet_robust_scaler | 0.066 ± 0.003 | 79.7k ± 1.3k | 260.6% ± 58.1% | 97.6% |
+
+Selected model in main deck: **xgboost_boxcox** by CV Median APE, tie-broken by MAE.
+
+:::
+
+## Annex: hold-out calibration of the selected classifier
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/annex_calibration_comparison.png){width=100%}
+:::
+::: {.column width="42%"}
+- This chart now shows the **selected classifier itself** on the held-out set: `random_forest_classifier_balanced_calibrated`.
+- It compares the model's mean predicted win probability to the observed win rate across quantile bins.
+- The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.
+:::
+:::
+
+## Annex: hold-out classification report at the selected model's optimal threshold
+
+::: {.smallest}
+
+Threshold chosen on **training out-of-fold predictions** by maximizing **F1** for the selected model: **37.8%** predicted win probability.
+
+| Model | Threshold | Accuracy | Precision | Recall | F1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Selected @ optimal threshold | 37.8% | 85.8% | 66.8% | 74.7% | 70.5% |
+| Random classifier | n/a | 65.1% | 23.5% | 23.6% | 23.5% |
+| Always false | n/a | 77.3% | 0.0% | 0.0% | 0.0% |
+| Always true | n/a | 22.7% | 22.7% | 100.0% | 37.0% |
+
+| Model | TN | FP | FN | TP |
+| --- | ---: | ---: | ---: | ---: |
+| Selected @ optimal threshold | 15,751 | 1,825 | 1,359 | 3,811 |
+| Random classifier | 13,597 | 3,979 | 3,951 | 1,219 |
+| Always false | 17,576 | 0 | 5,170 | 0 |
+| Always true | 0 | 17,576 | 0 | 5,170 |
+
+Diagnostic note: the threshold is selected on train-side OOF predictions, then evaluated once on the untouched hold-out set shown here.
+
+:::
+
+## Annex: regression error by amount bin on the hold-out set
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/annex_regression_error_bins.png){width=100%}
+:::
+::: {.column width="42%"}
+- The comparison shows where model error changes most across deal-size bands, instead of averaging everything into one MAE figure.
+- The transformed XGBoost variants dominate the relative-error ranking, with **XGBoost Box-Cox** narrowly leading overall.
+- The main gain comes from reducing typical proportional error, while the largest opportunities still drive a gap between per-deal accuracy and total-portfolio forecasting.
+:::
+:::
+
+## Annex: held-out forecast bias of the selected amount model
+
+::: {.columns}
+::: {.column width="56%"}
+![](assets/annex_forecast_bias.png){width=100%}
+:::
+::: {.column width="44%"}
+- The selected amount model under-forecasts the held-out portfolio: **$1.31B predicted** vs **$2.14B actual**.
+- That is a gap of about **$830M**, or roughly **39% below** the realized total on the test set.
+- This is why the main deck uses the amount model for **directional sizing and ranking**, not as a committed aggregate forecast without an explicit bias-correction layer.
+- The same hold-out evaluation still supports the model for per-opportunity ordering because **MAE ≈ $65K** and **Median APE ≈ 61%** are judged at deal level, not portfolio-total calibration.
+:::
+:::
+
+## Annex: strategic lever 1 — focus the same team on fewer, better-ranked deals
+
+::: {.columns}
+::: {.column width="55%"}
+![](assets/sim_focus_gain_main.png){width=88%}
+:::
+::: {.column width="45%"}
+- Same salesforce, fewer deals — dropped opportunities go unworked.
+- Focus gain grows as the slice shrinks (λ_max = 2.0× at top slice → 1.0× at full pipeline).
+- Break-even at **top ~12%**; optimal at **top ~42%** → **$566M** (+$181M vs. baseline).
+:::
+:::
+
+::: aside
+Focus-gain λ_max is a scenario assumption, not an empirically estimated causal effect. λ decays linearly from λ_max at the smallest slice to 1.0× at the full pipeline. Simulation uses held-out test-set predictions.
+:::
+
+
+## Annex: focus-gain sensitivity across λ values
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/sim_focus_gain_sweep.png){width=100%}
+:::
+::: {.column width="42%"}
+- Each curve shows the **net revenue delta in USD** vs. the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.
+- λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.
+- Break-even shifts left as λ_max increases: with the rerun dynamic classifier, the base scenario now breaks even at about **top 12%** of the ranked pipeline when **λ_max = 2.0**.
+- The current simulation uses **λ_max = 2.00** as the base scenario.
+:::
+:::
+
+## Annex: Strategic lever 2: Reduce the salesforce and let the model pick the best opportunities
+
+::: {.columns}
+::: {.column width="55%"}
+![](assets/sim_salesforce_reduction_main.png){width=100%}
+:::
+::: {.column width="45%"}
+- Baseline: **228 reps**, **$385M** realized revenue, and about **$121M** contribution after margin, base+overhead, commission, acquisition, and serving costs.
+- Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.
+- **Optimal headcount: 100 reps** → **$361M** revenue retained (93.8%) and **+$29.5M** contribution vs. baseline.
+- Last individually positive rep batch is around **rep #82** — after that point, incremental contribution no longer covers incremental operating cost.
+:::
+:::
+
+::: aside
+Same contribution formula as the static version, but applied to the stronger dynamic ranking. Simulation uses held-out test-set predictions.
+:::
+
+## Annex: salesforce reduction — marginal contribution per rep batch
+
+::: {.columns}
+::: {.column width="58%"}
+![](assets/sim_salesforce_reduction_marginal.png){width=100%}
+
+:::
+::: {.column width="42%"}
+- Each bar shows the **marginal contribution** contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.
+- The comparison line represents the **incremental operating cost** of the same batch.
+- **Blue bars** are ROI-positive: the batch adds more contribution than cost. **Red bars** are ROI-negative: cutting those reps improves contribution margin.
+- With the stronger dynamic ranking, the crossover happens much earlier, around **rep #82**, which is why the resized team becomes much smaller under this richer formula.
+:::
+:::

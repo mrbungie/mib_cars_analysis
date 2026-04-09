@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 import importlib.util
@@ -32,6 +33,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from tqdm.auto import tqdm
 from xgboost import XGBClassifier, XGBRegressor
+
+from reporting_variant_paths import model_report_path, validate_variant
 
 _original_type_of_target = multiclass.type_of_target
 
@@ -88,10 +91,7 @@ StatsModelsRegressor = statsmodels_module.StatsModelsRegressor
 TRAIN_PATH = ROOT / "data/intermediate/df_train_stratified.parquet"
 TEST_PATH = ROOT / "data/intermediate/df_test_stratified.parquet"
 SLIDE_DATA_DIR = ROOT / "slidedeck/data"
-CLASSIFICATION_REPORT = SLIDE_DATA_DIR / "classification_model_report.xlsx"
-REGRESSION_REPORT = SLIDE_DATA_DIR / "regression_model_report.xlsx"
-
-CLASSIFICATION_FEATURES = [
+DYNAMIC_FEATURES = [
     "Supplies Group",
     "Supplies Subgroup",
     "Region",
@@ -108,9 +108,26 @@ CLASSIFICATION_FEATURES = [
     "Ratio Days Validated To Total Days",
     "Ratio Days Qualified To Total Days",
 ]
-CLASSIFICATION_TARGET = "Opportunity Result Bool"
+STATIC_FEATURES = [
+    "Supplies Group",
+    "Supplies Subgroup",
+    "Region",
+    "Route To Market",
+    "Client Size By Revenue (USD)",
+    "Client Size By Employee Count",
+    "Revenue From Client Past Two Years (USD)",
+    "Competitor Type",
+]
 
-REGRESSION_FEATURES = CLASSIFICATION_FEATURES.copy()
+
+def get_feature_set(variant: str) -> list[str]:
+    normalized = validate_variant(variant)
+    if normalized == "static":
+        return STATIC_FEATURES.copy()
+    return DYNAMIC_FEATURES.copy()
+
+
+CLASSIFICATION_TARGET = "Opportunity Result Bool"
 REGRESSION_TARGET = "Opportunity Amount USD"
 
 
@@ -205,6 +222,125 @@ def get_power_transformed_regressor(model, method: str):
     return TransformedTargetRegressor(
         regressor=model,
         transformer=PowerTransformer(method=method, standardize=True),
+    )
+
+
+def get_rf_classifier(class_weight: str | None = None) -> RandomForestClassifier:
+    return RandomForestClassifier(
+        n_estimators=500,
+        max_depth=None,
+        min_samples_leaf=5,
+        min_samples_split=10,
+        max_features="sqrt",
+        bootstrap=True,
+        class_weight=class_weight,
+        n_jobs=-1,
+        random_state=42,
+    )
+
+
+def get_xgb_classifier(scale_pos_weight: float | None = None) -> XGBClassifier:
+    params: dict[str, object] = {
+        "objective": "binary:logistic",
+        "eval_metric": "auc",
+        "max_depth": 6,
+        "min_child_weight": 2,
+        "gamma": 0,
+        "learning_rate": 0.05,
+        "n_estimators": 800,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "reg_alpha": 0.0,
+        "random_state": 42,
+        "n_jobs": -1,
+    }
+    if scale_pos_weight is not None:
+        params["scale_pos_weight"] = scale_pos_weight
+    return XGBClassifier(**params)
+
+
+def select_operating_threshold(
+    y_true: pd.Series | np.ndarray,
+    proba: np.ndarray,
+    min_recall: float = 0.25,
+) -> tuple[float, float, float, float, float]:
+    threshold_grid = np.unique(np.concatenate(([0.0], proba, [1.0])))
+    best_threshold = 0.5
+    best_precision = -1.0
+    best_recall = -1.0
+    best_f1 = -1.0
+    best_accuracy = -1.0
+
+    for threshold in threshold_grid:
+        pred = (proba >= threshold).astype(int)
+        precision = precision_score(y_true, pred, zero_division=0)
+        recall = recall_score(y_true, pred, zero_division=0)
+        f1 = f1_score(y_true, pred, zero_division=0)
+        accuracy = accuracy_score(y_true, pred)
+        feasible = recall >= min_recall
+        current_key = (feasible, precision, f1, accuracy, threshold)
+        best_key = (
+            best_recall >= min_recall,
+            best_precision,
+            best_f1,
+            best_accuracy,
+            best_threshold,
+        )
+        if current_key > best_key:
+            best_threshold = float(threshold)
+            best_precision = float(precision)
+            best_recall = float(recall)
+            best_f1 = float(f1)
+            best_accuracy = float(accuracy)
+
+    return (
+        best_threshold,
+        best_accuracy,
+        best_precision,
+        best_recall,
+        best_f1,
+    )
+
+
+def select_f1_threshold(
+    y_true: pd.Series | np.ndarray,
+    proba: np.ndarray,
+) -> tuple[float, float, float, float, float]:
+    threshold_grid = np.unique(np.concatenate(([0.0], proba, [1.0])))
+    best_threshold = 0.5
+    best_f1 = -1.0
+    best_accuracy = -1.0
+    best_precision = -1.0
+    best_recall = -1.0
+
+    for threshold in threshold_grid:
+        pred = (proba >= threshold).astype(int)
+        f1 = f1_score(y_true, pred, zero_division=0)
+        accuracy = accuracy_score(y_true, pred)
+        precision = precision_score(y_true, pred, zero_division=0)
+        recall = recall_score(y_true, pred, zero_division=0)
+        current_key = (f1, precision, accuracy, recall, -threshold)
+        best_key = (
+            best_f1,
+            best_precision,
+            best_accuracy,
+            best_recall,
+            -best_threshold,
+        )
+        if current_key > best_key:
+            best_threshold = float(threshold)
+            best_f1 = float(f1)
+            best_accuracy = float(accuracy)
+            best_precision = float(precision)
+            best_recall = float(recall)
+
+    return (
+        best_threshold,
+        best_accuracy,
+        best_precision,
+        best_recall,
+        best_f1,
     )
 
 
@@ -465,13 +601,15 @@ def get_regressor_importance(
     return feature_importance_df
 
 
-def build_classification_reports() -> None:
+def build_classification_reports(variant: str = "dynamic") -> Path:
+    feature_set = get_feature_set(variant)
+    classification_report = model_report_path(ROOT, "classification", variant)
     train_df = pd.read_parquet(TRAIN_PATH)
     test_df = pd.read_parquet(TEST_PATH)
 
-    X = train_df[CLASSIFICATION_FEATURES].copy()
+    X = train_df[feature_set].copy()
     y = train_df[CLASSIFICATION_TARGET].astype(int).copy()
-    X_test = test_df[CLASSIFICATION_FEATURES].copy()
+    X_test = test_df[feature_set].copy()
     y_test = test_df[CLASSIFICATION_TARGET].astype(int).copy()
 
     categorical_cols = [
@@ -484,7 +622,7 @@ def build_classification_reports() -> None:
         "Client Size By Employee Count",
         "Revenue From Client Past Two Years (USD)",
     ]
-    numerical_cols = [c for c in CLASSIFICATION_FEATURES if c not in categorical_cols]
+    numerical_cols = [c for c in feature_set if c not in categorical_cols]
     scale_pos_weight = float((y == 0).sum() / max(int((y == 1).sum()), 1))
 
     experiment_grid = {
@@ -552,14 +690,7 @@ def build_classification_reports() -> None:
                 ),
                 (
                     "model",
-                    IntegerTargetClassifier(
-                        RandomForestClassifier(
-                            n_estimators=400,
-                            min_samples_leaf=5,
-                            n_jobs=-1,
-                            random_state=42,
-                        )
-                    ),
+                    IntegerTargetClassifier(get_rf_classifier(class_weight=None)),
                 ),
             ]
         ),
@@ -573,15 +704,7 @@ def build_classification_reports() -> None:
                 ),
                 (
                     "model",
-                    IntegerTargetClassifier(
-                        RandomForestClassifier(
-                            n_estimators=400,
-                            min_samples_leaf=5,
-                            class_weight="balanced_subsample",
-                            n_jobs=-1,
-                            random_state=42,
-                        )
-                    ),
+                    IntegerTargetClassifier(get_rf_classifier(class_weight="balanced")),
                 ),
             ]
         ),
@@ -597,13 +720,7 @@ def build_classification_reports() -> None:
                     "model",
                     CalibratedClassifierCV(
                         estimator=IntegerTargetClassifier(
-                            RandomForestClassifier(
-                                n_estimators=400,
-                                min_samples_leaf=5,
-                                class_weight="balanced_subsample",
-                                n_jobs=-1,
-                                random_state=42,
-                            )
+                            get_rf_classifier(class_weight="balanced")
                         ),
                         method="sigmoid",
                         cv=3,
@@ -616,7 +733,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -629,7 +746,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -650,7 +767,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -675,7 +792,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -697,7 +814,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -720,7 +837,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="woe",
                     ),
@@ -733,7 +850,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="woe",
                     ),
@@ -755,7 +872,7 @@ def build_classification_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=CLASSIFICATION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="woe",
                     ),
@@ -783,15 +900,7 @@ def build_classification_reports() -> None:
                 ),
                 (
                     "model",
-                    XGBClassifier(
-                        eval_metric="logloss",
-                        random_state=42,
-                        n_estimators=200,
-                        max_depth=4,
-                        learning_rate=0.05,
-                        subsample=0.9,
-                        colsample_bytree=0.9,
-                    ),
+                    get_xgb_classifier(),
                 ),
             ]
         ),
@@ -805,16 +914,7 @@ def build_classification_reports() -> None:
                 ),
                 (
                     "model",
-                    XGBClassifier(
-                        eval_metric="logloss",
-                        random_state=42,
-                        n_estimators=200,
-                        max_depth=4,
-                        learning_rate=0.05,
-                        subsample=0.9,
-                        colsample_bytree=0.9,
-                        scale_pos_weight=scale_pos_weight,
-                    ),
+                    get_xgb_classifier(scale_pos_weight=scale_pos_weight),
                 ),
             ]
         ),
@@ -938,20 +1038,26 @@ def build_classification_reports() -> None:
         cv=skf,
         method="predict_proba",
     )[:, 1]
-    train_threshold_grid = np.unique(np.concatenate(([0.0], train_oof_proba, [1.0])))
-    best_train_threshold = 0.5
-    best_train_f1 = -1.0
-    for threshold in train_threshold_grid:
-        threshold_pred = (train_oof_proba >= threshold).astype(int)
-        score = f1_score(y, threshold_pred, zero_division=0)
-        if score > best_train_f1:
-            best_train_f1 = score
-            best_train_threshold = float(threshold)
-
-    train_threshold_pred = (train_oof_proba >= best_train_threshold).astype(int)
-    best_train_accuracy = accuracy_score(y, train_threshold_pred)
-    best_train_precision = precision_score(y, train_threshold_pred, zero_division=0)
-    best_train_recall = recall_score(y, train_threshold_pred, zero_division=0)
+    if validate_variant(variant) == "static":
+        (
+            best_train_threshold,
+            best_train_accuracy,
+            best_train_precision,
+            best_train_recall,
+            best_train_f1,
+        ) = select_operating_threshold(y, train_oof_proba, min_recall=0.25)
+        threshold_selection_rule = "Selected classification model with threshold chosen on train OOF to maximize precision subject to recall >= 25%"
+    else:
+        (
+            best_train_threshold,
+            best_train_accuracy,
+            best_train_precision,
+            best_train_recall,
+            best_train_f1,
+        ) = select_f1_threshold(y, train_oof_proba)
+        threshold_selection_rule = (
+            "Selected classification model with threshold optimized on train OOF F1"
+        )
 
     test_proba = final_pipeline.predict_proba(X_test)[:, 1]
     test_label = (test_proba >= best_train_threshold).astype(int)
@@ -990,9 +1096,7 @@ def build_classification_reports() -> None:
         ]
     )
 
-    feature_importance_df = get_classifier_importance(
-        final_pipeline, X, CLASSIFICATION_FEATURES
-    )
+    feature_importance_df = get_classifier_importance(final_pipeline, X, feature_set)
 
     test_prediction_export = pd.DataFrame(
         {
@@ -1037,9 +1141,17 @@ def build_classification_reports() -> None:
         [
             {
                 "target": "Opportunity Result",
+                "variant": validate_variant(variant),
+                "feature_set_label": (
+                    "static entry-only features"
+                    if validate_variant(variant) == "static"
+                    else "dynamic snapshot features including process variables"
+                ),
+                "n_features": len(feature_set),
+                "features": ", ".join(feature_set),
                 "selected_experiment": selected_experiment,
                 "baseline_experiment": baseline_experiment,
-                "selection_rule": "Selected classification model with threshold optimized on train OOF F1",
+                "selection_rule": threshold_selection_rule,
                 "cv_roc_auc_mean": float(selected_cv_metrics.loc[0, "roc_auc_mean"]),
                 "cv_pr_auc_mean": float(selected_cv_metrics.loc[0, "pr_auc_mean"]),
                 "cv_accuracy_mean": float(selected_cv_metrics.loc[0, "accuracy_mean"]),
@@ -1075,7 +1187,7 @@ def build_classification_reports() -> None:
     )
 
     SLIDE_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with pd.ExcelWriter(CLASSIFICATION_REPORT, engine="openpyxl") as writer:
+    with pd.ExcelWriter(classification_report, engine="openpyxl") as writer:
         results_df.to_excel(writer, sheet_name="cv_results", index=False)
         summary_df.to_excel(writer, sheet_name="cv_summary", index=False)
         selected_cv_metrics.to_excel(
@@ -1099,15 +1211,18 @@ def build_classification_reports() -> None:
         )
         roc_curve_df.to_excel(writer, sheet_name="roc_curve", index=False)
         metadata_df.to_excel(writer, sheet_name="metadata", index=False)
+    return classification_report
 
 
-def build_regression_reports() -> None:
+def build_regression_reports(variant: str = "dynamic") -> Path:
+    feature_set = get_feature_set(variant)
+    regression_report = model_report_path(ROOT, "regression", variant)
     train_df = pd.read_parquet(TRAIN_PATH)
     test_df = pd.read_parquet(TEST_PATH)
 
-    X = train_df[REGRESSION_FEATURES].copy()
+    X = train_df[feature_set].copy()
     y = train_df[REGRESSION_TARGET].astype(np.float32).copy()
-    X_test = test_df[REGRESSION_FEATURES].copy()
+    X_test = test_df[feature_set].copy()
     y_test = test_df[REGRESSION_TARGET].astype(np.float32).copy()
 
     categorical_cols = [
@@ -1120,7 +1235,7 @@ def build_regression_reports() -> None:
         "Client Size By Employee Count",
         "Revenue From Client Past Two Years (USD)",
     ]
-    numerical_cols = [c for c in REGRESSION_FEATURES if c not in categorical_cols]
+    numerical_cols = [c for c in feature_set if c not in categorical_cols]
 
     experiment_grid = {
         "random_regressor": RandomRegressor(random_state=42),
@@ -1199,7 +1314,7 @@ def build_regression_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=REGRESSION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -1212,7 +1327,7 @@ def build_regression_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=REGRESSION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="bin_ohe",
                     ),
@@ -1230,7 +1345,7 @@ def build_regression_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=REGRESSION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="mean",
                     ),
@@ -1263,7 +1378,7 @@ def build_regression_reports() -> None:
                 (
                     "binning",
                     NamedBinningProcess(
-                        variable_names=REGRESSION_FEATURES,
+                        variable_names=feature_set,
                         categorical_variables=categorical_cols,
                         output_method="mean",
                     ),
@@ -1549,9 +1664,7 @@ def build_regression_reports() -> None:
         ]
     )
 
-    feature_importance_df = get_regressor_importance(
-        final_pipeline, X, REGRESSION_FEATURES
-    )
+    feature_importance_df = get_regressor_importance(final_pipeline, X, feature_set)
 
     test_prediction_export = pd.DataFrame(
         {
@@ -1595,6 +1708,14 @@ def build_regression_reports() -> None:
         [
             {
                 "target": "Opportunity Amount USD",
+                "variant": validate_variant(variant),
+                "feature_set_label": (
+                    "static entry-only features"
+                    if validate_variant(variant) == "static"
+                    else "dynamic snapshot features including process variables"
+                ),
+                "n_features": len(feature_set),
+                "features": ", ".join(feature_set),
                 "selected_experiment": selected_experiment,
                 "baseline_experiment": baseline_experiment,
                 "baseline_experiments": ", ".join(baseline_experiments),
@@ -1623,7 +1744,7 @@ def build_regression_reports() -> None:
     )
 
     SLIDE_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with pd.ExcelWriter(REGRESSION_REPORT, engine="openpyxl") as writer:
+    with pd.ExcelWriter(regression_report, engine="openpyxl") as writer:
         results_df.to_excel(writer, sheet_name="cv_results", index=False)
         summary_df.to_excel(writer, sheet_name="cv_summary", index=False)
         selected_cv_metrics.to_excel(
@@ -1644,13 +1765,28 @@ def build_regression_reports() -> None:
         )
         forecast_summary_df.to_excel(writer, sheet_name="forecast_summary", index=False)
         metadata_df.to_excel(writer, sheet_name="metadata", index=False)
+    return regression_report
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--variant",
+        choices=["dynamic", "static", "all"],
+        default="dynamic",
+        help="Which feature-set variant to run.",
+    )
+    return parser.parse_args()
 
 
 def main() -> None:
-    build_classification_reports()
-    build_regression_reports()
-    print(f"saved: {CLASSIFICATION_REPORT}")
-    print(f"saved: {REGRESSION_REPORT}")
+    args = parse_args()
+    variants = ["dynamic", "static"] if args.variant == "all" else [args.variant]
+    for variant in variants:
+        classification_report = build_classification_reports(variant)
+        regression_report = build_regression_reports(variant)
+        print(f"saved ({variant}): {classification_report}")
+        print(f"saved ({variant}): {regression_report}")
 
 
 if __name__ == "__main__":

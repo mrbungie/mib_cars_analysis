@@ -7,6 +7,26 @@ The goal of the sales process is to identify and communicate with potential lead
 2. Install the required libraries using `pip install -e .` or more easily with uv: `uv sync`
 3. Run notebooks using VS Code or Jupyter Lab.
 
+## Project structure
+
+The repository is organized as follows:
+
+- `data/`
+  - `raw/`: Original source datasets.
+  - `processed/`: Cleaned and transformed datasets ready for modelling.
+  - `intermediate/`: Intermediate tables generated during the pipeline.
+  - `bivariate_info/`: Outputs from bivariate analysis and monotonicity checks.
+- `notebooks/`
+  - `1_data_validation_and_cleaning/`: Data quality checks and cleaning notebooks.
+  - `2_eda/`: Exploratory data analysis.
+  - `3_discretization_and_bivariate_analysis/`: Train/test split, target binning, WoE/IV and monotonicity.
+  - `4_modelling/`: Classification/regression modelling notebooks and helper modules.
+  - `5_reporting/`: Notebook assets preparation for slides and reporting.
+  - `9_experiments/`: Additional experiments and sensitivity analyses.
+- `scripts/`: Reproducible scripts to generate plots, simulations, and reporting assets.
+- `slidedeck/`: Quarto presentation sources, generated HTML/PPTX, and slide assets.
+- `images/`: Figures used in documentation and reporting.
+
 ## Dataset description
 
 This dataset consists of 78,025 rows and 19 columns (9 numerical, 10 categorical). The columns include the following:
@@ -35,13 +55,20 @@ This dataset consists of 78,025 rows and 19 columns (9 numerical, 10 categorical
 The notebooks are organized in the following way:
 | Group | Notebook | Description | Link |
 | --- | --- | --- | --- |
-| 1_data_validation | 00_basic_validation.ipynb | Basic data validation and cleaning. | [Link](notebooks/1_data_validation/01_basic_validation.ipynb) |
-| 2_eda | 01_variable_eda.ipynb | Exploratory data analysis of the variables. (NOTE: Not applied to filtered data yet) | [Link](notebooks/2_eda/01_variable_eda.ipynb) |
-| 3_discretization_and_bivariate_analysis | 00_train_test_split.ipynb | Train-test split of the dataset. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/00_train_test_split.ipynb) |
-| 3_discretization_and_bivariate_analysis | 01_monotonicity_targets.ipynb | Analysis of monotonic relationships between features and targets. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/01_monotonicity_targets.ipynb) |
-| 3_discretization_and_bivariate_analysis | 02_woe_iv_winloss.ipynb | Weight of Evidence and Information Value analysis for the win/loss target. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/02_woe_iv_winloss.ipynb) |
-| 3_discretization_and_bivariate_analysis | 03_woe_iv_amount.ipynb | Weight of Evidence and Information Value analysis for the amount target. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/03_woe_iv_amount.ipynb) |
-| 3_discretization_and_bivariate_analysis | 04_optbinning_amount.ipynb | Optimal binning for the amount target. (NOTE: Not applied to filtered data yet) | [Link](notebooks/3_discretization_and_bivariate_analysis/04_optbinning_amount.ipynb) |
+| 1_data_validation_and_cleaning | 01_basic_validation.ipynb | Basic data validation and cleaning. | [Link](notebooks/1_data_validation_and_cleaning/01_basic_validation.ipynb) |
+| 2_eda | 01_variable_eda.ipynb | Exploratory data analysis of the variables. | [Link](notebooks/2_eda/01_variable_eda.ipynb) |
+| 3_discretization_and_bivariate_analysis | 00_train_test_split.ipynb | Train-test split of the dataset. | [Link](notebooks/3_discretization_and_bivariate_analysis/00_train_test_split.ipynb) |
+| 3_discretization_and_bivariate_analysis | 00b_bin_targets.ipynb | Target binning and target engineering support. | [Link](notebooks/3_discretization_and_bivariate_analysis/00b_bin_targets.ipynb) |
+| 3_discretization_and_bivariate_analysis | 01_bivariate_targets_overview.ipynb | Bivariate overview of features against targets. | [Link](notebooks/3_discretization_and_bivariate_analysis/01_bivariate_targets_overview.ipynb) |
+| 3_discretization_and_bivariate_analysis | 02_monotonicity_targets.ipynb | Monotonic relationship analysis between features and targets. | [Link](notebooks/3_discretization_and_bivariate_analysis/02_monotonicity_targets.ipynb) |
+| 3_discretization_and_bivariate_analysis | 03_woe_iv_winloss.ipynb | WoE/IV analysis for the win/loss target. | [Link](notebooks/3_discretization_and_bivariate_analysis/03_woe_iv_winloss.ipynb) |
+| 3_discretization_and_bivariate_analysis | 04_optbinning_amount.ipynb | Optimal binning for the amount target. | [Link](notebooks/3_discretization_and_bivariate_analysis/04_optbinning_amount.ipynb) |
+| 4_modelling | 01_classification_opportunity_result.ipynb | Classification modelling for opportunity result. | [Link](notebooks/4_modelling/01_classification_opportunity_result.ipynb) |
+| 4_modelling | 02_regression_opportunity_amount.ipynb | Regression modelling for opportunity amount. | [Link](notebooks/4_modelling/02_regression_opportunity_amount.ipynb) |
+| 5_reporting | 01_slide_datasets_and_assets.ipynb | Build reporting datasets and slide assets. | [Link](notebooks/5_reporting/01_slide_datasets_and_assets.ipynb) |
+| 9_experiments | 01_amount_maturity_thresholds.ipynb | Experiments on maturity thresholds for amount modelling. | [Link](notebooks/9_experiments/01_amount_maturity_thresholds.ipynb) |
+| 9_experiments | 02_amount_violinplots_by_age_bucket.ipynb | Distributional checks by age buckets. | [Link](notebooks/9_experiments/02_amount_violinplots_by_age_bucket.ipynb) |
+| 9_experiments | 03_method1_r2_baseline_vs_age_thresholds.ipynb | Baseline vs threshold sensitivity on R2. | [Link](notebooks/9_experiments/03_method1_r2_baseline_vs_age_thresholds.ipynb) |
 
 # Process
 

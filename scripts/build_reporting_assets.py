@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -17,14 +18,17 @@ from sklearn.metrics import (
     accuracy_score,
 )
 
+from reporting_variant_paths import (
+    asset_path,
+    data_path,
+    model_report_path,
+    validate_variant,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SLIDE_DATA_DIR = ROOT / "slidedeck/data"
 ASSET_DIR = ROOT / "slidedeck/assets"
-CLASSIFICATION_PATH = SLIDE_DATA_DIR / "classification_model_report.xlsx"
-REGRESSION_PATH = SLIDE_DATA_DIR / "regression_model_report.xlsx"
-MODEL_SLIDE_DATA_PATH = SLIDE_DATA_DIR / "model_slide_data.xlsx"
-MODEL_METRIC_TABLES_PATH = SLIDE_DATA_DIR / "model_metric_tables.xlsx"
 TRAIN_PATH = ROOT / "data/intermediate/df_train_stratified.parquet"
 
 MODEL_FEATURES = [
@@ -234,62 +238,90 @@ def pct_fmt(value: float, _position: float) -> str:
     return f"{value:.0%}"
 
 
-def build_workbooks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    classification_summary = pd.read_excel(CLASSIFICATION_PATH, sheet_name="cv_summary")
+def build_workbooks(
+    variant: str = "dynamic",
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    normalized_variant = validate_variant(variant)
+    classification_path = model_report_path(ROOT, "classification", normalized_variant)
+    regression_path = model_report_path(ROOT, "regression", normalized_variant)
+    model_slide_data_path = data_path(ROOT, "model_slide_data.xlsx", normalized_variant)
+    model_metric_tables_path = data_path(
+        ROOT, "model_metric_tables.xlsx", normalized_variant
+    )
+
+    classification_summary = pd.read_excel(classification_path, sheet_name="cv_summary")
     classification_cv_selected = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="cv_selected_model"
+        classification_path, sheet_name="cv_selected_model"
     )
     classification_cv_baseline = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="cv_baseline_model"
+        classification_path, sheet_name="cv_baseline_model"
     )
     classification_test_metrics = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="test_metrics"
+        classification_path, sheet_name="test_metrics"
     )
     classification_importance = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="feature_importance"
+        classification_path, sheet_name="feature_importance"
     )
     classification_lift = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="prioritization_lift"
+        classification_path, sheet_name="prioritization_lift"
     )
-    classification_metadata = pd.read_excel(CLASSIFICATION_PATH, sheet_name="metadata")
+    classification_metadata = pd.read_excel(classification_path, sheet_name="metadata")
 
-    regression_summary = pd.read_excel(REGRESSION_PATH, sheet_name="cv_summary")
+    regression_summary = pd.read_excel(regression_path, sheet_name="cv_summary")
     regression_cv_selected = pd.read_excel(
-        REGRESSION_PATH, sheet_name="cv_selected_model"
+        regression_path, sheet_name="cv_selected_model"
     )
     regression_cv_baseline = pd.read_excel(
-        REGRESSION_PATH, sheet_name="cv_baseline_model"
+        regression_path, sheet_name="cv_baseline_model"
     )
-    regression_test_metrics = pd.read_excel(REGRESSION_PATH, sheet_name="test_metrics")
+    regression_test_metrics = pd.read_excel(regression_path, sheet_name="test_metrics")
     regression_importance = pd.read_excel(
-        REGRESSION_PATH, sheet_name="feature_importance"
+        regression_path, sheet_name="feature_importance"
     )
-    regression_forecast = pd.read_excel(REGRESSION_PATH, sheet_name="forecast_summary")
+    regression_forecast = pd.read_excel(regression_path, sheet_name="forecast_summary")
     regression_predictions = pd.read_excel(
-        REGRESSION_PATH, sheet_name="test_predictions"
+        regression_path, sheet_name="test_predictions"
     )
-    regression_metadata = pd.read_excel(REGRESSION_PATH, sheet_name="metadata")
+    regression_metadata = pd.read_excel(regression_path, sheet_name="metadata")
 
     selected_models = pd.DataFrame(
         [
             {
-                "model": "Dynamic win/loss classification",
+                "model": (
+                    "Static win/loss classification"
+                    if normalized_variant == "static"
+                    else "Dynamic win/loss classification"
+                ),
+                "variant": normalized_variant,
                 "target": "Opportunity Result",
                 "business_use": "Prioritization and pipeline ranking",
-                "data_used": "All available snapshot variables, including process timing fields",
+                "data_used": (
+                    "Entry-only static variables"
+                    if normalized_variant == "static"
+                    else "All available snapshot variables, including process timing fields"
+                ),
                 "notes": f"Selected model: {classification_metadata.loc[0, 'selected_experiment']} | Baseline: {classification_metadata.loc[0, 'baseline_experiment']}",
             },
             {
-                "model": "Dynamic amount regression",
+                "model": (
+                    "Static amount regression"
+                    if normalized_variant == "static"
+                    else "Dynamic amount regression"
+                ),
+                "variant": normalized_variant,
                 "target": "Opportunity Amount USD",
                 "business_use": "Sizing and aggregate forecasting",
-                "data_used": "All available snapshot variables, including process timing fields",
+                "data_used": (
+                    "Entry-only static variables"
+                    if normalized_variant == "static"
+                    else "All available snapshot variables, including process timing fields"
+                ),
                 "notes": f"Selected model: {regression_metadata.loc[0, 'selected_experiment']} | Baseline: {regression_metadata.loc[0, 'baseline_experiment']}",
             },
         ]
     )
 
-    with pd.ExcelWriter(MODEL_SLIDE_DATA_PATH, engine="openpyxl") as writer:
+    with pd.ExcelWriter(model_slide_data_path, engine="openpyxl") as writer:
         selected_models.to_excel(writer, sheet_name="selected_models", index=False)
         classification_summary.to_excel(
             writer, sheet_name="classification_summary", index=False
@@ -376,7 +408,7 @@ def build_workbooks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Data
         how="left",
     )
 
-    with pd.ExcelWriter(MODEL_METRIC_TABLES_PATH, engine="openpyxl") as writer:
+    with pd.ExcelWriter(model_metric_tables_path, engine="openpyxl") as writer:
         classification_metric_table.to_excel(
             writer, sheet_name="classification_cv", index=False
         )
@@ -404,13 +436,35 @@ def build_assets(
     classification_importance: pd.DataFrame,
     regression_importance: pd.DataFrame,
 ) -> None:
+    build_assets_for_variant(
+        classification_lift,
+        regression_predictions,
+        classification_importance,
+        regression_importance,
+        variant="dynamic",
+    )
+
+
+def build_assets_for_variant(
+    classification_lift: pd.DataFrame,
+    regression_predictions: pd.DataFrame,
+    classification_importance: pd.DataFrame,
+    regression_importance: pd.DataFrame,
+    variant: str = "dynamic",
+) -> None:
+    normalized_variant = validate_variant(variant)
+    classification_path = model_report_path(ROOT, "classification", normalized_variant)
+    regression_path = model_report_path(ROOT, "regression", normalized_variant)
+    model_metric_tables_path = data_path(
+        ROOT, "model_metric_tables.xlsx", normalized_variant
+    )
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     sns.set_theme(style="whitegrid")
     plt.style.use("seaborn-v0_8-whitegrid")
     build_eda_iv_assets()
 
-    roc_df = pd.read_excel(CLASSIFICATION_PATH, sheet_name="roc_curve")
-    class_test = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_metrics")
+    roc_df = pd.read_excel(classification_path, sheet_name="roc_curve")
+    class_test = pd.read_excel(classification_path, sheet_name="test_metrics")
     class_selected = class_test.iloc[0]
 
     fig, ax_roc = plt.subplots(figsize=(7.2, 4.8))
@@ -436,7 +490,11 @@ def build_assets(
     ax_roc.grid(alpha=0.25)
 
     fig.tight_layout()
-    fig.savefig(ASSET_DIR / "classification_roc.png", dpi=220, bbox_inches="tight")
+    fig.savefig(
+        asset_path(ROOT, "classification_roc.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
+    )
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(7.5, 5))
@@ -452,7 +510,9 @@ def build_assets(
     ax.set_ylabel("Feature")
     fig.tight_layout()
     fig.savefig(
-        ASSET_DIR / "classification_importance.png", dpi=220, bbox_inches="tight"
+        asset_path(ROOT, "classification_importance.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
     )
     plt.close(fig)
 
@@ -474,7 +534,11 @@ def build_assets(
     ax.set_xlabel("Importance")
     ax.set_ylabel("Feature")
     fig.tight_layout()
-    fig.savefig(ASSET_DIR / "regression_importance.png", dpi=220, bbox_inches="tight")
+    fig.savefig(
+        asset_path(ROOT, "regression_importance.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
+    )
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -495,7 +559,11 @@ def build_assets(
     ax.set_title("Held-out lift by propensity decile")
     ax.legend(frameon=False, loc="upper left")
     fig.tight_layout()
-    fig.savefig(ASSET_DIR / "sim_prioritization.png", dpi=220, bbox_inches="tight")
+    fig.savefig(
+        asset_path(ROOT, "sim_prioritization.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
+    )
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -525,13 +593,17 @@ def build_assets(
     ax.set_ylabel("Predicted amount")
     ax.legend(frameon=False)
     fig.tight_layout()
-    fig.savefig(ASSET_DIR / "sim_forecasting.png", dpi=220, bbox_inches="tight")
+    fig.savefig(
+        asset_path(ROOT, "sim_forecasting.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
+    )
     plt.close(fig)
 
     selected_predictions = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="test_predictions"
+        classification_path, sheet_name="test_predictions"
     )
-    class_metadata = pd.read_excel(CLASSIFICATION_PATH, sheet_name="metadata")
+    class_metadata = pd.read_excel(classification_path, sheet_name="metadata")
     selected_experiment = str(class_metadata.loc[0, "selected_experiment"])
     fig, ax = plt.subplots(figsize=(7.2, 5))
     frac_pos, mean_pred = calibration_curve(
@@ -564,12 +636,14 @@ def build_assets(
     ax.legend(frameon=False, loc="upper left")
     fig.tight_layout()
     fig.savefig(
-        ASSET_DIR / "annex_calibration_comparison.png", dpi=220, bbox_inches="tight"
+        asset_path(ROOT, "annex_calibration_comparison.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
     )
     plt.close(fig)
 
     class_threshold_compare = pd.read_excel(
-        CLASSIFICATION_PATH, sheet_name="comparison_test_predictions"
+        classification_path, sheet_name="comparison_test_predictions"
     )
     train_selected_threshold = float(class_metadata.loc[0, "train_selected_threshold"])
     comparison_rows = []
@@ -639,14 +713,14 @@ def build_assets(
     ax.set_yticklabels(["Loss", "Win"], rotation=0)
     fig.tight_layout()
     fig.savefig(
-        ASSET_DIR / "classification_confusion_matrix.png",
+        asset_path(ROOT, "classification_confusion_matrix.png", normalized_variant),
         dpi=220,
         bbox_inches="tight",
     )
     plt.close(fig)
 
     comparison_predictions = pd.read_excel(
-        REGRESSION_PATH, sheet_name="comparison_test_predictions"
+        regression_path, sheet_name="comparison_test_predictions"
     )
     amount_order = [
         "10K or less",
@@ -731,24 +805,45 @@ def build_assets(
     )
     fig.subplots_adjust(top=0.8, bottom=0.1, hspace=0.2)
     fig.savefig(
-        ASSET_DIR / "annex_regression_error_bins.png", dpi=220, bbox_inches="tight"
+        asset_path(ROOT, "annex_regression_error_bins.png", normalized_variant),
+        dpi=220,
+        bbox_inches="tight",
     )
     plt.close(fig)
 
     with pd.ExcelWriter(
-        MODEL_METRIC_TABLES_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace"
+        model_metric_tables_path,
+        engine="openpyxl",
+        mode="a",
+        if_sheet_exists="replace",
     ) as writer:
         optimal_threshold_df.to_excel(
             writer, sheet_name="cls_optimal_threshold", index=False
         )
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--variant",
+        choices=["dynamic", "static", "all"],
+        default="dynamic",
+        help="Which feature-set variant to build assets for.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
-    outputs = build_workbooks()
-    build_assets(*outputs)
-    print(f"saved: {MODEL_SLIDE_DATA_PATH}")
-    print(f"saved: {MODEL_METRIC_TABLES_PATH}")
-    print("assets regenerated")
+    args = parse_args()
+    variants = ["dynamic", "static"] if args.variant == "all" else [args.variant]
+    for variant in variants:
+        outputs = build_workbooks(variant)
+        build_assets_for_variant(*outputs, variant=variant)
+        print(f"saved ({variant}): {data_path(ROOT, 'model_slide_data.xlsx', variant)}")
+        print(
+            f"saved ({variant}): {data_path(ROOT, 'model_metric_tables.xlsx', variant)}"
+        )
+        print(f"assets regenerated ({variant})")
 
 
 if __name__ == "__main__":

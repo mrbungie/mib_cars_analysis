@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -6,14 +7,23 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-ROOT = Path(__file__).resolve().parents[1]
-CLASSIFICATION_PATH = ROOT / "slidedeck/data/classification_model_report.xlsx"
-REGRESSION_PATH = ROOT / "slidedeck/data/regression_model_report.xlsx"
-DATA_DIR = ROOT / "slidedeck/data"
-ASSET_DIR = ROOT / "slidedeck/assets"
+from reporting_variant_paths import (
+    asset_path,
+    data_path,
+    model_report_path,
+    validate_variant,
+)
 
-FEATURED_LAMBDA_MAX = 1.50
+ROOT = Path(__file__).resolve().parents[1]
+
+FEATURED_LAMBDA_MAX = 2.00
 SWEEP_LAMBDA_MAXES = [1.1, 1.2, 1.3, 1.5, 2.0, 3.0]
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--variant", choices=["dynamic", "static"], default="dynamic")
+    return parser.parse_args()
 
 
 def usd_compact(value: float, _position: float = 0.0) -> str:
@@ -35,9 +45,14 @@ def pct_fmt(value: float, _position: float) -> str:
 # ---------------------------------------------------------------------------
 
 
-def load_merged() -> pd.DataFrame:
-    classification = pd.read_excel(CLASSIFICATION_PATH, sheet_name="test_predictions")
-    regression = pd.read_excel(REGRESSION_PATH, sheet_name="test_predictions")
+def load_merged(variant: str) -> pd.DataFrame:
+    classification = pd.read_excel(
+        model_report_path(ROOT, "classification", variant),
+        sheet_name="test_predictions",
+    )
+    regression = pd.read_excel(
+        model_report_path(ROOT, "regression", variant), sheet_name="test_predictions"
+    )
     df = classification.merge(
         regression, on="row_id", how="inner", validate="one_to_one"
     )
@@ -349,33 +364,41 @@ def plot_sweep(sweep_curves: pd.DataFrame) -> plt.Figure:
 
 
 def main() -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    ASSET_DIR.mkdir(parents=True, exist_ok=True)
+    args = parse_args()
+    variant = validate_variant(args.variant)
 
-    df = load_merged()
+    df = load_merged(variant)
     total_actual_won = float(df["actual_won_amount"].sum())
 
     main_curve, sweep_curves = build_all_curves(df)
 
-    main_csv = DATA_DIR / "sim_focus_gain_main.csv"
-    sweep_csv = DATA_DIR / "sim_focus_gain_sweep.csv"
+    main_csv = data_path(ROOT, "sim_focus_gain_main.csv", variant)
+    sweep_csv = data_path(ROOT, "sim_focus_gain_sweep.csv", variant)
+    main_csv.parent.mkdir(parents=True, exist_ok=True)
     main_curve.to_csv(main_csv, index=False)
     sweep_curves.to_csv(sweep_csv, index=False)
-    print(f"saved: {main_csv}")
-    print(f"saved: {sweep_csv}")
+    print(f"saved ({variant}): {main_csv}")
+    print(f"saved ({variant}): {sweep_csv}")
 
     main_fig = plot_main(main_curve, df, total_actual_won)
-    main_png = ASSET_DIR / "sim_focus_gain_main.png"
+    main_png = asset_path(ROOT, "sim_focus_gain_main.png", variant)
+    main_png.parent.mkdir(parents=True, exist_ok=True)
     main_fig.savefig(main_png, dpi=220, bbox_inches="tight")
     plt.close(main_fig)
-    print(f"saved: {main_png}")
+    print(f"saved ({variant}): {main_png}")
 
     sweep_fig = plot_sweep(sweep_curves)
-    sweep_png = ASSET_DIR / "sim_focus_gain_sweep.png"
+    sweep_png = asset_path(ROOT, "sim_focus_gain_sweep.png", variant)
     sweep_fig.savefig(sweep_png, dpi=220, bbox_inches="tight")
     plt.close(sweep_fig)
-    print(f"saved: {sweep_png}")
+    print(f"saved ({variant}): {sweep_png}")
 
 
 if __name__ == "__main__":
     main()
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--variant", choices=["dynamic", "static"], default="dynamic")
+    return parser.parse_args()

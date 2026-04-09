@@ -145,10 +145,10 @@ Strategic Analysis Group
 <h2>Executive Summary</h2>
 <ul>
 <li>This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e.&nbsp;CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.</li>
-<li>We propose two models: a win/loss classifier (<strong>AUROC 90.9%</strong>) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal) with an <strong>61.7% MdAPE</strong>.</li>
-<li>We show that focusing on the <strong>top 20% of most likely opportunities lifts win rates from the 22.7% baseline to ~74%</strong>; while focusing on the <strong>top 25% expected-value ranked opportunities captures ~78% of total opportunity revenue</strong>.</li>
+<li>We propose two <strong>static / at-creation</strong> models: a win/loss classifier (<strong>AUROC 73.6%</strong>) for early opportunity prioritization, and a regression model for deal sizing with <strong>63.0% MdAPE</strong> on held-out test data.</li>
+<li>We show that focusing on the <strong>top 20% of most likely opportunities lifts win rates from the 22.7% baseline to 51.7%</strong>; while focusing on the <strong>top 25% expected-value ranked opportunities captures 55.6% of total won revenue</strong>.</li>
 <li>We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.</li>
-<li>We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven decisions can improve commercial efficiency.</li>
+<li>We also simulate strategic levers under the static setup and find only modest upside, which reinforces that better process-history data is needed before using the models for bigger operating decisions.</li>
 </ul>
 </section>
 <section id="agenda" class="slide level2 scrollable">
@@ -302,22 +302,23 @@ Strategic Analysis Group
 <h1>Modelling</h1>
 
 </section>
-<section id="we-prioritize-dynamic-models-because-sales-state-information-adds-the-most-signal" class="slide level2">
-<h2>We prioritize dynamic models because sales-state information adds the most signal</h2>
+<section id="we-prioritize-static-models-because-snapshot-timing-is-uncertain" class="slide level2">
+<h2>We prioritize static models because snapshot timing is uncertain</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <h3 id="static-pre-sales-process-model">Static / pre-sales process model</h3>
 <ul>
 <li>Used for <strong>early decisions</strong> at opportunity creation especially around prioritization and sizing.</li>
 <li>Uses only <strong>at-creation variables</strong>: product / route / region / client-size / past-revenue descriptors.</li>
-<li>Best for <strong>early triage</strong> before any stage history exists.</li>
+<li><strong>This is the setup used here.</strong> It is the safer operational choice when we cannot verify when the snapshot was taken.</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <h3 id="dynamic-during-sales-process-model">Dynamic / during sales process model</h3>
 <ul>
 <li>Used for <strong>ongoing re-prioritization and re-sizing</strong> during the process.</li>
 <li>Uses the static variables <strong>plus process-state variables</strong>: elapsed time, stage changes, cumulative timing, and stage ratios.</li>
-<li><strong>This is the setup used here.</strong></li>
+<li>It scores much better, but it is more exposed to timing leakage if the dataset snapshot is close to closure.</li>
+<li>We keep that version in the <strong>annex as an old benchmark</strong>, not as the main recommendation.</li>
 </ul>
 </div></div>
 <p><img data-src="assets/process22.png"></p>
@@ -343,30 +344,30 @@ Strategic Analysis Group
 <p><img data-src="assets/model_split_treemap.png" style="width:100.0%"></p>
 </div></div>
 </section>
-<section id="prioritization-classification-model-enables-immediate-and-precise-reallocation-of-sales-effort" class="slide level2">
-<h2>Prioritization classification model enables immediate and precise reallocation of sales effort</h2>
+<section id="static-prioritization-model-supports-earlier-safer-reallocation-of-sales-effort" class="slide level2">
+<h2>Static prioritization model supports earlier, safer reallocation of sales effort</h2>
 <div class="columns">
 <div class="column" style="width:54%;">
 <ul>
 <li>Target: <strong>Opportunity Result</strong>.</li>
-<li>Business use: <strong>process prioritization</strong> and ranking the pipeline by win propensity.
+<li>Business use: <strong>early prioritization</strong> and ranking the pipeline by win propensity at opportunity creation.
 <ul>
 <li>Therefore we focused on ranking metrics such as ROC AUC and PR AUC.</li>
 </ul></li>
-<li>We used all the variables except for the amount target and deal size.</li>
+<li>We used only <strong>at-creation variables</strong>, excluding process-timing fields and the amount target.</li>
 <li>Selected final classifier: <strong>Calibrated Balanced Random Forest over the classic preprocessed feature set</strong> (<code>random_forest_classifier_balanced_calibrated</code>).</li>
-<li>This model has strong performance (<strong>AUROC 90.9%, Accuracy 86.0% @ 39.4% threshold</strong>) versus the baselines (<strong>AUROC 50.0%, Accuracy 77.3%</strong> for the always-false classifier).</li>
+<li>This model has <strong>moderate but usable</strong> performance for early triage (<strong>AUROC 73.6%, Accuracy 81.0% @ 54.5% threshold</strong>) versus the baselines (<strong>AUROC 50.0%, Accuracy 77.3%</strong> for the always-false classifier).</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <h6 id="classification-model-feature-importances">Classification model feature importances:</h6>
-<p><img data-src="assets/classification_importance.png" style="width:100.0%"></p>
+<p><img data-src="assets/classification_importance_static.png" style="width:100.0%"></p>
 </div></div>
 
 <aside><div>
-<p>Selected calibrated balanced random forest for stronger probability quality while preserving top-tier ranking performance.</p>
+<p>Selected calibrated balanced random forest for stronger probability quality under the safer static feature set.</p>
 </div></aside></section>
-<section id="prioritization-classification-model-enables-immediate-and-precise-reallocation-of-sales-effort-cont.-with-performance-metrics" class="slide level2">
-<h2>Prioritization classification model enables immediate and precise reallocation of sales effort (cont., with performance metrics)</h2>
+<section id="static-prioritization-model-supports-earlier-safer-reallocation-of-sales-effort-cont.-with-performance-metrics" class="slide level2">
+<h2>Static prioritization model supports earlier, safer reallocation of sales effort (cont., with performance metrics)</h2>
 <div class="columns">
 <div class="column" style="width:57%;">
 <div style="font-size: 70%;">
@@ -398,22 +399,22 @@ Strategic Analysis Group
 <tr class="odd">
 <td>Selected</td>
 <td>CV</td>
-<td style="text-align: right;">91.2%</td>
-<td style="text-align: right;">76.7%</td>
-<td style="text-align: right;">86.9%</td>
-<td style="text-align: right;">73.2%</td>
-<td style="text-align: right;">66.6%</td>
-<td style="text-align: right;">69.7%</td>
+<td style="text-align: right;">74.0%</td>
+<td style="text-align: right;">52.6%</td>
+<td style="text-align: right;">80.9%</td>
+<td style="text-align: right;">73.4%</td>
+<td style="text-align: right;">25.0%</td>
+<td style="text-align: right;">37.3%</td>
 </tr>
 <tr class="even">
 <td>Selected</td>
 <td>Held-out test</td>
-<td style="text-align: right;">90.9%</td>
-<td style="text-align: right;">76.2%</td>
-<td style="text-align: right;">86.0%</td>
-<td style="text-align: right;">67.6%</td>
-<td style="text-align: right;">73.7%</td>
-<td style="text-align: right;">70.5%</td>
+<td style="text-align: right;">73.6%</td>
+<td style="text-align: right;">52.8%</td>
+<td style="text-align: right;">81.0%</td>
+<td style="text-align: right;">73.5%</td>
+<td style="text-align: right;">25.3%</td>
+<td style="text-align: right;">37.6%</td>
 </tr>
 <tr class="odd">
 <td>Random baseline</td>
@@ -451,16 +452,16 @@ Strategic Analysis Group
 <div style="font-size: 80%;">
 <p>Conclusions:</p>
 <ul>
-<li>The model has strong ranking performance (<strong>AUROC 90.9% on hold-out</strong>) and good precision/recall balance at the selected threshold, which makes it a good candidate for prioritization.</li>
+<li>The model has enough ranking signal (<strong>AUROC 73.6% on hold-out</strong>) to support early screening, and we now use a more precision-oriented operating threshold because the business action is to focus scarce sales effort.</li>
 </ul>
 </div>
 </div>
 </div><div class="column" style="width:43%;">
-<p><img data-src="assets/classification_roc.png" style="width:100.0%"></p>
+<p><img data-src="assets/classification_roc_static.png" style="width:100.0%"></p>
 </div></div>
 
 <aside><div>
-<p>Annex details model selection, calibration, thresholding (39.4% OOF); baselines use observed win rate.</p>
+<p>Selected threshold is <strong>54.5%</strong> on training OOF predictions, chosen to maximize precision subject to at least <strong>25% recall</strong>; the old dynamic calibration and hold-out diagnostics are kept in the annex for reference.</p>
 </div></aside></section>
 <section id="use-the-amount-model-for-per-opportunity-sizing-and-ranking-not-deal-level-precision" class="slide level2">
 <h2>Use the amount model for per-opportunity sizing and ranking, not deal-level precision</h2>
@@ -472,13 +473,13 @@ Strategic Analysis Group
 <ul>
 <li>Therefore we focused on error metrics such as MAE and especially MAPE since it is scale-invariant and better captures the relative error across the wide deal-size distribution.</li>
 </ul></li>
-<li>We used all the variables except for the win/loss target and the deal-size descriptors.</li>
-<li>Selected final regression model: <strong>Box-Cox transformed XGBoost regressor</strong> (<code>xgboost_boxcox</code>), selected by lowest CV Median APE.</li>
-<li>The model beats simple baselines on MAPE and MAE, <strong>but with R² ≈ 0.06, MAE ≈ 65k USD, and Median APE ≈ 62%</strong>, deal-level precision remains weak, so the best use case is for directional sizing and ranking rather than exact deal-level forecasts.</li>
+<li>We used only <strong>at-creation variables</strong>, excluding process-timing fields and the win/loss target.</li>
+<li>Selected final regression model: <strong>Yeo-Johnson transformed XGBoost regressor</strong> (<code>xgboost_yeojohnson</code>), selected by lowest CV Median APE.</li>
+<li>The model beats simple baselines on MAE and Median APE, <strong>but with R² ≈ 0.04, MAE ≈ 66.7k USD, and Median APE ≈ 63%</strong>, deal-level precision remains weak, so the best use case is directional sizing and ranking rather than exact deal-level forecasts.</li>
 </ul>
 </div><div class="column" style="width:46%;">
 <h6 id="amount-model-feature-importances">Amount model feature importances:</h6>
-<p><img data-src="assets/regression_importance.png" style="width:100.0%"></p>
+<p><img data-src="assets/regression_importance_static.png" style="width:100.0%"></p>
 </div></div>
 </section>
 <section id="use-the-amount-model-for-per-opportunity-sizing-and-ranking-not-deal-level-precision-cont.-with-performance-metrics" class="slide level2">
@@ -501,16 +502,16 @@ Strategic Analysis Group
 <tr class="odd">
 <td>Selected</td>
 <td style="text-align: right;">CV</td>
-<td style="text-align: right;">0.062</td>
-<td style="text-align: right;">65.1k USD</td>
-<td style="text-align: right;">61.7%</td>
+<td style="text-align: right;">0.041</td>
+<td style="text-align: right;">66.7k USD</td>
+<td style="text-align: right;">63.1%</td>
 </tr>
 <tr class="even">
 <td>Selected</td>
 <td style="text-align: right;">Held-out test</td>
-<td style="text-align: right;">0.067</td>
-<td style="text-align: right;">65.0k USD</td>
-<td style="text-align: right;">61.5%</td>
+<td style="text-align: right;">0.044</td>
+<td style="text-align: right;">66.7k USD</td>
+<td style="text-align: right;">63.0%</td>
 </tr>
 <tr class="odd">
 <td>Mean baseline</td>
@@ -538,55 +539,55 @@ Strategic Analysis Group
 <p><br></p>
 <h6 id="conclusions">Conclusions:</h6>
 <ul>
-<li>Model is more useful for relative sizing and ranking than for exact portfolio totals, which is the tradeoff from selecting by Median APE.
+<li>Model is more useful for relative sizing and ranking than for exact portfolio totals, which remains the tradeoff from selecting by Median APE.
 <ul>
 <li>Aggregate actual amount: <strong>2.138B USD</strong> on the held-out test set.</li>
-<li>Aggregate predicted amount: <strong>1.309B USD</strong> on the held-out test set.</li>
-<li>Mean absolute error per opportunity: <strong>65.0k USD</strong>.</li>
+<li>Aggregate predicted amount: <strong>1.279B USD</strong> on the held-out test set.</li>
+<li>Mean absolute error per opportunity: <strong>66.7k USD</strong>.</li>
 </ul></li>
 </ul>
 </div>
 </div><div class="column" style="width:46%;">
 <h6 id="forecast-vs-actual-scatter-plot">Forecast vs actual scatter plot:</h6>
-<p><img data-src="assets/sim_forecasting.png" style="width:100.0%"></p>
+<p><img data-src="assets/sim_forecasting_static.png" style="width:100.0%"></p>
 </div></div>
 
 <aside><div>
-<p>The annex contains more details about model selection, and per bin performance metrics.</p>
+<p>The annex keeps the old dynamic validation artifacts for comparison; the main takeaway here is that the static amount model is still directional, not precise.</p>
 </div></aside></section></section>
 <section>
 <section id="application-scenarios" class="title-slide slide level1 center" data-background-color="#1E293B">
 <h1>Application scenarios</h1>
 
 </section>
-<section id="tripling-conversion-is-achievable-by-focusing-on-the-top-20-of-opportunities-without-increasing-pipeline-size" class="slide level2">
-<h2>Tripling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size</h2>
+<section id="more-than-doubling-conversion-is-achievable-by-focusing-on-the-top-20-of-opportunities-without-increasing-pipeline-size" class="slide level2">
+<h2>More than doubling conversion is achievable by focusing on the top 20% of opportunities, without increasing pipeline size</h2>
 <div class="columns">
 <div class="column" style="width:44%;">
 <ul>
 <li>Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can raise conversion efficiency.
 <ul>
-<li><strong>Top 20%</strong> of opportunities: <strong>73.8%</strong> conversion vs <strong>22.7%</strong> baseline (<strong>3.25× lift</strong>).</li>
+<li><strong>Top 20%</strong> of opportunities: <strong>51.7%</strong> conversion vs <strong>22.7%</strong> baseline (<strong>2.27× lift</strong>).</li>
 </ul></li>
 </ul>
 
 </div><div class="column" style="width:56%;">
-<p><img data-src="assets/sim_prioritization.png" style="width:100.0%"></p>
+<p><img data-src="assets/sim_prioritization_static.png" style="width:100.0%"></p>
 </div></div>
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="concentration-49-value-capture-at-top-10-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
-<h2>Concentration (~49% value capture at top 10%) makes expected-value prioritization a key revenue lever</h2>
+<section id="concentration-38-value-capture-at-top-10-still-makes-expected-value-prioritization-useful" class="slide level2">
+<h2>Concentration (~38% value capture at top 10%) still makes expected-value prioritization useful</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
-<p><img data-src="assets/sim_expected_value_threshold.png" style="width:80.0%"></p>
+<p><img data-src="assets/sim_expected_value_threshold_static.png" style="width:80.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
 <li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
 <ul>
-<li>At top 10%, expected-value ranking captures 48.6% of won revenue vs 30.6% with propensity-only.</li>
-<li>After 25% threshold, the incremental value capture flattens.</li>
+<li>At top 10%, expected-value ranking captures <strong>37.9%</strong> of won revenue vs <strong>31.4%</strong> with propensity-only.</li>
+<li>By top 25%, expected-value ranking captures <strong>56.0%</strong> of won revenue, after which the curve starts to flatten.</li>
 </ul></li>
 </ul>
 </div></div>
@@ -598,11 +599,11 @@ Strategic Analysis Group
 <h2>Combining model outputs creates actionable commercial segments</h2>
 <div class="columns">
 <div class="column" style="width:62%;">
-<p><img data-src="assets/annex_ev_probability_quadrants.png" style="width:100.0%"></p>
+<p><img data-src="assets/annex_ev_probability_quadrants_static.png" style="width:100.0%"></p>
 </div><div class="column" style="width:38%;">
 <ul>
-<li>Simple split, strong signal: Combining expected value and win probability cleanly separates opportunities into distinct commercial tiers.</li>
-<li>Clear performance differences: Each segment shows different conversion rates and revenue contribution.</li>
+<li>Simple split, still useful: Combining expected value and win probability separates opportunities into workable commercial tiers even with the weaker static model.</li>
+<li>Clear but more modest performance differences: each segment still shows different conversion rates and revenue contribution.</li>
 <li>Direct CRM translation: Segments map to actions like intervene, focus, accelerate, or deprioritize.</li>
 <li>Operational, not theoretical: This provides a practical decision layer for sales, not just model output.</li>
 </ul>
@@ -621,18 +622,18 @@ Strategic Analysis Group
 <div class="column" style="width:58%;">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="assets/strategic_lever_focus_summary.png" class="quarto-figure quarto-figure-center" style="width:50.0%"></p>
+<p><img data-src="assets/strategic_lever_focus_summary_static.png" class="quarto-figure quarto-figure-center" style="width:50.0%"></p>
 </figure>
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="assets/strategic_lever_salesforce_summary.png" class="quarto-figure quarto-figure-center" style="width:50.0%"></p>
+<p><img data-src="assets/strategic_lever_salesforce_summary_static.png" class="quarto-figure quarto-figure-center" style="width:50.0%"></p>
 </figure>
 </div>
 </div><div class="column" style="width:42%;">
 <ul>
-<li><strong>Lever 1, Focus the team:</strong> Assuming higher effort on top-ranked opportunities improves conversion, we might achieve better results per deal. Best simulated point is <strong>top ~43%</strong> of the ranked pipeline, reaching <strong>$462M</strong> in revenue, or <strong>+$77M vs.&nbsp;baseline</strong>.</li>
-<li><strong>Lever 2, Optimize salesforce size:</strong> With better prioritization, we might achieve higher efficiency. Best simulated point is <strong>143 reps</strong>, retaining <strong>$376M</strong> of revenue (97.7%) and improving net margin by <strong>+$6M</strong> vs.&nbsp;full staffing.
+<li><strong>Lever 1, Focus the team:</strong> Under the static ranking with a stronger focus-gain assumption (<strong>λ_max = 2.0×</strong>), the upside becomes more visible. Best simulated point is <strong>top ~56%</strong> of the ranked pipeline, reaching <strong>$436M</strong> in revenue, or about <strong>+$51M vs.&nbsp;baseline</strong>.</li>
+<li><strong>Lever 2, Optimize salesforce size:</strong> With a richer contribution formula and a more realistic comp structure, the headcount signal is still modest but more realistic. Best simulated point is <strong>221 reps</strong>, retaining <strong>99.7%</strong> of revenue and improving contribution margin by <strong>~+$1.2M</strong> vs.&nbsp;baseline.
 <ul>
 <li>Another option is segmenting the salesforce, with a specialized team focused on high-value opportunities/accounts and another team managing the rest.</li>
 </ul></li>
@@ -640,20 +641,21 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>Held-out predictions; Lever 1 uses a decaying focus gain (1.5×→1.0×), Lever 2 assumes $120K OTE / $180K cost and 100 opps per rep.</p>
+<p>Held-out predictions; Lever 1 now uses a decaying focus gain (<strong>2.0×→1.0×</strong>), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.</p>
 </div></aside></section>
 <section id="these-simulations-show-business-potential-not-final-operating-estimates" class="slide level2">
 <h2>These simulations show business potential, not final operating estimates</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <ul>
-<li><strong>No true pre-process static model is shown here</strong>: due to time constraints, current models used in the simulation use evolving lifecycle features; an early-stage model is still needed.</li>
+<li><strong>The main deck now focuses on the static setup</strong>: this is the safer operational choice when snapshot timing is uncertain and we cannot fully rule out timing leakage in process variables.</li>
 <li><strong>Potentially relevant covariates are missing</strong>: the dataset lacks important drivers such as richer account history, rep behavior, pricing context, and external market conditions.</li>
 <li><strong>Snapshot data limits process interpretation</strong>: the dataset reflects a single recorded state, without full event history or detailed timing of interactions.</li>
 </ul>
 </div><div class="column" style="width:48%;">
 <ul>
-<li><strong>Simulations are based on held-out observational predictions</strong>, results are based on held-out predictions, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.</li>
+<li><strong>Dynamic results are kept in the annex as an old benchmark</strong>, because they are stronger but also more exposed to timing leakage if the snapshot was taken late in the sales process.</li>
+<li><strong>Simulations are based on held-out observational predictions</strong>, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.</li>
 <li><strong>Missing business context</strong>: key factors such as sales capacity, cost structure, pricing, and CRM integration were not incorporated or validated with business stakeholders, limiting real-world applicability.</li>
 </ul>
 </div></div>
@@ -667,28 +669,28 @@ Strategic Analysis Group
 <h2>Key takeaways for commercial decision-making</h2>
 <ul>
 <li>Prioritization is the highest-impact, low-effort lever</li>
-<li>Win/loss model (strong scoring performance, AUROC 90.9%) improves focus
+<li>Win/loss model (moderate scoring performance, AUROC 73.6%) still improves focus early in the process
 <ul>
-<li>Top 20% opportunities go from <strong>~22.7% win rate (baseline) to ~74%</strong></li>
+<li>Top 20% opportunities go from <strong>~22.7% win rate (baseline) to ~51.7%</strong></li>
 </ul></li>
 <li>Use the amount model directionally, not for forecasting
 <ul>
-<li>61.7% MdAPE per deal and ~39% under-forecast at portfolio level</li>
+<li>63.0% MdAPE per deal and ~40% under-forecast at portfolio level</li>
 </ul></li>
 <li>Expected value is the strongest prioritization approach
 <ul>
 <li>Outperforms individual models for value capture</li>
 </ul></li>
-<li>Revenues are concentrated <strong>(~49% top 10% opp., ~78% top 25% opp.)</strong> and should be prioritized accordingly</li>
+<li>Revenues are still concentrated <strong>(~38% top 10% opp., ~56% top 25% opp.)</strong> and should be prioritized accordingly</li>
 <li>Implications for commercial strategy:
 <ul>
 <li>Focus efforts on the best opportunities first</li>
-<li>Eventually optimize salesforce size and structure</li>
+<li>Treat bigger strategic levers cautiously until richer process-history data is available</li>
 </ul></li>
 <li>Recommendations for implementing model-driven sales:
 <ul>
 <li>Always embed through CRM.</li>
-<li>[1] Pilot prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.</li>
+<li>[1] Pilot static prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.</li>
 <li><strong>(Optional but recommended)</strong> Keep an experimental mindset and run A/B tests continuously to validate the impact of acting on model outputs, and also to collect contrafactual data to improve the models over time.</li>
 </ul></li>
 </ul>
@@ -706,6 +708,824 @@ Strategic Analysis Group
 <section id="annex" class="title-slide slide level1 center" data-background-color="#0F172A">
 <h1>Annex</h1>
 
+</section>
+<section id="annex-static-classification-cv-leaderboard" class="slide level2">
+<h2>Annex: static classification CV leaderboard</h2>
+<div style="font-size: 80%;">
+<table class="caption-top">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th style="text-align: right;">ROC AUC</th>
+<th style="text-align: right;">PR AUC</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">Precision</th>
+<th style="text-align: right;">Recall</th>
+<th style="text-align: right;">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>random_forest_classifier_balanced_calibrated</td>
+<td style="text-align: right;"><strong>74.0% ± 0.6%</strong></td>
+<td style="text-align: right;"><strong>52.6% ± 1.3%</strong></td>
+<td style="text-align: right;"><strong>81.0% ± 0.4%</strong></td>
+<td style="text-align: right;">70.5% ± 1.8%</td>
+<td style="text-align: right;">28.0% ± 1.1%</td>
+<td style="text-align: right;">40.1% ± 1.4%</td>
+</tr>
+<tr class="even">
+<td>random_forest_classifier</td>
+<td style="text-align: right;">73.9% ± 0.7%</td>
+<td style="text-align: right;">52.5% ± 1.3%</td>
+<td style="text-align: right;">72.1% ± 0.4%</td>
+<td style="text-align: right;">41.9% ± 0.8%</td>
+<td style="text-align: right;"><strong>58.7% ± 1.3%</strong></td>
+<td style="text-align: right;"><strong>48.8% ± 0.9%</strong></td>
+</tr>
+<tr class="odd">
+<td>random_forest_classifier_balanced</td>
+<td style="text-align: right;">73.9% ± 0.7%</td>
+<td style="text-align: right;">52.5% ± 1.3%</td>
+<td style="text-align: right;">72.1% ± 0.4%</td>
+<td style="text-align: right;">41.9% ± 0.8%</td>
+<td style="text-align: right;"><strong>58.7% ± 1.3%</strong></td>
+<td style="text-align: right;"><strong>48.8% ± 0.9%</strong></td>
+</tr>
+<tr class="even">
+<td>xgboost</td>
+<td style="text-align: right;">73.5% ± 0.6%</td>
+<td style="text-align: right;">51.8% ± 1.5%</td>
+<td style="text-align: right;">80.8% ± 0.5%</td>
+<td style="text-align: right;"><strong>71.5% ± 1.4%</strong></td>
+<td style="text-align: right;">26.4% ± 2.3%</td>
+<td style="text-align: right;">38.8% ± 2.6%</td>
+</tr>
+<tr class="odd">
+<td>xgboost_balanced</td>
+<td style="text-align: right;">73.3% ± 0.8%</td>
+<td style="text-align: right;">51.7% ± 1.5%</td>
+<td style="text-align: right;">71.2% ± 0.7%</td>
+<td style="text-align: right;">40.3% ± 0.8%</td>
+<td style="text-align: right;">58.2% ± 1.6%</td>
+<td style="text-align: right;">47.6% ± 0.5%</td>
+</tr>
+<tr class="even">
+<td>logit_elasticnet_robust_scaler_balanced</td>
+<td style="text-align: right;">72.5% ± 0.5%</td>
+<td style="text-align: right;">50.9% ± 1.2%</td>
+<td style="text-align: right;">71.1% ± 0.7%</td>
+<td style="text-align: right;">40.4% ± 0.6%</td>
+<td style="text-align: right;">56.7% ± 2.4%</td>
+<td style="text-align: right;">47.1% ± 0.8%</td>
+</tr>
+<tr class="odd">
+<td>logit_elasticnet_robust_scaler</td>
+<td style="text-align: right;">72.4% ± 0.5%</td>
+<td style="text-align: right;">50.9% ± 1.2%</td>
+<td style="text-align: right;">80.9% ± 0.4%</td>
+<td style="text-align: right;">70.9% ± 1.6%</td>
+<td style="text-align: right;">26.7% ± 1.7%</td>
+<td style="text-align: right;">38.8% ± 2.0%</td>
+</tr>
+<tr class="even">
+<td>classic_logit_robust_scaler</td>
+<td style="text-align: right;">72.4% ± 0.5%</td>
+<td style="text-align: right;">50.9% ± 1.2%</td>
+<td style="text-align: right;">80.9% ± 0.4%</td>
+<td style="text-align: right;">70.9% ± 1.6%</td>
+<td style="text-align: right;">26.8% ± 1.6%</td>
+<td style="text-align: right;">38.8% ± 1.9%</td>
+</tr>
+<tr class="odd">
+<td>logit_elasticnet_binned_ohe_balanced</td>
+<td style="text-align: right;">72.4% ± 0.5%</td>
+<td style="text-align: right;">50.1% ± 0.9%</td>
+<td style="text-align: right;">70.5% ± 0.6%</td>
+<td style="text-align: right;">39.7% ± 0.5%</td>
+<td style="text-align: right;">57.3% ± 2.4%</td>
+<td style="text-align: right;">46.9% ± 0.7%</td>
+</tr>
+<tr class="even">
+<td>logit_binned_ohe_balanced</td>
+<td style="text-align: right;">72.4% ± 0.5%</td>
+<td style="text-align: right;">50.1% ± 0.9%</td>
+<td style="text-align: right;">70.5% ± 0.6%</td>
+<td style="text-align: right;">39.7% ± 0.5%</td>
+<td style="text-align: right;">57.4% ± 2.4%</td>
+<td style="text-align: right;">46.9% ± 0.7%</td>
+</tr>
+<tr class="odd">
+<td>logit_binned_ohe_balanced_calibrated</td>
+<td style="text-align: right;">72.4% ± 0.5%</td>
+<td style="text-align: right;">50.1% ± 0.9%</td>
+<td style="text-align: right;">80.6% ± 0.3%</td>
+<td style="text-align: right;">68.2% ± 2.5%</td>
+<td style="text-align: right;">27.5% ± 3.1%</td>
+<td style="text-align: right;">39.0% ± 2.9%</td>
+</tr>
+<tr class="even">
+<td>logit_elasticnet_binned_ohe</td>
+<td style="text-align: right;">72.3% ± 0.4%</td>
+<td style="text-align: right;">50.1% ± 0.9%</td>
+<td style="text-align: right;">80.6% ± 0.4%</td>
+<td style="text-align: right;">68.3% ± 2.5%</td>
+<td style="text-align: right;">27.8% ± 3.3%</td>
+<td style="text-align: right;">39.4% ± 3.1%</td>
+</tr>
+<tr class="odd">
+<td>logit_binned_ohe</td>
+<td style="text-align: right;">72.3% ± 0.4%</td>
+<td style="text-align: right;">50.1% ± 0.9%</td>
+<td style="text-align: right;">80.6% ± 0.4%</td>
+<td style="text-align: right;">68.2% ± 2.4%</td>
+<td style="text-align: right;">27.8% ± 3.2%</td>
+<td style="text-align: right;">39.4% ± 3.1%</td>
+</tr>
+<tr class="even">
+<td>logit_elastic_binned_woe_balanced</td>
+<td style="text-align: right;">71.2% ± 0.5%</td>
+<td style="text-align: right;">49.7% ± 0.8%</td>
+<td style="text-align: right;">69.5% ± 0.8%</td>
+<td style="text-align: right;">38.4% ± 0.6%</td>
+<td style="text-align: right;">56.7% ± 2.2%</td>
+<td style="text-align: right;">45.8% ± 0.3%</td>
+</tr>
+<tr class="odd">
+<td>logit_elastic_binned_woe</td>
+<td style="text-align: right;">71.2% ± 0.5%</td>
+<td style="text-align: right;">49.7% ± 0.8%</td>
+<td style="text-align: right;">80.7% ± 0.4%</td>
+<td style="text-align: right;">68.3% ± 3.2%</td>
+<td style="text-align: right;">28.2% ± 4.3%</td>
+<td style="text-align: right;">39.7% ± 4.0%</td>
+</tr>
+<tr class="even">
+<td>logit_binned_woe</td>
+<td style="text-align: right;">71.2% ± 0.5%</td>
+<td style="text-align: right;">49.7% ± 0.8%</td>
+<td style="text-align: right;">80.6% ± 0.3%</td>
+<td style="text-align: right;">68.3% ± 3.2%</td>
+<td style="text-align: right;">28.2% ± 4.3%</td>
+<td style="text-align: right;">39.7% ± 4.0%</td>
+</tr>
+<tr class="odd">
+<td>random_classifier</td>
+<td style="text-align: right;">50.2% ± 0.2%</td>
+<td style="text-align: right;">22.8% ± 0.1%</td>
+<td style="text-align: right;">65.4% ± 0.1%</td>
+<td style="text-align: right;">23.0% ± 0.3%</td>
+<td style="text-align: right;">22.4% ± 0.3%</td>
+<td style="text-align: right;">22.7% ± 0.3%</td>
+</tr>
+<tr class="even">
+<td>always_true_classifier</td>
+<td style="text-align: right;">50.0% ± 0.0%</td>
+<td style="text-align: right;">22.7% ± 0.0%</td>
+<td style="text-align: right;">22.7% ± 0.0%</td>
+<td style="text-align: right;">22.7% ± 0.0%</td>
+<td style="text-align: right;">100.0% ± 0.0%</td>
+<td style="text-align: right;">37.0% ± 0.0%</td>
+</tr>
+</tbody>
+</table>
+<p>Selected model in the current main deck: <strong>random_forest_classifier_balanced_calibrated</strong>.</p>
+</div>
+</section>
+<section id="annex-static-regression-cv-leaderboard" class="slide level2">
+<h2>Annex: static regression CV leaderboard</h2>
+<div style="font-size: 80%;">
+<table class="caption-top">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th style="text-align: right;">R²</th>
+<th style="text-align: right;">MAE (USD)</th>
+<th style="text-align: right;">MAPE</th>
+<th style="text-align: right;">Median APE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>xgboost_yeojohnson</td>
+<td style="text-align: right;">0.041 ± 0.009</td>
+<td style="text-align: right;">66.7k ± 1.5k</td>
+<td style="text-align: right;">158.4% ± 22.3%</td>
+<td style="text-align: right;">63.1%</td>
+</tr>
+<tr class="even">
+<td>xgboost_boxcox</td>
+<td style="text-align: right;">0.041 ± 0.009</td>
+<td style="text-align: right;">66.7k ± 1.5k</td>
+<td style="text-align: right;">158.7% ± 23.9%</td>
+<td style="text-align: right;">63.1%</td>
+</tr>
+<tr class="odd">
+<td>xgboost_log1p</td>
+<td style="text-align: right;">-0.007 ± 0.009</td>
+<td style="text-align: right;">67.6k ± 1.6k</td>
+<td style="text-align: right;">126.4% ± 19.5%</td>
+<td style="text-align: right;">63.5%</td>
+</tr>
+<tr class="even">
+<td>classic_linear_boxcox_robust_scaler</td>
+<td style="text-align: right;">0.031 ± 0.009</td>
+<td style="text-align: right;">67.4k ± 1.5k</td>
+<td style="text-align: right;">173.5% ± 28.9%</td>
+<td style="text-align: right;">63.8%</td>
+</tr>
+<tr class="odd">
+<td>classic_linear_yeojohnson_robust_scaler</td>
+<td style="text-align: right;">0.031 ± 0.009</td>
+<td style="text-align: right;">67.4k ± 1.5k</td>
+<td style="text-align: right;">173.4% ± 28.9%</td>
+<td style="text-align: right;">63.8%</td>
+</tr>
+<tr class="even">
+<td>linear_power_scaler_binned_ohe</td>
+<td style="text-align: right;">0.029 ± 0.009</td>
+<td style="text-align: right;">67.5k ± 1.5k</td>
+<td style="text-align: right;">176.8% ± 30.4%</td>
+<td style="text-align: right;">63.9%</td>
+</tr>
+<tr class="odd">
+<td>classic_linear_log1p_robust_scaler</td>
+<td style="text-align: right;">-0.017 ± 0.008</td>
+<td style="text-align: right;">68.3k ± 1.6k</td>
+<td style="text-align: right;">144.6% ± 24.8%</td>
+<td style="text-align: right;">64.4%</td>
+</tr>
+<tr class="even">
+<td>median_regressor</td>
+<td style="text-align: right;">-0.108 ± 0.002</td>
+<td style="text-align: right;">75.0k ± 1.5k</td>
+<td style="text-align: right;">124.7% ± 28.4%</td>
+<td style="text-align: right;">74.6%</td>
+</tr>
+<tr class="odd">
+<td>random_forest_regressor</td>
+<td style="text-align: right;">0.124 ± 0.009</td>
+<td style="text-align: right;">74.2k ± 1.1k</td>
+<td style="text-align: right;">283.4% ± 44.4%</td>
+<td style="text-align: right;">77.5%</td>
+</tr>
+<tr class="even">
+<td>xgboost</td>
+<td style="text-align: right;">0.136 ± 0.008</td>
+<td style="text-align: right;">73.8k ± 1.0k</td>
+<td style="text-align: right;">289.3% ± 46.0%</td>
+<td style="text-align: right;">78.6%</td>
+</tr>
+<tr class="odd">
+<td>linear_binned_ohe</td>
+<td style="text-align: right;">0.127 ± 0.008</td>
+<td style="text-align: right;">74.7k ± 1.0k</td>
+<td style="text-align: right;">298.7% ± 52.5%</td>
+<td style="text-align: right;">78.6%</td>
+</tr>
+<tr class="even">
+<td>classic_linear_robust_scaler</td>
+<td style="text-align: right;">0.128 ± 0.007</td>
+<td style="text-align: right;">74.7k ± 1.1k</td>
+<td style="text-align: right;">295.1% ± 50.2%</td>
+<td style="text-align: right;">78.7%</td>
+</tr>
+<tr class="odd">
+<td>linear_binned_woe_robust_scaler</td>
+<td style="text-align: right;">0.124 ± 0.008</td>
+<td style="text-align: right;">74.8k ± 1.1k</td>
+<td style="text-align: right;">298.7% ± 56.6%</td>
+<td style="text-align: right;">79.1%</td>
+</tr>
+<tr class="even">
+<td>elastic_binned_woe</td>
+<td style="text-align: right;">0.124 ± 0.008</td>
+<td style="text-align: right;">74.8k ± 1.1k</td>
+<td style="text-align: right;">298.7% ± 56.6%</td>
+<td style="text-align: right;">79.1%</td>
+</tr>
+<tr class="odd">
+<td>mean_regressor</td>
+<td style="text-align: right;">-0.000 ± 0.000</td>
+<td style="text-align: right;">84.9k ± 1.3k</td>
+<td style="text-align: right;">235.0% ± 53.9%</td>
+<td style="text-align: right;">88.3%</td>
+</tr>
+<tr class="even">
+<td>random_regressor</td>
+<td style="text-align: right;">-1.053 ± 0.057</td>
+<td style="text-align: right;">115.0k ± 2.1k</td>
+<td style="text-align: right;">164.1% ± 65.3%</td>
+<td style="text-align: right;">90.4%</td>
+</tr>
+<tr class="odd">
+<td>xgboost_pseudohubererror</td>
+<td style="text-align: right;">-0.473 ± 0.011</td>
+<td style="text-align: right;">92.3k ± 2.0k</td>
+<td style="text-align: right;">5.3% ± 1.2%</td>
+<td style="text-align: right;">96.1%</td>
+</tr>
+<tr class="even">
+<td>elasticnet_robust_scaler</td>
+<td style="text-align: right;">0.058 ± 0.003</td>
+<td style="text-align: right;">80.2k ± 1.2k</td>
+<td style="text-align: right;">260.0% ± 54.5%</td>
+<td style="text-align: right;">99.0%</td>
+</tr>
+</tbody>
+</table>
+<p>Selected model in the current main deck: <strong>xgboost_yeojohnson</strong> by CV Median APE.</p>
+</div>
+</section>
+<section id="annex-static-hold-out-calibration-of-the-selected-classifier" class="slide level2">
+<h2>Annex: static hold-out calibration of the selected classifier</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/annex_calibration_comparison_static.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>This chart shows the <strong>selected static classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced_calibrated</code>.</li>
+<li>It compares the model’s mean predicted win probability to the observed win rate across quantile bins.</li>
+<li>The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-static-hold-out-classification-report-at-the-selected-models-optimal-threshold" class="slide level2">
+<h2>Annex: static hold-out classification report at the selected model’s optimal threshold</h2>
+<div class="smallest">
+<p>Threshold chosen on <strong>training out-of-fold predictions</strong> to maximize <strong>precision subject to recall ≥ 25%</strong> for the selected model: <strong>54.5%</strong> predicted win probability.</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th style="text-align: right;">Threshold</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">Precision</th>
+<th style="text-align: right;">Recall</th>
+<th style="text-align: right;">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Selected @ optimal threshold</td>
+<td style="text-align: right;">54.5%</td>
+<td style="text-align: right;">81.0%</td>
+<td style="text-align: right;">73.5%</td>
+<td style="text-align: right;">25.3%</td>
+<td style="text-align: right;">37.6%</td>
+</tr>
+<tr class="even">
+<td>Random classifier</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">65.1%</td>
+<td style="text-align: right;">23.5%</td>
+<td style="text-align: right;">23.6%</td>
+<td style="text-align: right;">23.5%</td>
+</tr>
+<tr class="odd">
+<td>Always false</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">77.3%</td>
+<td style="text-align: right;">0.0%</td>
+<td style="text-align: right;">0.0%</td>
+<td style="text-align: right;">0.0%</td>
+</tr>
+<tr class="even">
+<td>Always true</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">22.7%</td>
+<td style="text-align: right;">22.7%</td>
+<td style="text-align: right;">100.0%</td>
+<td style="text-align: right;">37.0%</td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th style="text-align: right;">TN</th>
+<th style="text-align: right;">FP</th>
+<th style="text-align: right;">FN</th>
+<th style="text-align: right;">TP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Selected @ optimal threshold</td>
+<td style="text-align: right;">17,104</td>
+<td style="text-align: right;">472</td>
+<td style="text-align: right;">3,860</td>
+<td style="text-align: right;">1,310</td>
+</tr>
+<tr class="even">
+<td>Random classifier</td>
+<td style="text-align: right;">13,597</td>
+<td style="text-align: right;">3,979</td>
+<td style="text-align: right;">3,951</td>
+<td style="text-align: right;">1,219</td>
+</tr>
+<tr class="odd">
+<td>Always false</td>
+<td style="text-align: right;">17,576</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5,170</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td>Always true</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">17,576</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5,170</td>
+</tr>
+</tbody>
+</table>
+<p>Diagnostic note: the threshold is selected on train-side OOF predictions, then evaluated once on the untouched hold-out set shown here.</p>
+</div>
+</section>
+<section id="annex-static-regression-error-by-amount-bin-on-the-hold-out-set" class="slide level2">
+<h2>Annex: static regression error by amount bin on the hold-out set</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/annex_regression_error_bins_static.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>The comparison shows where model error changes most across deal-size bands, instead of averaging everything into one MAE figure.</li>
+<li>Under the static setup, the transformed XGBoost variants still lead the relative-error ranking, with <strong>XGBoost Yeo-Johnson</strong> narrowly selected overall.</li>
+<li>The main gain still comes from controlling typical proportional error, while the largest opportunities continue to create a gap between deal-level accuracy and total-portfolio forecasting.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-static-held-out-forecast-bias-of-the-selected-amount-model" class="slide level2">
+<h2>Annex: static held-out forecast bias of the selected amount model</h2>
+<div class="columns">
+<div class="column" style="width:56%;">
+<p><img data-src="assets/annex_forecast_bias_static.png" style="width:100.0%"></p>
+</div><div class="column" style="width:44%;">
+<ul>
+<li>The selected static amount model under-forecasts the held-out portfolio: <strong>$1.28B predicted</strong> vs <strong>$2.14B actual</strong>.</li>
+<li>That is a gap of about <strong>$859M</strong>, or roughly <strong>40% below</strong> the realized total on the test set.</li>
+<li>This is why the main deck uses the amount model for <strong>directional sizing and ranking</strong>, not as a committed aggregate forecast without an explicit bias-correction layer.</li>
+<li>The same hold-out evaluation still supports the model for per-opportunity ordering because <strong>MAE ≈ $66.7K</strong> and <strong>Median APE ≈ 63%</strong> are judged at deal level, not portfolio-total calibration.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-data-quality-issue-profile-from-the-validation-notebook" class="slide level2">
+<h2>Annex: data-quality issue profile from the validation notebook</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><img data-src="assets/number_of_problems.png" style="width:100.0%"></p>
+</div><div class="column" style="width:50%;">
+<p><img data-src="assets/annex_data_quality_issue_types.png" style="width:100.0%"></p>
+</div></div>
+<ul>
+<li>Source of truth: <code>notebooks/1_data_validation_and_cleaning/01_basic_validation.ipynb</code>, which builds <code>problem_tags</code>, <code>problem_count</code>, and the row-level validation flags before exporting <code>cleaned_data.parquet</code>.</li>
+<li>The row-count distribution shows that most records have <strong>0–1 detected issues</strong>, while the issue-type breakdown shows that the main burden comes from <strong>stage-ratio inconsistencies</strong>, <strong>amount weirdness</strong>, and <strong>only-identified-stage</strong> records.</li>
+<li>This supports the data-prep choice used throughout the deck: remove clearly unusable rows (duplicates, invalid targets) but retain many imperfect rows with explicit flags because the modeling task is ranking and prioritization, not accounting-grade reconciliation.</li>
+</ul>
+</section>
+<section id="annex-numeric-variable-correlation-heatmap" class="slide level2">
+<h2>Annex: numeric variable correlation heatmap</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><img data-src="assets/annex_numeric_correlation_heatmap.png" style="width:100.0%"></p>
+</div><div class="column" style="width:50%;">
+<ul>
+<li>Most numeric relationships are weak, suggesting limited linear redundancy across variables.</li>
+<li>Process-duration variables are highly correlated (e.g.&nbsp;identified→closing vs identified→qualified), so they likely capture overlapping timing effects.</li>
+<li>Stage-ratio variables show expected inverse relationships, reflecting how progress through the funnel mechanically shifts the composition of stage shares.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-strategic-lever-1-focus-the-same-team-on-fewer-better-ranked-deals" class="slide level2">
+<h2>Annex: strategic lever 1 — focus the same team on fewer, better-ranked deals</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><img data-src="assets/sim_focus_gain_main_static.png" style="width:88.0%"></p>
+</div><div class="column" style="width:45%;">
+<ul>
+<li>Same salesforce, fewer deals — dropped opportunities go unworked.</li>
+<li>Focus gain grows as the slice shrinks (λ_max = 2.0× at top slice → 1.0× at full pipeline).</li>
+<li>Break-even at <strong>top ~28%</strong>; optimal at <strong>top ~56%</strong> → <strong>$436M</strong> (+$51M vs.&nbsp;baseline).</li>
+</ul>
+</div></div>
+
+<aside><div>
+<p>Focus-gain λ_max is a scenario assumption, not an empirically estimated causal effect. λ decays linearly from λ_max at the smallest slice to 1.0× at the full pipeline. Simulation uses held-out test-set predictions.</p>
+</div></aside></section>
+<section id="annex-focus-gain-sensitivity-across-λ-values" class="slide level2">
+<h2>Annex: focus-gain sensitivity across λ values</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/sim_focus_gain_sweep_static.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>Each curve shows the <strong>net revenue delta in USD</strong> vs.&nbsp;the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.</li>
+<li>λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.</li>
+<li>Break-even shifts left as λ_max increases: under the static model, the base scenario now breaks even at about <strong>top 28%</strong> of the ranked pipeline when <strong>λ_max = 2.0</strong>.</li>
+<li>The current static deck uses <strong>λ_max = 2.00</strong> as the base scenario.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-strategic-lever-2-practical-contribution-formula" class="slide level2">
+<h2>Annex: strategic lever 2 — practical contribution formula</h2>
+<div class="smaller">
+<p>We replace the old <code>revenue − rep cost</code> shortcut with a more realistic contribution measure:</p>
+<p><code>Contribution = RealizedRevenue × margin_pct − SalesEffortCost − CommissionCost − AcquisitionCost − ServingCost</code></p>
+<ul>
+<li><strong>Realized revenue</strong>: <code>amount_i</code> if won, else <code>0</code></li>
+<li><strong>Margin %</strong>: product-group proxy used as a COGS fallback
+<ul>
+<li>Car Accessories <code>68%</code>, Performance &amp; Non-auto <code>62%</code>, Tires &amp; Wheels <code>55%</code>, Car Electronics <code>58%</code>, default <code>63%</code></li>
+</ul></li>
+<li><strong>Sales effort cost</strong>: team base+overhead allocated from rep capacity</li>
+<li><strong>Commission cost</strong>: <code>7%</code> of realized revenue</li>
+<li><strong>Acquisition cost</strong>: route-to-market proxy
+<ul>
+<li>Fields Sales <code>2.4k</code>, Reseller <code>1.6k</code>, Telesales <code>0.85k</code>, Telecoverage <code>0.65k</code>, Other/default lower values</li>
+</ul></li>
+<li><strong>Serving cost</strong>: <code>8%</code> of realized won amount</li>
+</ul>
+<p>Why this matters: it keeps the earlier sales-effort framing, but now separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.</p>
+</div>
+</section>
+<section id="annex-strategic-lever-2-reduce-the-salesforce-and-let-the-model-pick-the-best-opportunities" class="slide level2">
+<h2>Annex: Strategic lever 2: Reduce the salesforce and let the model pick the best opportunities</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><img data-src="assets/sim_salesforce_reduction_main_static.png" style="width:100.0%"></p>
+</div><div class="column" style="width:45%;">
+<ul>
+<li>Baseline: <strong>228 reps</strong>, <strong>$385M</strong> realized revenue, and about <strong>$121M</strong> contribution after margin, base+overhead, commission, acquisition, and serving costs.</li>
+<li>Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.</li>
+<li><strong>Optimal headcount: 221 reps</strong> → <strong>$384M</strong> revenue retained (99.7%) and <strong>+$1.2M</strong> contribution vs.&nbsp;baseline.</li>
+<li>Last individually positive rep batch is around <strong>rep #221</strong> — beyond that, incremental contribution no longer covers incremental operating cost.</li>
+</ul>
+</div></div>
+
+<aside><div>
+<p>Headcount model assumes 100 opps/rep/period. Contribution now uses product-margin proxies, <strong>$135K base+overhead per rep</strong>, <strong>7% commission on realized revenue</strong>, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.</p>
+</div></aside></section>
+<section id="annex-salesforce-reduction-marginal-contribution-per-rep-batch" class="slide level2">
+<h2>Annex: salesforce reduction — marginal contribution per rep batch</h2>
+<div class="columns">
+<div class="column" style="width:58%;">
+<p><img data-src="assets/sim_salesforce_reduction_marginal_static.png" style="width:100.0%"></p>
+</div><div class="column" style="width:42%;">
+<ul>
+<li>Each bar shows the <strong>marginal contribution</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
+<li>The comparison line now represents the <strong>incremental operating cost</strong> of the same batch, not a flat rep-cost shortcut.</li>
+<li><strong>Blue bars</strong> are ROI-positive: the batch adds more contribution than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves contribution margin.</li>
+<li>Under the static ranking, the crossover is still late in the curve, which is why the contribution upside from resizing remains modest.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-binning-methods-easy-explanation" class="slide level2">
+<h2>Annex: binning methods — easy explanation</h2>
+<div class="smaller">
+<ul>
+<li><strong>Binning</strong> means replacing a raw variable with a small number of ranges.</li>
+<li>Instead of using exact values like <code>17 days</code>, <code>43 days</code>, <code>91 days</code>, the model can work with bands like:
+<ul>
+<li><strong>0–30 days</strong></li>
+<li><strong>31–60 days</strong></li>
+<li><strong>60+ days</strong></li>
+</ul></li>
+<li>This is useful when the signal comes from <strong>thresholds</strong> or <strong>zones</strong>, not from a perfectly smooth linear relationship.</li>
+<li>In practice, binning helps when variables are:
+<ul>
+<li>noisy</li>
+<li>skewed</li>
+<li>sensitive to outliers</li>
+<li>easier to interpret in ranges than in raw units</li>
+</ul></li>
+<li>So the intuition is simple: <strong>group similar values together before modeling</strong>.</li>
+</ul>
+</div>
+</section>
+<section id="annex-binning-methods-what-optbinning-does" class="slide level2">
+<h2>Annex: binning methods — what <code>optbinning</code> does</h2>
+<div class="smaller">
+<ul>
+<li>This project uses <strong>supervised binning</strong> with <code>optbinning</code>.</li>
+<li>“Supervised” means the bins are not chosen arbitrarily: they are learned using the <strong>target</strong>.</li>
+<li>The algorithm searches for cut points that make the bins as different as possible with respect to the prediction target.</li>
+<li>For classification, that means finding intervals where the <strong>win/loss mix</strong> is clearly different.</li>
+<li>For regression-style use, it means finding intervals that better separate the <strong>amount behavior</strong>.</li>
+<li>Compared with manual bucketing or equal-width bins, <code>optbinning</code> is trying to find <strong>more informative splits</strong>.</li>
+<li>In this repo, the wrapper is <code>NamedBinningProcess</code> in <code>notebooks/4_modelling/binning.py</code>, which keeps the output compatible with the sklearn pipelines used in the experiments.</li>
+</ul>
+</div>
+</section>
+<section id="annex-binning-methods-the-3-usage-modes-in-this-repo" class="slide level2">
+<h2>Annex: binning methods — the 3 usage modes in this repo</h2>
+<div class="smaller">
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Usage mode</th>
+<th>What the pipeline outputs</th>
+<th>Why use it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>bin</code></td>
+<td>The learned bin labels themselves</td>
+<td>Mainly useful for inspection / debugging / intermediate transforms</td>
+</tr>
+<tr class="even">
+<td><code>bin_ohe</code></td>
+<td>The learned bins, then one-hot encoded into dummy columns</td>
+<td>Keeps non-linear threshold effects while staying interpretable in linear/logistic models</td>
+</tr>
+<tr class="odd">
+<td><code>woe</code></td>
+<td>One WoE value per binned variable</td>
+<td>Compresses each variable into a single monotonic signal and often stabilizes logistic-type models</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Selected classifier in the main deck:</strong> <code>random_forest_classifier_balanced_calibrated</code></li>
+<li>So the binning modes below describe the <strong>logit-family alternatives</strong> and supporting model variants, not the final chosen forest.
+<ul>
+<li>supervised bins are learned first</li>
+<li>then the bins are one-hot encoded</li>
+<li>then logistic regression is fit</li>
+<li>then probabilities are calibrated</li>
+</ul></li>
+<li><strong>WoE pipelines</strong> in the annex leaderboard use the same supervised binning step, but replace each bin with its <strong>Weight of Evidence</strong> value instead of a set of dummy columns.</li>
+<li><strong>WoE intuition:</strong> positive WoE = more win-heavy than average; negative WoE = more loss-heavy than average.</li>
+</ul>
+</div>
+</section>
+<section id="annex-how-to-read-iv-charts-classification-win-loss" class="slide level2">
+<h2>Annex: how to read IV charts — classification / win-loss</h2>
+<div class="smaller">
+<ul>
+<li><strong>Information Value (IV)</strong> is a score used to rank how much predictive signal a variable carries against a target.</li>
+<li>For the <strong>classification / win-loss</strong> chart, IV is the classic binary-target version derived from <strong>Weight of Evidence (WoE)</strong>.</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>IV range</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt; 0.02</td>
+<td>Useless</td>
+</tr>
+<tr class="even">
+<td>0.02 to 0.10</td>
+<td>Weak</td>
+</tr>
+<tr class="odd">
+<td>0.10 to 0.30</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>0.30 to 0.50</td>
+<td>Strong</td>
+</tr>
+<tr class="odd">
+<td>&gt; 0.50</td>
+<td>Suspiciously high → check for leakage</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Colors</strong> add direction, because IV itself is only a strength score:
+<ul>
+<li><strong>green</strong> = increasing relationship</li>
+<li><strong>red</strong> = decreasing relationship</li>
+<li><strong>gray</strong> = categorical or unclear direction</li>
+</ul></li>
+<li><strong>Asterisk (<code>*</code>)</strong> = strictly monotonic relationship across bins.</li>
+<li>Very high IV values for process variables can reflect genuinely strong signal, but they should always be checked for <strong>timing leakage</strong>.</li>
+</ul>
+</div>
+</section>
+<section id="annex-how-to-read-iv-charts-regression-amount" class="slide level2">
+<h2>Annex: how to read IV charts — regression / amount</h2>
+<div class="smaller">
+<ul>
+<li>The <strong>regression / amount</strong> chart does <strong>not</strong> use the same IV definition as the win/loss chart.</li>
+<li>It comes from <code>ContinuousOptimalBinning</code>, where IV is a <strong>surrogate separation metric based on differences in bin means</strong>.</li>
+<li>So the regression IV values are useful for <strong>relative ranking within that chart</strong>, but they should <strong>not</strong> be read with the binary-IV table and should <strong>not</strong> be compared numerically to the classification IV values.</li>
+<li>Practical reading rule:
+<ul>
+<li>use the <strong>classification IV chart</strong> with the standard heuristic bands</li>
+<li>use the <strong>regression IV chart</strong> only to see which variables separate amount behavior the most within that chart</li>
+</ul></li>
+<li>This is why regression IV values can look numerically much larger: they are on a <strong>different scale</strong>, not evidence of impossible predictive power.</li>
+</ul>
+</div>
+</section>
+<section id="annex-original-text-version-of-the-modelling-use-cases-slide" class="slide level2">
+<h2>Annex: original text version of the modelling use-cases slide</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<h3 id="selected-for-this-project">Selected for this project</h3>
+<ul>
+<li><strong>Process prioritization</strong>: rank opportunities by win propensity and support decisions on where sales effort should focus first.</li>
+<li><strong>Opportunity sizing &amp; forecasting</strong>: estimate deal value and aggregate expected sales for planning, prioritization, and budget visibility.</li>
+</ul>
+</div><div class="column" style="width:48%;">
+<h3 id="additional-opportunities-identified-in-the-data">Additional opportunities identified in the data</h3>
+<ul>
+<li><strong>Channel optimization</strong>: test what-if scenarios around route-to-market and engagement model choices.</li>
+<li><strong>Secondary market segmentation</strong>: create actionable commercial segments from predicted value and conversion potential.</li>
+<li><strong>Early warning systems</strong>: flag opportunities that are likely to deteriorate or stall.</li>
+<li><strong>Budget allocation</strong>: guide sales effort and product-focus decisions across segments, regions, and product lines.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-original-text-version-of-the-crm-embedding-slide" class="slide level2">
+<h2>Annex: original text version of the CRM embedding slide</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<h3 id="operational-flow">Operational flow</h3>
+<p><strong>Opportunity created</strong> → <strong>score + expected value generated</strong></p>
+<ul>
+<li>As soon as a new opportunity enters the CRM, the workflow generates:
+<ul>
+<li><strong>win-propensity score</strong></li>
+<li><strong>predicted amount</strong></li>
+<li><strong>expected value = E[Amount] × P(Win)</strong></li>
+</ul></li>
+</ul>
+<h3 id="crm-displays">CRM displays</h3>
+<ul>
+<li><strong>Priority tier</strong>: Top 10%, Top 25%, Top 50%, etc.</li>
+<li><strong>Suggested action</strong>: focus / monitor / deprioritize</li>
+<li>This gives frontline teams a simple operating signal without exposing model internals.</li>
+</ul>
+</div><div class="column" style="width:48%;">
+<h3 id="weekly-pipeline-reviews">Weekly pipeline reviews</h3>
+<ul>
+<li>Review only opportunities above agreed propensity or expected-value thresholds.</li>
+<li>Use those cutoffs to focus rep attention, escalation, and follow-up.</li>
+</ul>
+<h3 id="management-view">Management view</h3>
+<ul>
+<li><strong>Directional forecast = sum of predicted values</strong> across the active pipeline.</li>
+<li>Management can compare it by region, route to market, owner, or priority tier.</li>
+</ul>
+</div></div>
+</section>
+<section id="annex-original-text-version-of-the-next-steps-slide" class="slide level2">
+<h2>Annex: original text version of the Next steps slide</h2>
+<ul>
+<li>Pilot deployment (4–6 weeks):
+<ul>
+<li>Embed prioritization scores into CRM workflows</li>
+<li>Run A/B test vs.&nbsp;current sales process and measure lift in conversion and revenue</li>
+</ul></li>
+<li>Define operating model (after pilot early results):
+<ul>
+<li>Incorporate funnel/client segmentation into the process</li>
+<li>Potentially include product-level segmentation if it makes sense.</li>
+<li>Set clear thresholds and actions (e.g., top deciles = sales focus)</li>
+<li>Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively</li>
+</ul></li>
+<li>Monitor performance (starting after deployment):
+<ul>
+<li>Track conversion lift, cycle time, and revenue per opportunity</li>
+<li>Continuously recalibrate thresholds and retrain models</li>
+</ul></li>
+<li>Scale and integrate (after pilot success):
+<ul>
+<li>Extend to full pipeline and embed in forecasting cadence</li>
+<li>Incorporate into commercial planning and resource allocation</li>
+<li>Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights</li>
+</ul></li>
+</ul>
 </section>
 <section id="annex-classification-cv-leaderboard" class="slide level2">
 <h2>Annex: classification CV leaderboard</h2>
@@ -733,49 +1553,49 @@ Strategic Analysis Group
 </thead>
 <tbody>
 <tr class="odd">
+<td>xgboost</td>
+<td style="text-align: right;"><strong>92.9% ± 0.4%</strong></td>
+<td style="text-align: right;"><strong>82.2% ± 0.5%</strong></td>
+<td style="text-align: right;"><strong>88.3% ± 0.4%</strong></td>
+<td style="text-align: right;"><strong>78.5% ± 0.9%</strong></td>
+<td style="text-align: right;">66.8% ± 1.2%</td>
+<td style="text-align: right;">72.2% ± 0.9%</td>
+</tr>
+<tr class="even">
+<td>xgboost_balanced</td>
+<td style="text-align: right;">92.8% ± 0.4%</td>
+<td style="text-align: right;">82.0% ± 0.6%</td>
+<td style="text-align: right;">86.2% ± 0.6%</td>
+<td style="text-align: right;">65.7% ± 1.3%</td>
+<td style="text-align: right;"><strong>82.0% ± 0.5%</strong></td>
+<td style="text-align: right;"><strong>72.9% ± 0.9%</strong></td>
+</tr>
+<tr class="odd">
 <td>random_forest_classifier</td>
-<td style="text-align: right;"><strong>91.7% ± 0.4%</strong></td>
-<td style="text-align: right;">78.4% ± 0.9%</td>
-<td style="text-align: right;"><strong>87.2% ± 0.2%</strong></td>
-<td style="text-align: right;"><strong>77.8% ± 0.7%</strong></td>
-<td style="text-align: right;">61.1% ± 1.1%</td>
-<td style="text-align: right;">68.5% ± 0.8%</td>
+<td style="text-align: right;">91.4% ± 0.4%</td>
+<td style="text-align: right;">77.3% ± 1.0%</td>
+<td style="text-align: right;">84.7% ± 0.6%</td>
+<td style="text-align: right;">62.6% ± 1.1%</td>
+<td style="text-align: right;">80.9% ± 0.6%</td>
+<td style="text-align: right;">70.6% ± 1.0%</td>
 </tr>
 <tr class="even">
 <td>random_forest_classifier_balanced</td>
 <td style="text-align: right;">91.4% ± 0.4%</td>
-<td style="text-align: right;">77.3% ± 1.1%</td>
+<td style="text-align: right;">77.3% ± 1.0%</td>
 <td style="text-align: right;">84.7% ± 0.6%</td>
-<td style="text-align: right;">62.7% ± 1.1%</td>
-<td style="text-align: right;">81.0% ± 0.7%</td>
-<td style="text-align: right;"><strong>70.7% ± 1.0%</strong></td>
+<td style="text-align: right;">62.6% ± 1.1%</td>
+<td style="text-align: right;">80.9% ± 0.6%</td>
+<td style="text-align: right;">70.6% ± 1.0%</td>
 </tr>
 <tr class="odd">
 <td>random_forest_classifier_balanced_calibrated</td>
 <td style="text-align: right;">91.2% ± 0.4%</td>
-<td style="text-align: right;">76.7% ± 1.1%</td>
+<td style="text-align: right;">76.7% ± 1.2%</td>
 <td style="text-align: right;">86.9% ± 0.4%</td>
 <td style="text-align: right;">73.2% ± 1.1%</td>
-<td style="text-align: right;">66.6% ± 0.9%</td>
-<td style="text-align: right;">69.7% ± 0.8%</td>
-</tr>
-<tr class="even">
-<td>xgboost_balanced</td>
-<td style="text-align: right;">91.2% ± 0.3%</td>
-<td style="text-align: right;">78.3% ± 0.7%</td>
-<td style="text-align: right;">83.0% ± 0.5%</td>
-<td style="text-align: right;">58.8% ± 1.0%</td>
-<td style="text-align: right;"><strong>83.9% ± 0.4%</strong></td>
-<td style="text-align: right;">69.1% ± 0.7%</td>
-</tr>
-<tr class="odd">
-<td>xgboost</td>
-<td style="text-align: right;">91.2% ± 0.3%</td>
-<td style="text-align: right;"><strong>78.6% ± 0.6%</strong></td>
-<td style="text-align: right;">87.1% ± 0.3%</td>
-<td style="text-align: right;">77.6% ± 0.8%</td>
-<td style="text-align: right;">60.9% ± 1.1%</td>
-<td style="text-align: right;">68.2% ± 0.8%</td>
+<td style="text-align: right;">66.6% ± 1.0%</td>
+<td style="text-align: right;">69.8% ± 0.8%</td>
 </tr>
 <tr class="even">
 <td>logit_elasticnet_binned_ohe_balanced</td>
@@ -1067,7 +1887,7 @@ Strategic Analysis Group
 <section id="annex-hold-out-classification-report-at-the-selected-models-optimal-threshold" class="slide level2">
 <h2>Annex: hold-out classification report at the selected model’s optimal threshold</h2>
 <div class="smallest">
-<p>Threshold chosen on <strong>training out-of-fold predictions</strong> by maximizing <strong>F1</strong> for the selected model: <strong>39.4%</strong> predicted win probability.</p>
+<p>Threshold chosen on <strong>training out-of-fold predictions</strong> by maximizing <strong>F1</strong> for the selected model: <strong>37.8%</strong> predicted win probability.</p>
 <table class="caption-top">
 <thead>
 <tr class="header">
@@ -1082,10 +1902,10 @@ Strategic Analysis Group
 <tbody>
 <tr class="odd">
 <td>Selected @ optimal threshold</td>
-<td style="text-align: right;">39.4%</td>
-<td style="text-align: right;">86.0%</td>
-<td style="text-align: right;">67.6%</td>
-<td style="text-align: right;">73.7%</td>
+<td style="text-align: right;">37.8%</td>
+<td style="text-align: right;">85.8%</td>
+<td style="text-align: right;">66.8%</td>
+<td style="text-align: right;">74.7%</td>
 <td style="text-align: right;">70.5%</td>
 </tr>
 <tr class="even">
@@ -1185,34 +2005,7 @@ Strategic Analysis Group
 </ul>
 </div></div>
 </section>
-<section id="annex-data-quality-issue-profile-from-the-validation-notebook" class="slide level2">
-<h2>Annex: data-quality issue profile from the validation notebook</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<p><img data-src="assets/number_of_problems.png" style="width:100.0%"></p>
-</div><div class="column" style="width:50%;">
-<p><img data-src="assets/annex_data_quality_issue_types.png" style="width:100.0%"></p>
-</div></div>
-<ul>
-<li>Source of truth: <code>notebooks/1_data_validation_and_cleaning/01_basic_validation.ipynb</code>, which builds <code>problem_tags</code>, <code>problem_count</code>, and the row-level validation flags before exporting <code>cleaned_data.parquet</code>.</li>
-<li>The row-count distribution shows that most records have <strong>0–1 detected issues</strong>, while the issue-type breakdown shows that the main burden comes from <strong>stage-ratio inconsistencies</strong>, <strong>amount weirdness</strong>, and <strong>only-identified-stage</strong> records.</li>
-<li>This supports the data-prep choice used throughout the deck: remove clearly unusable rows (duplicates, invalid targets) but retain many imperfect rows with explicit flags because the modeling task is ranking and prioritization, not accounting-grade reconciliation.</li>
-</ul>
-</section>
-<section id="annex-numeric-variable-correlation-heatmap" class="slide level2">
-<h2>Annex: numeric variable correlation heatmap</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<p><img data-src="assets/annex_numeric_correlation_heatmap.png" style="width:100.0%"></p>
-</div><div class="column" style="width:50%;">
-<ul>
-<li>Most numeric relationships are weak, suggesting limited linear redundancy across variables.</li>
-<li>Process-duration variables are highly correlated (e.g.&nbsp;identified→closing vs identified→qualified), so they likely capture overlapping timing effects.</li>
-<li>Stage-ratio variables show expected inverse relationships, reflecting how progress through the funnel mechanically shifts the composition of stage shares.</li>
-</ul>
-</div></div>
-</section>
-<section id="annex-strategic-lever-1-focus-the-same-team-on-fewer-better-ranked-deals" class="slide level2">
+<section id="annex-strategic-lever-1-focus-the-same-team-on-fewer-better-ranked-deals-1" class="slide level2">
 <h2>Annex: strategic lever 1 — focus the same team on fewer, better-ranked deals</h2>
 <div class="columns">
 <div class="column" style="width:55%;">
@@ -1220,15 +2013,15 @@ Strategic Analysis Group
 </div><div class="column" style="width:45%;">
 <ul>
 <li>Same salesforce, fewer deals — dropped opportunities go unworked.</li>
-<li>Focus gain grows as the slice shrinks (λ_max = 1.5× at top slice → 1.0× at full pipeline).</li>
-<li>Break-even at <strong>top ~21%</strong>; optimal at <strong>top ~43%</strong> → <strong>$462M</strong> (+$77M vs.&nbsp;baseline).</li>
+<li>Focus gain grows as the slice shrinks (λ_max = 2.0× at top slice → 1.0× at full pipeline).</li>
+<li>Break-even at <strong>top ~12%</strong>; optimal at <strong>top ~42%</strong> → <strong>$566M</strong> (+$181M vs.&nbsp;baseline).</li>
 </ul>
 </div></div>
 
 <aside><div>
 <p>Focus-gain λ_max is a scenario assumption, not an empirically estimated causal effect. λ decays linearly from λ_max at the smallest slice to 1.0× at the full pipeline. Simulation uses held-out test-set predictions.</p>
 </div></aside></section>
-<section id="annex-focus-gain-sensitivity-across-λ-values" class="slide level2">
+<section id="annex-focus-gain-sensitivity-across-λ-values-1" class="slide level2">
 <h2>Annex: focus-gain sensitivity across λ values</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
@@ -1237,271 +2030,41 @@ Strategic Analysis Group
 <ul>
 <li>Each curve shows the <strong>net revenue delta in USD</strong> vs.&nbsp;the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.</li>
 <li>λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.</li>
-<li>Break-even shifts left as λ_max increases: at λ_max = 1.5 the top ~21% of the pipeline already matches full-pipeline revenue; at λ_max = 3.0 even a very small slice generates a large surplus.</li>
-<li>The main deck uses <strong>λ_max = 1.50</strong> as the base scenario.</li>
+<li>Break-even shifts left as λ_max increases: with the rerun dynamic classifier, the base scenario now breaks even at about <strong>top 12%</strong> of the ranked pipeline when <strong>λ_max = 2.0</strong>.</li>
+<li>The current simulation uses <strong>λ_max = 2.00</strong> as the base scenario.</li>
 </ul>
 </div></div>
 </section>
-<section id="annex-strategic-lever-2-reduce-the-salesforce-and-let-the-model-pick-the-best-opportunities" class="slide level2">
+<section id="annex-strategic-lever-2-reduce-the-salesforce-and-let-the-model-pick-the-best-opportunities-1" class="slide level2">
 <h2>Annex: Strategic lever 2: Reduce the salesforce and let the model pick the best opportunities</h2>
 <div class="columns">
 <div class="column" style="width:55%;">
 <p><img data-src="assets/sim_salesforce_reduction_main.png" style="width:100.0%"></p>
 </div><div class="column" style="width:45%;">
 <ul>
-<li>Baseline: <strong>228 reps</strong> × $120K OTE = <strong>$41M</strong> fully-loaded salesforce cost, covering 22,746 opportunities.</li>
+<li>Baseline: <strong>228 reps</strong>, <strong>$385M</strong> realized revenue, and about <strong>$121M</strong> contribution after margin, base+overhead, commission, acquisition, and serving costs.</li>
 <li>Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.</li>
-<li><strong>Optimal headcount: 143 reps</strong> → $376M revenue retained (97.7%) at $26M cost → net margin <strong>+$6M</strong> vs.&nbsp;full staffing.</li>
-<li>Last individually break-even rep batch: <strong>rep #225</strong> — reps 226–228 generate less revenue than their fully-loaded cost.</li>
+<li><strong>Optimal headcount: 100 reps</strong> → <strong>$361M</strong> revenue retained (93.8%) and <strong>+$29.5M</strong> contribution vs.&nbsp;baseline.</li>
+<li>Last individually positive rep batch is around <strong>rep #82</strong> — after that point, incremental contribution no longer covers incremental operating cost.</li>
 </ul>
 </div></div>
 
 <aside><div>
-<p>Headcount model assumes 100 opps/rep/period. $120K OTE per rep; fully-loaded cost estimated at $180K (1.5× OTE, including benefits, payroll taxes, tech stack, and overhead). Simulation uses held-out test-set predictions.</p>
+<p>Same contribution formula as the static version, but applied to the stronger dynamic ranking. Simulation uses held-out test-set predictions.</p>
 </div></aside></section>
-<section id="annex-salesforce-reduction-marginal-revenue-per-rep-batch" class="slide level2">
-<h2>Annex: salesforce reduction — marginal revenue per rep batch</h2>
+<section id="annex-salesforce-reduction-marginal-contribution-per-rep-batch-1" class="slide level2">
+<h2>Annex: salesforce reduction — marginal contribution per rep batch</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <p><img data-src="assets/sim_salesforce_reduction_marginal.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>Each bar shows the <strong>marginal revenue</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
-<li>The dashed line marks the <strong>cost of one rep batch</strong> (~$1.44M at $120K OTE).</li>
-<li><strong>Blue bars</strong> are ROI-positive: the batch earns more than it costs. <strong>Red bars</strong> are ROI-negative: cutting those reps improves net margin.</li>
-<li>The crossover point is around rep #225 — reps beyond that generate less revenue than their <strong>fully-loaded cost</strong> ($180K), making reduction unambiguously value-accretive.</li>
+<li>Each bar shows the <strong>marginal contribution</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
+<li>The comparison line represents the <strong>incremental operating cost</strong> of the same batch.</li>
+<li><strong>Blue bars</strong> are ROI-positive: the batch adds more contribution than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves contribution margin.</li>
+<li>With the stronger dynamic ranking, the crossover happens much earlier, around <strong>rep #82</strong>, which is why the resized team becomes much smaller under this richer formula.</li>
 </ul>
 </div></div>
-</section>
-<section id="annex-binning-methods-easy-explanation" class="slide level2">
-<h2>Annex: binning methods — easy explanation</h2>
-<div class="smaller">
-<ul>
-<li><strong>Binning</strong> means replacing a raw variable with a small number of ranges.</li>
-<li>Instead of using exact values like <code>17 days</code>, <code>43 days</code>, <code>91 days</code>, the model can work with bands like:
-<ul>
-<li><strong>0–30 days</strong></li>
-<li><strong>31–60 days</strong></li>
-<li><strong>60+ days</strong></li>
-</ul></li>
-<li>This is useful when the signal comes from <strong>thresholds</strong> or <strong>zones</strong>, not from a perfectly smooth linear relationship.</li>
-<li>In practice, binning helps when variables are:
-<ul>
-<li>noisy</li>
-<li>skewed</li>
-<li>sensitive to outliers</li>
-<li>easier to interpret in ranges than in raw units</li>
-</ul></li>
-<li>So the intuition is simple: <strong>group similar values together before modeling</strong>.</li>
-</ul>
-</div>
-</section>
-<section id="annex-binning-methods-what-optbinning-does" class="slide level2">
-<h2>Annex: binning methods — what <code>optbinning</code> does</h2>
-<div class="smaller">
-<ul>
-<li>This project uses <strong>supervised binning</strong> with <code>optbinning</code>.</li>
-<li>“Supervised” means the bins are not chosen arbitrarily: they are learned using the <strong>target</strong>.</li>
-<li>The algorithm searches for cut points that make the bins as different as possible with respect to the prediction target.</li>
-<li>For classification, that means finding intervals where the <strong>win/loss mix</strong> is clearly different.</li>
-<li>For regression-style use, it means finding intervals that better separate the <strong>amount behavior</strong>.</li>
-<li>Compared with manual bucketing or equal-width bins, <code>optbinning</code> is trying to find <strong>more informative splits</strong>.</li>
-<li>In this repo, the wrapper is <code>NamedBinningProcess</code> in <code>notebooks/4_modelling/binning.py</code>, which keeps the output compatible with the sklearn pipelines used in the experiments.</li>
-</ul>
-</div>
-</section>
-<section id="annex-binning-methods-the-3-usage-modes-in-this-repo" class="slide level2">
-<h2>Annex: binning methods — the 3 usage modes in this repo</h2>
-<div class="smaller">
-<table class="caption-top">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Usage mode</th>
-<th>What the pipeline outputs</th>
-<th>Why use it</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>bin</code></td>
-<td>The learned bin labels themselves</td>
-<td>Mainly useful for inspection / debugging / intermediate transforms</td>
-</tr>
-<tr class="even">
-<td><code>bin_ohe</code></td>
-<td>The learned bins, then one-hot encoded into dummy columns</td>
-<td>Keeps non-linear threshold effects while staying interpretable in linear/logistic models</td>
-</tr>
-<tr class="odd">
-<td><code>woe</code></td>
-<td>One WoE value per binned variable</td>
-<td>Compresses each variable into a single monotonic signal and often stabilizes logistic-type models</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><strong>Selected classifier in the main deck:</strong> <code>random_forest_classifier_balanced_calibrated</code></li>
-<li>So the binning modes below describe the <strong>logit-family alternatives</strong> and supporting model variants, not the final chosen forest.
-<ul>
-<li>supervised bins are learned first</li>
-<li>then the bins are one-hot encoded</li>
-<li>then logistic regression is fit</li>
-<li>then probabilities are calibrated</li>
-</ul></li>
-<li><strong>WoE pipelines</strong> in the annex leaderboard use the same supervised binning step, but replace each bin with its <strong>Weight of Evidence</strong> value instead of a set of dummy columns.</li>
-<li><strong>WoE intuition:</strong> positive WoE = more win-heavy than average; negative WoE = more loss-heavy than average.</li>
-</ul>
-</div>
-</section>
-<section id="annex-how-to-read-iv-charts-classification-win-loss" class="slide level2">
-<h2>Annex: how to read IV charts — classification / win-loss</h2>
-<div class="smaller">
-<ul>
-<li><strong>Information Value (IV)</strong> is a score used to rank how much predictive signal a variable carries against a target.</li>
-<li>For the <strong>classification / win-loss</strong> chart, IV is the classic binary-target version derived from <strong>Weight of Evidence (WoE)</strong>.</li>
-</ul>
-<table class="caption-top">
-<thead>
-<tr class="header">
-<th>IV range</th>
-<th>Interpretation</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>&lt; 0.02</td>
-<td>Useless</td>
-</tr>
-<tr class="even">
-<td>0.02 to 0.10</td>
-<td>Weak</td>
-</tr>
-<tr class="odd">
-<td>0.10 to 0.30</td>
-<td>Medium</td>
-</tr>
-<tr class="even">
-<td>0.30 to 0.50</td>
-<td>Strong</td>
-</tr>
-<tr class="odd">
-<td>&gt; 0.50</td>
-<td>Suspiciously high → check for leakage</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><strong>Colors</strong> add direction, because IV itself is only a strength score:
-<ul>
-<li><strong>green</strong> = increasing relationship</li>
-<li><strong>red</strong> = decreasing relationship</li>
-<li><strong>gray</strong> = categorical or unclear direction</li>
-</ul></li>
-<li><strong>Asterisk (<code>*</code>)</strong> = strictly monotonic relationship across bins.</li>
-<li>Very high IV values for process variables can reflect genuinely strong signal, but they should always be checked for <strong>timing leakage</strong>.</li>
-</ul>
-</div>
-</section>
-<section id="annex-how-to-read-iv-charts-regression-amount" class="slide level2">
-<h2>Annex: how to read IV charts — regression / amount</h2>
-<div class="smaller">
-<ul>
-<li>The <strong>regression / amount</strong> chart does <strong>not</strong> use the same IV definition as the win/loss chart.</li>
-<li>It comes from <code>ContinuousOptimalBinning</code>, where IV is a <strong>surrogate separation metric based on differences in bin means</strong>.</li>
-<li>So the regression IV values are useful for <strong>relative ranking within that chart</strong>, but they should <strong>not</strong> be read with the binary-IV table and should <strong>not</strong> be compared numerically to the classification IV values.</li>
-<li>Practical reading rule:
-<ul>
-<li>use the <strong>classification IV chart</strong> with the standard heuristic bands</li>
-<li>use the <strong>regression IV chart</strong> only to see which variables separate amount behavior the most within that chart</li>
-</ul></li>
-<li>This is why regression IV values can look numerically much larger: they are on a <strong>different scale</strong>, not evidence of impossible predictive power.</li>
-</ul>
-</div>
-</section>
-<section id="annex-original-text-version-of-the-modelling-use-cases-slide" class="slide level2">
-<h2>Annex: original text version of the modelling use-cases slide</h2>
-<div class="columns">
-<div class="column" style="width:52%;">
-<h3 id="selected-for-this-project">Selected for this project</h3>
-<ul>
-<li><strong>Process prioritization</strong>: rank opportunities by win propensity and support decisions on where sales effort should focus first.</li>
-<li><strong>Opportunity sizing &amp; forecasting</strong>: estimate deal value and aggregate expected sales for planning, prioritization, and budget visibility.</li>
-</ul>
-</div><div class="column" style="width:48%;">
-<h3 id="additional-opportunities-identified-in-the-data">Additional opportunities identified in the data</h3>
-<ul>
-<li><strong>Channel optimization</strong>: test what-if scenarios around route-to-market and engagement model choices.</li>
-<li><strong>Secondary market segmentation</strong>: create actionable commercial segments from predicted value and conversion potential.</li>
-<li><strong>Early warning systems</strong>: flag opportunities that are likely to deteriorate or stall.</li>
-<li><strong>Budget allocation</strong>: guide sales effort and product-focus decisions across segments, regions, and product lines.</li>
-</ul>
-</div></div>
-</section>
-<section id="annex-original-text-version-of-the-crm-embedding-slide" class="slide level2">
-<h2>Annex: original text version of the CRM embedding slide</h2>
-<div class="columns">
-<div class="column" style="width:52%;">
-<h3 id="operational-flow">Operational flow</h3>
-<p><strong>Opportunity created</strong> → <strong>score + expected value generated</strong></p>
-<ul>
-<li>As soon as a new opportunity enters the CRM, the workflow generates:
-<ul>
-<li><strong>win-propensity score</strong></li>
-<li><strong>predicted amount</strong></li>
-<li><strong>expected value = E[Amount] × P(Win)</strong></li>
-</ul></li>
-</ul>
-<h3 id="crm-displays">CRM displays</h3>
-<ul>
-<li><strong>Priority tier</strong>: Top 10%, Top 25%, Top 50%, etc.</li>
-<li><strong>Suggested action</strong>: focus / monitor / deprioritize</li>
-<li>This gives frontline teams a simple operating signal without exposing model internals.</li>
-</ul>
-</div><div class="column" style="width:48%;">
-<h3 id="weekly-pipeline-reviews">Weekly pipeline reviews</h3>
-<ul>
-<li>Review only opportunities above agreed propensity or expected-value thresholds.</li>
-<li>Use those cutoffs to focus rep attention, escalation, and follow-up.</li>
-</ul>
-<h3 id="management-view">Management view</h3>
-<ul>
-<li><strong>Directional forecast = sum of predicted values</strong> across the active pipeline.</li>
-<li>Management can compare it by region, route to market, owner, or priority tier.</li>
-</ul>
-</div></div>
-</section>
-<section id="annex-original-text-version-of-the-next-steps-slide" class="slide level2">
-<h2>Annex: original text version of the Next steps slide</h2>
-<ul>
-<li>Pilot deployment (4–6 weeks):
-<ul>
-<li>Embed prioritization scores into CRM workflows</li>
-<li>Run A/B test vs.&nbsp;current sales process and measure lift in conversion and revenue</li>
-</ul></li>
-<li>Define operating model (after pilot early results):
-<ul>
-<li>Incorporate funnel/client segmentation into the process</li>
-<li>Potentially include product-level segmentation if it makes sense.</li>
-<li>Set clear thresholds and actions (e.g., top deciles = sales focus)</li>
-<li>Align sales forces with incentives and pipeline reviews to make sure model outputs are used effectively</li>
-</ul></li>
-<li>Monitor performance (starting after deployment):
-<ul>
-<li>Track conversion lift, cycle time, and revenue per opportunity</li>
-<li>Continuously recalibrate thresholds and retrain models</li>
-</ul></li>
-<li>Scale and integrate (after pilot success):
-<ul>
-<li>Extend to full pipeline and embed in forecasting cadence</li>
-<li>Incorporate into commercial planning and resource allocation</li>
-<li>Explore applying strategic levers such as pipeline optimization and salesforce adjustments based on model insights</li>
-</ul></li>
-</ul>
 
 </section></section>
     </div>

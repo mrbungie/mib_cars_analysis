@@ -1,17 +1,29 @@
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from reporting_variant_paths import asset_path, model_report_path, validate_variant
+
 
 ROOT = Path(__file__).resolve().parents[1]
-CLASSIFICATION_PATH = ROOT / "slidedeck/data/classification_model_report.xlsx"
-ASSET_PATH = ROOT / "slidedeck/assets/sim_prioritization.png"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--variant", choices=["dynamic", "static"], default="dynamic")
+    return parser.parse_args()
 
 
 def main() -> None:
-    lift = pd.read_excel(CLASSIFICATION_PATH, sheet_name="prioritization_lift")
+    args = parse_args()
+    variant = validate_variant(args.variant)
+    classification_path = model_report_path(ROOT, "classification", variant)
+    output_path = asset_path(ROOT, "sim_prioritization.png", variant)
+
+    lift = pd.read_excel(classification_path, sheet_name="prioritization_lift")
     plot_df = lift.sort_values("score_decile").copy()
     plot_df["score_decile"] = plot_df["score_decile"].astype(int)
     overall_win_rate = plot_df["wins"].sum() / plot_df["opportunities"].sum()
@@ -71,10 +83,10 @@ def main() -> None:
     )
 
     fig.tight_layout()
-    ASSET_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(ASSET_PATH, dpi=220, bbox_inches="tight")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
-    print(f"saved: {ASSET_PATH}")
+    print(f"saved ({variant}): {output_path}")
 
 
 if __name__ == "__main__":
