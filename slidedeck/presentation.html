@@ -145,8 +145,8 @@ Strategic Analysis Group
 <h2>Executive Summary</h2>
 <ul>
 <li>This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e.&nbsp;CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.</li>
-<li>We propose two models: a win/loss classifier (<strong>AUROC 91.2%</strong>) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal) with an <strong>61.7% MdAPE</strong>.</li>
-<li>We show that focusing on the <strong>top 20% of most likely opportunities lifts win rates from the 22.7% baseline to ~74%</strong>; while focusing on the <strong>top 25% expected-value ranked opportunities captures ~76% of total opportunity revenue</strong>.</li>
+<li>We propose two models: a win/loss classifier (<strong>AUROC 90.9%</strong>) for opportunity prioritization, and a regression model for deal sizing and aggregate forecasting (reliable at portfolio level, not per deal) with an <strong>61.7% MdAPE</strong>.</li>
+<li>We show that focusing on the <strong>top 20% of most likely opportunities lifts win rates from the 22.7% baseline to ~74%</strong>; while focusing on the <strong>top 25% expected-value ranked opportunities captures ~78% of total opportunity revenue</strong>.</li>
 <li>We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.</li>
 <li>We also simulate strategic levers such as pipeline optimization and salesforce adjustments to show how model-driven decisions can improve commercial efficiency.</li>
 </ul>
@@ -354,8 +354,8 @@ Strategic Analysis Group
 <li>Therefore we focused on ranking metrics such as ROC AUC and PR AUC.</li>
 </ul></li>
 <li>We used all the variables except for the amount target and deal size.</li>
-<li>Selected final classifier: <strong>Balanced Random Forest over the classic preprocessed feature set</strong> (<code>random_forest_classifier_balanced</code>).</li>
-<li>This model has strong performance (<strong>AUROC 91.2%, Accuracy 86.1% @ 58.1% threshold</strong>) versus the baselines (<strong>AUROC 50.0%, Accuracy 77.3%</strong> for the always-false classifier).</li>
+<li>Selected final classifier: <strong>Calibrated Balanced Random Forest over the classic preprocessed feature set</strong> (<code>random_forest_classifier_balanced_calibrated</code>).</li>
+<li>This model has strong performance (<strong>AUROC 90.9%, Accuracy 86.0% @ 39.4% threshold</strong>) versus the baselines (<strong>AUROC 50.0%, Accuracy 77.3%</strong> for the always-false classifier).</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <h6 id="classification-model-feature-importances">Classification model feature importances:</h6>
@@ -363,7 +363,7 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>Selected balanced random forest for top ranking + best threshold performance, trading off interpretability.</p>
+<p>Selected calibrated balanced random forest for stronger probability quality while preserving top-tier ranking performance.</p>
 </div></aside></section>
 <section id="prioritization-classification-model-enables-immediate-and-precise-reallocation-of-sales-effort-cont.-with-performance-metrics" class="slide level2">
 <h2>Prioritization classification model enables immediate and precise reallocation of sales effort (cont., with performance metrics)</h2>
@@ -398,22 +398,22 @@ Strategic Analysis Group
 <tr class="odd">
 <td>Selected</td>
 <td>CV</td>
-<td style="text-align: right;">91.4%</td>
-<td style="text-align: right;">77.3%</td>
-<td style="text-align: right;">86.4%</td>
-<td style="text-align: right;">68.6%</td>
-<td style="text-align: right;">74.4%</td>
-<td style="text-align: right;">71.4%</td>
+<td style="text-align: right;">91.2%</td>
+<td style="text-align: right;">76.7%</td>
+<td style="text-align: right;">86.9%</td>
+<td style="text-align: right;">73.2%</td>
+<td style="text-align: right;">66.6%</td>
+<td style="text-align: right;">69.7%</td>
 </tr>
 <tr class="even">
 <td>Selected</td>
 <td>Held-out test</td>
-<td style="text-align: right;">91.2%</td>
-<td style="text-align: right;">76.9%</td>
-<td style="text-align: right;">86.1%</td>
-<td style="text-align: right;">68.0%</td>
-<td style="text-align: right;">73.8%</td>
-<td style="text-align: right;">70.8%</td>
+<td style="text-align: right;">90.9%</td>
+<td style="text-align: right;">76.2%</td>
+<td style="text-align: right;">86.0%</td>
+<td style="text-align: right;">67.6%</td>
+<td style="text-align: right;">73.7%</td>
+<td style="text-align: right;">70.5%</td>
 </tr>
 <tr class="odd">
 <td>Random baseline</td>
@@ -451,7 +451,7 @@ Strategic Analysis Group
 <div style="font-size: 80%;">
 <p>Conclusions:</p>
 <ul>
-<li>The model has strong ranking performance (<strong>AUROC 91.2% on hold-out</strong>) and good precision/recall balance at the selected threshold, which makes it a good candidate for prioritization.</li>
+<li>The model has strong ranking performance (<strong>AUROC 90.9% on hold-out</strong>) and good precision/recall balance at the selected threshold, which makes it a good candidate for prioritization.</li>
 </ul>
 </div>
 </div>
@@ -460,7 +460,7 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>Annex details model selection, calibration, thresholding (58.1% OOF); baselines use observed win rate.</p>
+<p>Annex details model selection, calibration, thresholding (39.4% OOF); baselines use observed win rate.</p>
 </div></aside></section>
 <section id="use-the-amount-model-for-per-opportunity-sizing-and-ranking-not-deal-level-precision" class="slide level2">
 <h2>Use the amount model for per-opportunity sizing and ranking, not deal-level precision</h2>
@@ -566,7 +566,7 @@ Strategic Analysis Group
 <ul>
 <li>Sales effort is currently spread across low-probability deals → concentrating on the top-scored opportunities can raise conversion efficiency.
 <ul>
-<li><strong>Top 20%</strong> of opportunities: <strong>74.3%</strong> conversion vs <strong>22.7%</strong> baseline (<strong>3.27× lift</strong>).</li>
+<li><strong>Top 20%</strong> of opportunities: <strong>73.8%</strong> conversion vs <strong>22.7%</strong> baseline (<strong>3.25× lift</strong>).</li>
 </ul></li>
 </ul>
 
@@ -576,8 +576,8 @@ Strategic Analysis Group
 <aside><div>
 <p>This simulation is based on held-out test-set predictions.</p>
 </div></aside></section>
-<section id="concentration-46-value-capture-at-top-10-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
-<h2>Concentration (~46% value capture at top 10%) makes expected-value prioritization a key revenue lever</h2>
+<section id="concentration-49-value-capture-at-top-10-makes-expected-value-prioritization-a-key-revenue-lever" class="slide level2">
+<h2>Concentration (~49% value capture at top 10%) makes expected-value prioritization a key revenue lever</h2>
 <div class="columns">
 <div class="column" style="width:56%;">
 <p><img data-src="assets/sim_expected_value_threshold.png" style="width:80.0%"></p>
@@ -585,7 +585,7 @@ Strategic Analysis Group
 <ul>
 <li>Rank the pipeline using expected value (E[Amount] × P(Win)), not just propensity especially under limited sales capacity.
 <ul>
-<li>At top 10%, expected-value ranking captures 45.7% of won revenue vs 31.2% with propensity-only.</li>
+<li>At top 10%, expected-value ranking captures 48.6% of won revenue vs 30.6% with propensity-only.</li>
 <li>After 25% threshold, the incremental value capture flattens.</li>
 </ul></li>
 </ul>
@@ -631,8 +631,8 @@ Strategic Analysis Group
 </div>
 </div><div class="column" style="width:42%;">
 <ul>
-<li><strong>Lever 1, Focus the team:</strong> Assuming higher effort on top-ranked opportunities improves conversion, we might achieve better results per deal. Best simulated point is <strong>top ~51%</strong> of the ranked pipeline, reaching <strong>$459M</strong> in revenue, or <strong>+$74M vs.&nbsp;baseline</strong>.</li>
-<li><strong>Lever 2, Optimize salesforce size:</strong> With better prioritization, we might achieve higher efficiency. Best simulated point is <strong>151 reps</strong>, retaining <strong>$380M</strong> of revenue (98.6%) and improving net margin by <strong>+$9M</strong> vs.&nbsp;full staffing.
+<li><strong>Lever 1, Focus the team:</strong> Assuming higher effort on top-ranked opportunities improves conversion, we might achieve better results per deal. Best simulated point is <strong>top ~43%</strong> of the ranked pipeline, reaching <strong>$462M</strong> in revenue, or <strong>+$77M vs.&nbsp;baseline</strong>.</li>
+<li><strong>Lever 2, Optimize salesforce size:</strong> With better prioritization, we might achieve higher efficiency. Best simulated point is <strong>143 reps</strong>, retaining <strong>$376M</strong> of revenue (97.7%) and improving net margin by <strong>+$6M</strong> vs.&nbsp;full staffing.
 <ul>
 <li>Another option is segmenting the salesforce, with a specialized team focused on high-value opportunities/accounts and another team managing the rest.</li>
 </ul></li>
@@ -666,9 +666,9 @@ Strategic Analysis Group
 <section id="key-takeaways-for-commercial-decision-making" class="slide level2">
 <h2>Key takeaways for commercial decision-making</h2>
 <ul>
-<li>Prioritization is the highest-impact, low-effort lever
+<li>Prioritization is the highest-impact, low-effort lever</li>
+<li>Win/loss model (strong scoring performance, AUROC 90.9%) improves focus
 <ul>
-<li>Win/loss model (strong scoring performance, AUROC 91.2%) improves focus</li>
 <li>Top 20% opportunities go from <strong>~22.7% win rate (baseline) to ~74%</strong></li>
 </ul></li>
 <li>Use the amount model directionally, not for forecasting
@@ -678,8 +678,8 @@ Strategic Analysis Group
 <li>Expected value is the strongest prioritization approach
 <ul>
 <li>Outperforms individual models for value capture</li>
-<li>Revenues are concentrated <strong>(~46% top 10% opp., ~76% top 25% opp.)</strong> and should be prioritized accordingly</li>
 </ul></li>
+<li>Revenues are concentrated <strong>(~49% top 10% opp., ~78% top 25% opp.)</strong> and should be prioritized accordingly</li>
 <li>Implications for commercial strategy:
 <ul>
 <li>Focus efforts on the best opportunities first</li>
@@ -751,6 +751,15 @@ Strategic Analysis Group
 <td style="text-align: right;"><strong>70.7% ± 1.0%</strong></td>
 </tr>
 <tr class="odd">
+<td>random_forest_classifier_balanced_calibrated</td>
+<td style="text-align: right;">91.2% ± 0.4%</td>
+<td style="text-align: right;">76.7% ± 1.1%</td>
+<td style="text-align: right;">86.9% ± 0.4%</td>
+<td style="text-align: right;">73.2% ± 1.1%</td>
+<td style="text-align: right;">66.6% ± 0.9%</td>
+<td style="text-align: right;">69.7% ± 0.8%</td>
+</tr>
+<tr class="even">
 <td>xgboost_balanced</td>
 <td style="text-align: right;">91.2% ± 0.3%</td>
 <td style="text-align: right;">78.3% ± 0.7%</td>
@@ -759,7 +768,7 @@ Strategic Analysis Group
 <td style="text-align: right;"><strong>83.9% ± 0.4%</strong></td>
 <td style="text-align: right;">69.1% ± 0.7%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>xgboost</td>
 <td style="text-align: right;">91.2% ± 0.3%</td>
 <td style="text-align: right;"><strong>78.6% ± 0.6%</strong></td>
@@ -768,7 +777,7 @@ Strategic Analysis Group
 <td style="text-align: right;">60.9% ± 1.1%</td>
 <td style="text-align: right;">68.2% ± 0.8%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elasticnet_binned_ohe_balanced</td>
 <td style="text-align: right;">88.1% ± 0.4%</td>
 <td style="text-align: right;">69.8% ± 0.5%</td>
@@ -777,7 +786,7 @@ Strategic Analysis Group
 <td style="text-align: right;">81.8% ± 0.8%</td>
 <td style="text-align: right;">64.3% ± 1.1%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_ohe_balanced</td>
 <td style="text-align: right;">88.1% ± 0.4%</td>
 <td style="text-align: right;">69.8% ± 0.5%</td>
@@ -786,7 +795,7 @@ Strategic Analysis Group
 <td style="text-align: right;">81.8% ± 0.8%</td>
 <td style="text-align: right;">64.3% ± 1.0%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_binned_ohe_balanced_calibrated</td>
 <td style="text-align: right;">88.1% ± 0.4%</td>
 <td style="text-align: right;">69.8% ± 0.5%</td>
@@ -795,7 +804,7 @@ Strategic Analysis Group
 <td style="text-align: right;">50.1% ± 1.2%</td>
 <td style="text-align: right;">58.8% ± 1.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_ohe</td>
 <td style="text-align: right;">88.1% ± 0.4%</td>
 <td style="text-align: right;">70.0% ± 0.5%</td>
@@ -804,7 +813,7 @@ Strategic Analysis Group
 <td style="text-align: right;">51.3% ± 1.3%</td>
 <td style="text-align: right;">59.6% ± 1.1%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elasticnet_binned_ohe</td>
 <td style="text-align: right;">88.1% ± 0.4%</td>
 <td style="text-align: right;">70.0% ± 0.5%</td>
@@ -813,7 +822,7 @@ Strategic Analysis Group
 <td style="text-align: right;">51.0% ± 1.2%</td>
 <td style="text-align: right;">59.4% ± 1.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_elastic_binned_woe_balanced</td>
 <td style="text-align: right;">87.7% ± 0.4%</td>
 <td style="text-align: right;">69.2% ± 0.3%</td>
@@ -822,7 +831,7 @@ Strategic Analysis Group
 <td style="text-align: right;">80.9% ± 0.6%</td>
 <td style="text-align: right;">63.6% ± 0.7%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elastic_binned_woe</td>
 <td style="text-align: right;">87.7% ± 0.4%</td>
 <td style="text-align: right;">69.3% ± 0.4%</td>
@@ -831,7 +840,7 @@ Strategic Analysis Group
 <td style="text-align: right;">47.3% ± 1.1%</td>
 <td style="text-align: right;">57.0% ± 0.9%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_binned_woe</td>
 <td style="text-align: right;">87.7% ± 0.4%</td>
 <td style="text-align: right;">69.3% ± 0.4%</td>
@@ -840,7 +849,7 @@ Strategic Analysis Group
 <td style="text-align: right;">47.3% ± 0.9%</td>
 <td style="text-align: right;">57.0% ± 0.8%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>logit_elasticnet_robust_scaler_balanced</td>
 <td style="text-align: right;">86.8% ± 0.6%</td>
 <td style="text-align: right;">66.9% ± 1.1%</td>
@@ -849,7 +858,7 @@ Strategic Analysis Group
 <td style="text-align: right;">79.6% ± 1.1%</td>
 <td style="text-align: right;">62.9% ± 1.1%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>logit_elasticnet_robust_scaler</td>
 <td style="text-align: right;">86.8% ± 0.6%</td>
 <td style="text-align: right;">67.5% ± 1.1%</td>
@@ -858,7 +867,7 @@ Strategic Analysis Group
 <td style="text-align: right;">45.5% ± 1.1%</td>
 <td style="text-align: right;">54.6% ± 0.8%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>classic_logit_robust_scaler</td>
 <td style="text-align: right;">86.8% ± 0.6%</td>
 <td style="text-align: right;">67.5% ± 1.1%</td>
@@ -867,7 +876,7 @@ Strategic Analysis Group
 <td style="text-align: right;">45.5% ± 1.1%</td>
 <td style="text-align: right;">54.7% ± 0.8%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>random_classifier</td>
 <td style="text-align: right;">50.2% ± 0.2%</td>
 <td style="text-align: right;">22.8% ± 0.1%</td>
@@ -876,7 +885,7 @@ Strategic Analysis Group
 <td style="text-align: right;">22.4% ± 0.3%</td>
 <td style="text-align: right;">22.7% ± 0.3%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>always_true_classifier</td>
 <td style="text-align: right;">50.0% ± 0.0%</td>
 <td style="text-align: right;">22.7% ± 0.0%</td>
@@ -887,7 +896,7 @@ Strategic Analysis Group
 </tr>
 </tbody>
 </table>
-<p>Selected model in main deck: <strong>random_forest_classifier_balanced</strong>.</p>
+<p>Selected model in main deck: <strong>random_forest_classifier_balanced_calibrated</strong>.</p>
 </div>
 </section>
 <section id="annex-regression-cv-leaderboard" class="slide level2">
@@ -1049,7 +1058,7 @@ Strategic Analysis Group
 <p><img data-src="assets/annex_calibration_comparison.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>This chart now shows the <strong>selected classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced</code>.</li>
+<li>This chart now shows the <strong>selected classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced_calibrated</code>.</li>
 <li>It compares the model’s mean predicted win probability to the observed win rate across quantile bins.</li>
 <li>The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.</li>
 </ul>
@@ -1058,7 +1067,7 @@ Strategic Analysis Group
 <section id="annex-hold-out-classification-report-at-the-selected-models-optimal-threshold" class="slide level2">
 <h2>Annex: hold-out classification report at the selected model’s optimal threshold</h2>
 <div class="smallest">
-<p>Threshold chosen on <strong>training out-of-fold predictions</strong> by maximizing <strong>F1</strong> for the selected model: <strong>58.1%</strong> predicted win probability.</p>
+<p>Threshold chosen on <strong>training out-of-fold predictions</strong> by maximizing <strong>F1</strong> for the selected model: <strong>39.4%</strong> predicted win probability.</p>
 <table class="caption-top">
 <thead>
 <tr class="header">
@@ -1073,11 +1082,11 @@ Strategic Analysis Group
 <tbody>
 <tr class="odd">
 <td>Selected @ optimal threshold</td>
-<td style="text-align: right;">58.1%</td>
-<td style="text-align: right;">86.1%</td>
-<td style="text-align: right;">68.0%</td>
-<td style="text-align: right;">73.8%</td>
-<td style="text-align: right;">70.8%</td>
+<td style="text-align: right;">39.4%</td>
+<td style="text-align: right;">86.0%</td>
+<td style="text-align: right;">67.6%</td>
+<td style="text-align: right;">73.7%</td>
+<td style="text-align: right;">70.5%</td>
 </tr>
 <tr class="even">
 <td>Random classifier</td>
@@ -1118,10 +1127,10 @@ Strategic Analysis Group
 <tbody>
 <tr class="odd">
 <td>Selected @ optimal threshold</td>
-<td style="text-align: right;">15,780</td>
-<td style="text-align: right;">1,796</td>
-<td style="text-align: right;">1,356</td>
-<td style="text-align: right;">3,814</td>
+<td style="text-align: right;">15,751</td>
+<td style="text-align: right;">1,825</td>
+<td style="text-align: right;">1,359</td>
+<td style="text-align: right;">3,811</td>
 </tr>
 <tr class="even">
 <td>Random classifier</td>
@@ -1212,7 +1221,7 @@ Strategic Analysis Group
 <ul>
 <li>Same salesforce, fewer deals — dropped opportunities go unworked.</li>
 <li>Focus gain grows as the slice shrinks (λ_max = 1.5× at top slice → 1.0× at full pipeline).</li>
-<li>Break-even at <strong>top ~23%</strong>; optimal at <strong>top ~51%</strong> → <strong>$459M</strong> (+$74M vs.&nbsp;baseline).</li>
+<li>Break-even at <strong>top ~21%</strong>; optimal at <strong>top ~43%</strong> → <strong>$462M</strong> (+$77M vs.&nbsp;baseline).</li>
 </ul>
 </div></div>
 
@@ -1228,7 +1237,7 @@ Strategic Analysis Group
 <ul>
 <li>Each curve shows the <strong>net revenue delta in USD</strong> vs.&nbsp;the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.</li>
 <li>λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.</li>
-<li>Break-even shifts left as λ_max increases: at λ_max = 1.5 the top ~23% of the pipeline already matches full-pipeline revenue; at λ_max = 3.0 even a very small slice generates a large surplus.</li>
+<li>Break-even shifts left as λ_max increases: at λ_max = 1.5 the top ~21% of the pipeline already matches full-pipeline revenue; at λ_max = 3.0 even a very small slice generates a large surplus.</li>
 <li>The main deck uses <strong>λ_max = 1.50</strong> as the base scenario.</li>
 </ul>
 </div></div>
@@ -1242,8 +1251,8 @@ Strategic Analysis Group
 <ul>
 <li>Baseline: <strong>228 reps</strong> × $120K OTE = <strong>$41M</strong> fully-loaded salesforce cost, covering 22,746 opportunities.</li>
 <li>Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.</li>
-<li><strong>Optimal headcount: 151 reps</strong> → $380M revenue retained (98.6%) at $27M cost → net margin <strong>+$9M</strong> vs.&nbsp;full staffing.</li>
-<li>Last individually break-even rep batch: <strong>rep #223</strong> — reps 224–228 generate less revenue than their fully-loaded cost.</li>
+<li><strong>Optimal headcount: 143 reps</strong> → $376M revenue retained (97.7%) at $26M cost → net margin <strong>+$6M</strong> vs.&nbsp;full staffing.</li>
+<li>Last individually break-even rep batch: <strong>rep #225</strong> — reps 226–228 generate less revenue than their fully-loaded cost.</li>
 </ul>
 </div></div>
 
@@ -1260,7 +1269,7 @@ Strategic Analysis Group
 <li>Each bar shows the <strong>marginal revenue</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
 <li>The dashed line marks the <strong>cost of one rep batch</strong> (~$1.44M at $120K OTE).</li>
 <li><strong>Blue bars</strong> are ROI-positive: the batch earns more than it costs. <strong>Red bars</strong> are ROI-negative: cutting those reps improves net margin.</li>
-<li>The crossover point is around rep #223 — reps beyond that generate less revenue than their <strong>fully-loaded cost</strong> ($180K), making reduction unambiguously value-accretive.</li>
+<li>The crossover point is around rep #225 — reps beyond that generate less revenue than their <strong>fully-loaded cost</strong> ($180K), making reduction unambiguously value-accretive.</li>
 </ul>
 </div></div>
 </section>
@@ -1336,7 +1345,7 @@ Strategic Analysis Group
 </tbody>
 </table>
 <ul>
-<li><strong>Selected classifier in the main deck:</strong> <code>random_forest_classifier_balanced</code></li>
+<li><strong>Selected classifier in the main deck:</strong> <code>random_forest_classifier_balanced_calibrated</code></li>
 <li>So the binning modes below describe the <strong>logit-family alternatives</strong> and supporting model variants, not the final chosen forest.
 <ul>
 <li>supervised bins are learned first</li>

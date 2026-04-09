@@ -128,7 +128,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         return self.random_state_.choice(self.y_train_, size=n, replace=True)
 
 
-class IntegerTargetClassifier(BaseEstimator, ClassifierMixin):
+class IntegerTargetClassifier(ClassifierMixin, BaseEstimator):
     def __init__(self, estimator):
         self.estimator = estimator
 
@@ -295,6 +295,45 @@ def get_classifier_importance(
             )
         return None
 
+    def extract_calibrated_tree_importance(current_model) -> pd.DataFrame | None:
+        if not isinstance(current_model, CalibratedClassifierCV):
+            return None
+        calibrated_models = getattr(current_model, "calibrated_classifiers_", [])
+        if not calibrated_models:
+            return None
+        importance_frames: list[pd.DataFrame] = []
+        for calibrated_model in calibrated_models:
+            base_estimator = getattr(calibrated_model, "estimator", None)
+            if base_estimator is None or not hasattr(
+                base_estimator, "feature_importances_"
+            ):
+                continue
+            importances = np.asarray(base_estimator.feature_importances_).reshape(-1)
+            importance_frames.append(
+                pd.DataFrame(
+                    {
+                        "feature": [
+                            normalize_feature_name(c, original_features)
+                            for c in transformed_columns
+                        ],
+                        "importance_mean": importances,
+                        "transformed_terms": 1,
+                    }
+                )
+            )
+        if not importance_frames:
+            return None
+        return (
+            pd.concat(importance_frames, ignore_index=True)
+            .groupby("feature", as_index=False)
+            .agg(
+                importance_mean=("importance_mean", "mean"),
+                transformed_terms=("transformed_terms", "sum"),
+            )
+            .sort_values("importance_mean", ascending=False)
+            .reset_index(drop=True)
+        )
+
     coef_df = extract_classifier_term_importance(model)
     if coef_df is not None:
         coef_df["feature"] = coef_df["transformed_feature"].apply(
@@ -309,35 +348,39 @@ def get_classifier_importance(
             .sort_values("importance_mean", ascending=False)
             .reset_index(drop=True)
         )
-    elif hasattr(model, "feature_importances_"):
-        importances = np.asarray(model.feature_importances_).reshape(-1)
-        feature_importance_df = pd.DataFrame(
-            {
-                "feature": [
-                    normalize_feature_name(c, original_features)
-                    for c in transformed_columns
-                ],
-                "importance_mean": importances,
-                "transformed_terms": 1,
-            }
-        )
-        feature_importance_df = (
-            feature_importance_df.groupby("feature", as_index=False)
-            .agg(
-                importance_mean=("importance_mean", "sum"),
-                transformed_terms=("transformed_terms", "sum"),
-            )
-            .sort_values("importance_mean", ascending=False)
-            .reset_index(drop=True)
-        )
     else:
-        feature_importance_df = pd.DataFrame(
-            {
-                "feature": original_features,
-                "importance_mean": 0.0,
-                "transformed_terms": 1,
-            }
-        )
+        calibrated_tree_df = extract_calibrated_tree_importance(model)
+        if calibrated_tree_df is not None:
+            feature_importance_df = calibrated_tree_df
+        elif hasattr(model, "feature_importances_"):
+            importances = np.asarray(model.feature_importances_).reshape(-1)
+            feature_importance_df = pd.DataFrame(
+                {
+                    "feature": [
+                        normalize_feature_name(c, original_features)
+                        for c in transformed_columns
+                    ],
+                    "importance_mean": importances,
+                    "transformed_terms": 1,
+                }
+            )
+            feature_importance_df = (
+                feature_importance_df.groupby("feature", as_index=False)
+                .agg(
+                    importance_mean=("importance_mean", "sum"),
+                    transformed_terms=("transformed_terms", "sum"),
+                )
+                .sort_values("importance_mean", ascending=False)
+                .reset_index(drop=True)
+            )
+        else:
+            feature_importance_df = pd.DataFrame(
+                {
+                    "feature": original_features,
+                    "importance_mean": 0.0,
+                    "transformed_terms": 1,
+                }
+            )
 
     feature_importance_df["importance_std"] = 0.0
     return feature_importance_df
@@ -538,6 +581,32 @@ def build_classification_reports() -> None:
                             n_jobs=-1,
                             random_state=42,
                         )
+                    ),
+                ),
+            ]
+        ),
+        "random_forest_classifier_balanced_calibrated": Pipeline(
+            [
+                (
+                    "preprocessing",
+                    get_classic_preprocessor(
+                        categorical_cols, numerical_cols, scaler=RobustScaler()
+                    ),
+                ),
+                (
+                    "model",
+                    CalibratedClassifierCV(
+                        estimator=IntegerTargetClassifier(
+                            RandomForestClassifier(
+                                n_estimators=400,
+                                min_samples_leaf=5,
+                                class_weight="balanced_subsample",
+                                n_jobs=-1,
+                                random_state=42,
+                            )
+                        ),
+                        method="sigmoid",
+                        cv=3,
                     ),
                 ),
             ]
@@ -820,7 +889,7 @@ def build_classification_reports() -> None:
         .reset_index()
     )
 
-    selected_experiment = "random_forest_classifier_balanced"
+    selected_experiment = "random_forest_classifier_balanced_calibrated"
     if selected_experiment not in summary_df["experiment"].values:
         raise ValueError(
             f"Selected classification experiment missing: {selected_experiment}"
