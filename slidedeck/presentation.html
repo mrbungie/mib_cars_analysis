@@ -318,7 +318,7 @@ Strategic Analysis Group
 <li>Used for <strong>ongoing re-prioritization and re-sizing</strong> during the process.</li>
 <li>Uses the static variables <strong>plus process-state variables</strong>: elapsed time, stage changes, cumulative timing, and stage ratios.</li>
 <li>It scores much better, but it is more exposed to timing leakage if the dataset snapshot is close to closure.</li>
-<li>We keep that version in the <strong>annex as an old benchmark</strong>, not as the main recommendation.</li>
+<li>That version is kept in the <strong>annex as a reference benchmark</strong>.</li>
 </ul>
 </div></div>
 <p><img data-src="assets/process22.png"></p>
@@ -452,7 +452,7 @@ Strategic Analysis Group
 <div style="font-size: 80%;">
 <p>Conclusions:</p>
 <ul>
-<li>The model has enough ranking signal (<strong>AUROC 73.6% on hold-out</strong>) to support early screening, and we now use a more precision-oriented operating threshold because the business action is to focus scarce sales effort.</li>
+<li>The model has enough ranking signal (<strong>AUROC 73.6% on hold-out</strong>) to support early screening, and it uses a more precision-oriented operating threshold because the business action is to focus scarce sales effort.</li>
 </ul>
 </div>
 </div>
@@ -641,21 +641,19 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>Held-out predictions; Lever 1 now uses a decaying focus gain (<strong>2.0×→1.0×</strong>), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.</p>
+<p>Held-out predictions; Lever 1 uses a decaying focus gain (<strong>2.0×→1.0×</strong>), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.</p>
 </div></aside></section>
 <section id="these-simulations-show-business-potential-not-final-operating-estimates" class="slide level2">
 <h2>These simulations show business potential, not final operating estimates</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <ul>
-<li><strong>The main deck now focuses on the static setup</strong>: this is the safer operational choice when snapshot timing is uncertain and we cannot fully rule out timing leakage in process variables.</li>
+<li><strong>Simulations are based on held-out observational predictions</strong>, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.</li>
 <li><strong>Potentially relevant covariates are missing</strong>: the dataset lacks important drivers such as richer account history, rep behavior, pricing context, and external market conditions.</li>
-<li><strong>Snapshot data limits process interpretation</strong>: the dataset reflects a single recorded state, without full event history or detailed timing of interactions.</li>
 </ul>
 </div><div class="column" style="width:48%;">
 <ul>
-<li><strong>Dynamic results are kept in the annex as an old benchmark</strong>, because they are stronger but also more exposed to timing leakage if the snapshot was taken late in the sales process.</li>
-<li><strong>Simulations are based on held-out observational predictions</strong>, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.</li>
+<li><strong>Dynamic results are kept in the annex as a benchmark</strong>, because they are much stronger example of how the models could perform under ideal conditions, but also more exposed to timing leakage if the snapshot was taken late in the sales process.</li>
 <li><strong>Missing business context</strong>: key factors such as sales capacity, cost structure, pricing, and CRM integration were not incorporated or validated with business stakeholders, limiting real-world applicability.</li>
 </ul>
 </div></div>
@@ -1239,7 +1237,7 @@ Strategic Analysis Group
 <ul>
 <li>Each curve shows the <strong>net revenue delta in USD</strong> vs.&nbsp;the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.</li>
 <li>λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.</li>
-<li>Break-even shifts left as λ_max increases: under the static model, the base scenario now breaks even at about <strong>top 28%</strong> of the ranked pipeline when <strong>λ_max = 2.0</strong>.</li>
+<li>Break-even shifts left as λ_max increases: under the static model, the base scenario breaks even at about <strong>top 28%</strong> of the ranked pipeline when <strong>λ_max = 2.0</strong>.</li>
 <li>The current static deck uses <strong>λ_max = 2.00</strong> as the base scenario.</li>
 </ul>
 </div></div>
@@ -1263,7 +1261,7 @@ Strategic Analysis Group
 </ul></li>
 <li><strong>Serving cost</strong>: <code>8%</code> of realized won amount</li>
 </ul>
-<p>Why this matters: it keeps the earlier sales-effort framing, but now separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.</p>
+<p>Why this matters: it keeps the earlier sales-effort framing, but separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.</p>
 </div>
 </section>
 <section id="annex-strategic-lever-2-reduce-the-salesforce-and-let-the-model-pick-the-best-opportunities" class="slide level2">
@@ -1281,7 +1279,7 @@ Strategic Analysis Group
 </div></div>
 
 <aside><div>
-<p>Headcount model assumes 100 opps/rep/period. Contribution now uses product-margin proxies, <strong>$135K base+overhead per rep</strong>, <strong>7% commission on realized revenue</strong>, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.</p>
+<p>Headcount model assumes 100 opps/rep/period. Contribution uses product-margin proxies, <strong>$135K base+overhead per rep</strong>, <strong>7% commission on realized revenue</strong>, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.</p>
 </div></aside></section>
 <section id="annex-salesforce-reduction-marginal-contribution-per-rep-batch" class="slide level2">
 <h2>Annex: salesforce reduction — marginal contribution per rep batch</h2>
@@ -1291,7 +1289,7 @@ Strategic Analysis Group
 </div><div class="column" style="width:42%;">
 <ul>
 <li>Each bar shows the <strong>marginal contribution</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
-<li>The comparison line now represents the <strong>incremental operating cost</strong> of the same batch, not a flat rep-cost shortcut.</li>
+<li>The comparison line represents the <strong>incremental operating cost</strong> of the same batch, not a flat rep-cost shortcut.</li>
 <li><strong>Blue bars</strong> are ROI-positive: the batch adds more contribution than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves contribution margin.</li>
 <li>Under the static ranking, the crossover is still late in the curve, which is why the contribution upside from resizing remains modest.</li>
 </ul>
@@ -1878,7 +1876,7 @@ Strategic Analysis Group
 <p><img data-src="assets/annex_calibration_comparison.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>This chart now shows the <strong>selected classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced_calibrated</code>.</li>
+<li>This chart shows the <strong>selected classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced_calibrated</code>.</li>
 <li>It compares the model’s mean predicted win probability to the observed win rate across quantile bins.</li>
 <li>The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.</li>
 </ul>
@@ -2030,7 +2028,7 @@ Strategic Analysis Group
 <ul>
 <li>Each curve shows the <strong>net revenue delta in USD</strong> vs.&nbsp;the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.</li>
 <li>λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.</li>
-<li>Break-even shifts left as λ_max increases: with the rerun dynamic classifier, the base scenario now breaks even at about <strong>top 12%</strong> of the ranked pipeline when <strong>λ_max = 2.0</strong>.</li>
+<li>Break-even shifts left as λ_max increases: with the rerun dynamic classifier, the base scenario breaks even at about <strong>top 12%</strong> of the ranked pipeline when <strong>λ_max = 2.0</strong>.</li>
 <li>The current simulation uses <strong>λ_max = 2.00</strong> as the base scenario.</li>
 </ul>
 </div></div>

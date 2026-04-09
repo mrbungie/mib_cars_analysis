@@ -193,7 +193,7 @@ Further causal work is needed to distinguish demand from historical sales focus.
 - Used for **ongoing re-prioritization and re-sizing** during the process.
 - Uses the static variables **plus process-state variables**: elapsed time, stage changes, cumulative timing, and stage ratios.
 - It scores much better, but it is more exposed to timing leakage if the dataset snapshot is close to closure.
-- We keep that version in the **annex as an old benchmark**, not as the main recommendation.
+- That version is kept in the **annex as a reference benchmark**.
 :::
 :::
 
@@ -261,7 +261,7 @@ The following table shows the selected model's performance on both CV and held-o
 ::: {style="font-size: 80%;"}
 Conclusions:
 
-- The model has enough ranking signal (**AUROC 73.6% on hold-out**) to support early screening, and we now use a more precision-oriented operating threshold because the business action is to focus scarce sales effort.
+- The model has enough ranking signal (**AUROC 73.6% on hold-out**) to support early screening, and it uses a more precision-oriented operating threshold because the business action is to focus scarce sales effort.
 :::
 
 :::
@@ -410,20 +410,18 @@ Based on held-out test-set predictions; assumes opportunity amount reflects fina
 :::
 
 ::: aside
-Held-out predictions; Lever 1 now uses a decaying focus gain (**2.0×→1.0×**), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.
+ Held-out predictions; Lever 1 uses a decaying focus gain (**2.0×→1.0×**), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.
 :::
 
 ## These simulations show business potential, not final operating estimates
 
 ::: {.columns}
 ::: {.column width="52%"}
-- **The main deck now focuses on the static setup**: this is the safer operational choice when snapshot timing is uncertain and we cannot fully rule out timing leakage in process variables.
+- **Simulations are based on held-out observational predictions**, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.
 - **Potentially relevant covariates are missing**: the dataset lacks important drivers such as richer account history, rep behavior, pricing context, and external market conditions.
-- **Snapshot data limits process interpretation**: the dataset reflects a single recorded state, without full event history or detailed timing of interactions.
 :::
 ::: {.column width="48%"}
-- **Dynamic results are kept in the annex as an old benchmark**, because they are stronger but also more exposed to timing leakage if the snapshot was taken late in the sales process.
-- **Simulations are based on held-out observational predictions**, so they are weaker than an actual backtest and/or experiment and they cannot capture the full causal impact of acting on model outputs.
+- **Dynamic results are kept in the annex as a benchmark**, because they are much stronger example of how the models could perform under ideal conditions, but also more exposed to timing leakage if the snapshot was taken late in the sales process.
 - **Missing business context**: key factors such as sales capacity, cost structure, pricing, and CRM integration were not incorporated or validated with business stakeholders, limiting real-world applicability.
 :::
 :::
@@ -635,7 +633,7 @@ Focus-gain λ_max is a scenario assumption, not an empirically estimated causal 
 ::: {.column width="42%"}
 - Each curve shows the **net revenue delta in USD** vs. the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.
 - λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.
-- Break-even shifts left as λ_max increases: under the static model, the base scenario now breaks even at about **top 28%** of the ranked pipeline when **λ_max = 2.0**.
+- Break-even shifts left as λ_max increases: under the static model, the base scenario breaks even at about **top 28%** of the ranked pipeline when **λ_max = 2.0**.
 - The current static deck uses **λ_max = 2.00** as the base scenario.
 :::
 :::
@@ -657,7 +655,7 @@ We replace the old `revenue − rep cost` shortcut with a more realistic contrib
   - Fields Sales `2.4k`, Reseller `1.6k`, Telesales `0.85k`, Telecoverage `0.65k`, Other/default lower values
 - **Serving cost**: `8%` of realized won amount
 
-Why this matters: it keeps the earlier sales-effort framing, but now separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.
+Why this matters: it keeps the earlier sales-effort framing, but separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.
 
 :::
 
@@ -676,7 +674,7 @@ Why this matters: it keeps the earlier sales-effort framing, but now separates f
 :::
 
 ::: aside
-Headcount model assumes 100 opps/rep/period. Contribution now uses product-margin proxies, **$135K base+overhead per rep**, **7% commission on realized revenue**, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.
+Headcount model assumes 100 opps/rep/period. Contribution uses product-margin proxies, **$135K base+overhead per rep**, **7% commission on realized revenue**, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.
 :::
 
 ## Annex: salesforce reduction — marginal contribution per rep batch
@@ -688,7 +686,7 @@ Headcount model assumes 100 opps/rep/period. Contribution now uses product-margi
 :::
 ::: {.column width="42%"}
 - Each bar shows the **marginal contribution** contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.
-- The comparison line now represents the **incremental operating cost** of the same batch, not a flat rep-cost shortcut.
+- The comparison line represents the **incremental operating cost** of the same batch, not a flat rep-cost shortcut.
 - **Blue bars** are ROI-positive: the batch adds more contribution than cost. **Red bars** are ROI-negative: cutting those reps improves contribution margin.
 - Under the static ranking, the crossover is still late in the curve, which is why the contribution upside from resizing remains modest.
 :::
@@ -920,7 +918,7 @@ Selected model in main deck: **xgboost_boxcox** by CV Median APE, tie-broken by 
 ![](assets/annex_calibration_comparison.png){width=100%}
 :::
 ::: {.column width="42%"}
-- This chart now shows the **selected classifier itself** on the held-out set: `random_forest_classifier_balanced_calibrated`.
+- This chart shows the **selected classifier itself** on the held-out set: `random_forest_classifier_balanced_calibrated`.
 - It compares the model's mean predicted win probability to the observed win rate across quantile bins.
 - The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.
 :::
@@ -1004,7 +1002,7 @@ Focus-gain λ_max is a scenario assumption, not an empirically estimated causal 
 ::: {.column width="42%"}
 - Each curve shows the **net revenue delta in USD** vs. the full-pipeline baseline for a given λ_max — dropped deals are simply unworked (zero revenue from them), so the only gain is the focus uplift on worked deals.
 - λ decays linearly to 1.0× at the full pipeline — so the gain is highest when the team is most concentrated.
-- Break-even shifts left as λ_max increases: with the rerun dynamic classifier, the base scenario now breaks even at about **top 12%** of the ranked pipeline when **λ_max = 2.0**.
+- Break-even shifts left as λ_max increases: with the rerun dynamic classifier, the base scenario breaks even at about **top 12%** of the ranked pipeline when **λ_max = 2.0**.
 - The current simulation uses **λ_max = 2.00** as the base scenario.
 :::
 :::
