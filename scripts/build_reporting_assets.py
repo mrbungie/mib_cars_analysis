@@ -203,8 +203,8 @@ def build_eda_iv_assets() -> None:
         from matplotlib.patches import Patch
 
         legend_handles = [
-            Patch(facecolor="#16A34A", label="Increasing relationship"),
-            Patch(facecolor="#DC2626", label="Decreasing relationship"),
+            Patch(facecolor="#16A34A", label="Direct relationship"),
+            Patch(facecolor="#DC2626", label="Inverse relationship"),
             Patch(facecolor="#6B7280", label="Categorical / unclear"),
         ]
         ax.legend(handles=legend_handles, frameon=False, loc="lower right", fontsize=9)
@@ -603,8 +603,16 @@ def build_assets_for_variant(
     selected_predictions = pd.read_excel(
         classification_path, sheet_name="test_predictions"
     )
+    comparison_predictions = pd.read_excel(
+        classification_path, sheet_name="comparison_test_predictions"
+    )
     class_metadata = pd.read_excel(classification_path, sheet_name="metadata")
     selected_experiment = str(class_metadata.loc[0, "selected_experiment"])
+    uncalibrated_experiment = (
+        selected_experiment.removesuffix("_calibrated")
+        if selected_experiment.endswith("_calibrated")
+        else ""
+    )
     fig, ax = plt.subplots(figsize=(7.2, 5))
     frac_pos, mean_pred = calibration_curve(
         selected_predictions["actual_result"],
@@ -620,6 +628,26 @@ def build_assets_for_variant(
         label="Selected classifier",
         color="#2563EB",
     )
+    if uncalibrated_experiment:
+        uncalibrated_predictions = comparison_predictions.loc[
+            comparison_predictions["experiment"] == uncalibrated_experiment
+        ].copy()
+        if not uncalibrated_predictions.empty:
+            frac_pos_uncal, mean_pred_uncal = calibration_curve(
+                uncalibrated_predictions["actual_result"],
+                uncalibrated_predictions["predicted_win_probability"],
+                n_bins=10,
+                strategy="quantile",
+            )
+            ax.plot(
+                mean_pred_uncal,
+                frac_pos_uncal,
+                marker="o",
+                linewidth=2.0,
+                linestyle="--",
+                label="Uncalibrated selected classifier",
+                color="#F59E0B",
+            )
     ax.plot(
         [0, 1],
         [0, 1],
@@ -630,7 +658,12 @@ def build_assets_for_variant(
     )
     ax.set_xlabel("Mean predicted win probability")
     ax.set_ylabel("Observed win rate")
-    ax.set_title(f"Hold-out calibration: {selected_experiment}")
+    if uncalibrated_experiment:
+        ax.set_title(
+            f"Hold-out calibration: {selected_experiment} vs {uncalibrated_experiment}"
+        )
+    else:
+        ax.set_title(f"Hold-out calibration: {selected_experiment}")
     ax.xaxis.set_major_formatter(FuncFormatter(pct_fmt))
     ax.yaxis.set_major_formatter(FuncFormatter(pct_fmt))
     ax.legend(frameon=False, loc="upper left")

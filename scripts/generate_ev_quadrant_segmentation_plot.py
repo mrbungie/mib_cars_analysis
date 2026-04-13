@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--variant", choices=["dynamic", "static"], default="dynamic")
+    parser.add_argument("--variant", choices=["dynamic", "static"], default="static")
     return parser.parse_args()
 
 
@@ -177,7 +177,7 @@ def main() -> None:
             y,
             f"{row['quadrant']}\n"
             f"n {int(row['count']):,}  |  win {row['win_rate']:.0%}\n"
-            f"rev {usd_compact(float(row['realized_revenue']))}",
+            f"Actual Revenue {usd_compact(float(row['realized_revenue']))}",
             ha="center",
             va="center",
             fontsize=10.2,

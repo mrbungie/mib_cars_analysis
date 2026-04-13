@@ -1008,6 +1008,7 @@ def build_classification_reports(variant: str = "dynamic") -> Path:
     baseline_pipeline.fit(X, y)
     classification_comparison_experiments = [
         selected_experiment,
+        "random_forest_classifier_balanced",
         "logit_binned_ohe_balanced",
         "logit_binned_ohe_balanced_calibrated",
         "random_classifier",

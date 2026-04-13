@@ -37,7 +37,7 @@ def build_focus_plot(variant: str) -> None:
 
     sns.set_theme(style="whitegrid")
     plt.style.use("seaborn-v0_8-whitegrid")
-    fig, ax = plt.subplots(figsize=(6.2, 4.1), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(7.8, 4.1), constrained_layout=True)
 
     ax.fill_between(
         df["top_share"],
@@ -100,7 +100,7 @@ def build_sales_plot(variant: str) -> None:
 
     sns.set_theme(style="whitegrid")
     plt.style.use("seaborn-v0_8-whitegrid")
-    fig, ax = plt.subplots(figsize=(6.2, 4.1), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(7.8, 4.1), constrained_layout=True)
 
     ax.plot(df["n_reps"], df["net_margin"], color="#2563EB", linewidth=2.8)
     ax.axhline(baseline, color="#0F172A", linewidth=1.2, linestyle=":")
@@ -123,7 +123,9 @@ def build_sales_plot(variant: str) -> None:
         arrowprops={"arrowstyle": "-", "color": "#DC2626", "lw": 0.8},
     )
     ax.set_title(
-        "Lever 2 — Contribution margin by headcount", fontsize=12, weight="bold"
+        "Lever 2 — Gross profit after selling costs by headcount",
+        fontsize=12,
+        weight="bold",
     )
     ax.set_xlabel("Sales reps (headcount)")
     ax.set_ylabel("USD")

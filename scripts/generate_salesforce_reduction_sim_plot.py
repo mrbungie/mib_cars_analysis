@@ -280,14 +280,14 @@ def plot_main(sim: pd.DataFrame) -> plt.Figure:
         sim["net_margin"],
         color="#14B8A6",
         linewidth=2.4,
-        label="Contribution margin",
+        label="Gross profit after selling costs",
     )
     ax_net.axhline(
         baseline_contribution,
         color="#0F172A",
         linewidth=1.1,
         linestyle="--",
-        label=f"Baseline contribution = {usd_compact(baseline_contribution)}",
+        label=f"Baseline gross profit after selling costs = {usd_compact(baseline_contribution)}",
     )
     best_row = sim.loc[sim["net_margin"].idxmax()]
     ax_net.scatter(
@@ -300,7 +300,7 @@ def plot_main(sim: pd.DataFrame) -> plt.Figure:
         linewidths=0.8,
     )
     ax_net.annotate(
-        f"Optimal: {int(best_row['n_reps'])} reps\n{usd_compact(best_row['net_margin'])} contribution",
+        f"Optimal: {int(best_row['n_reps'])} reps\n{usd_compact(best_row['net_margin'])} gross profit after selling costs",
         xy=(best_row["n_reps"], best_row["net_margin"]),
         xytext=(
             best_row["n_reps"] + baseline_reps * 0.06,
@@ -313,8 +313,8 @@ def plot_main(sim: pd.DataFrame) -> plt.Figure:
     )
     ax_net.yaxis.set_major_formatter(mticker.FuncFormatter(usd_compact))
     ax_net.set_xlabel("Sales reps (headcount)")
-    ax_net.set_ylabel("Contribution margin (USD)")
-    ax_net.set_title("Contribution margin by headcount", weight="bold")
+    ax_net.set_ylabel("Gross profit after selling costs (USD)")
+    ax_net.set_title("Gross profit after selling costs by headcount", weight="bold")
     ax_net.legend(frameon=False, fontsize=8.5)
 
     ax_mroi.plot(
@@ -329,7 +329,7 @@ def plot_main(sim: pd.DataFrame) -> plt.Figure:
         color="#DC2626",
         linewidth=1.4,
         linestyle="--",
-        label="ROI = 1.0× (incremental contribution pays for incremental cost)",
+        label="ROI = 1.0× (incremental gross profit after selling costs pays for incremental cost)",
     )
     ax_mroi.axvline(baseline_reps, color="#94A3B8", linewidth=1.2, linestyle=":")
 
@@ -356,13 +356,15 @@ def plot_main(sim: pd.DataFrame) -> plt.Figure:
 
     ax_mroi.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.1f}×"))
     ax_mroi.set_xlabel("Sales reps (headcount)")
-    ax_mroi.set_ylabel("Marginal ROI (contribution / incremental cost)")
+    ax_mroi.set_ylabel(
+        "Marginal ROI (gross profit after selling costs / incremental cost)"
+    )
     ax_mroi.set_title("Marginal ROI of last rep batch", weight="bold")
     ax_mroi.legend(frameon=False, fontsize=8.5)
 
     fig.suptitle(
         f"Salesforce reduction analysis — holdout set "
-        f"(baseline: {baseline_reps} reps, contribution = gross margin − effort − acquisition − serving, "
+        f"(baseline: {baseline_reps} reps, gross profit after selling costs = gross margin − effort − acquisition − serving, "
         f"{OPPS_PER_REP} opps/rep, opportunities ranked by expected value)",
         fontsize=11,
         weight="bold",
@@ -399,8 +401,8 @@ def plot_marginal_curve(sim: pd.DataFrame) -> plt.Figure:
     ax.legend(
         [above_patch, below_patch],
         [
-            "Marginal contribution ≥ incremental cost — keep the rep",
-            "Marginal contribution < incremental cost — consider cutting",
+            "Marginal gross profit after selling costs ≥ incremental cost — keep the rep",
+            "Marginal gross profit after selling costs < incremental cost — consider cutting",
         ],
         frameon=False,
         fontsize=8.5,
@@ -417,9 +419,11 @@ def plot_marginal_curve(sim: pd.DataFrame) -> plt.Figure:
     ax.set_xlabel(
         "Sales reps (headcount) — bars ordered from highest-EV to lowest-EV batch"
     )
-    ax.set_ylabel("Marginal contribution from last batch of 100 opportunities")
+    ax.set_ylabel(
+        "Marginal gross profit after selling costs from last batch of 100 opportunities"
+    )
     ax.set_title(
-        "Marginal contribution per rep batch vs. incremental cost (annex)",
+        "Marginal gross profit after selling costs per rep batch vs. incremental cost (annex)",
         fontsize=12,
         weight="bold",
     )
@@ -427,7 +431,7 @@ def plot_marginal_curve(sim: pd.DataFrame) -> plt.Figure:
     ax.text(
         0.02,
         0.97,
-        "Blue bars: marginal contribution exceeds incremental cost. "
+        "Blue bars: marginal gross profit after selling costs exceeds incremental cost. "
         "Red bars: below break-even.",
         transform=ax.transAxes,
         fontsize=8.5,
@@ -469,10 +473,10 @@ def main() -> None:
     last_roi_rep = int(last_roi_row.iloc[-1]["n_reps"]) if not last_roi_row.empty else 0
 
     print(
-        f"\nBaseline: {baseline_reps} reps, contribution={usd_compact(float(sim['baseline_contribution'].iloc[0]))}"
+        f"\nBaseline: {baseline_reps} reps, gross profit after selling costs={usd_compact(float(sim['baseline_contribution'].iloc[0]))}"
     )
     print(
-        f"Optimal headcount by contribution margin: {int(best_row['n_reps'])} reps → contribution {usd_compact(best_row['net_margin'])}"
+        f"Optimal headcount by gross profit after selling costs: {int(best_row['n_reps'])} reps → gross profit after selling costs {usd_compact(best_row['net_margin'])}"
     )
     print(f"Last rep batch with ROI ≥ 1: rep #{last_roi_rep}")
     print(

@@ -9,8 +9,7 @@
 <link href="presentation_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.8.25">
 
-  <meta name="author" content="Strategic Analysis Group">
-  <title>MIB Cars Analysis</title>
+  <title>Car Parts Sales Data Analysis</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -129,27 +128,37 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">MIB Cars Analysis</h1>
+  <h1 class="title">Car Parts Sales Data Analysis</h1>
   <p class="subtitle">Commercial prioritization and forecasting from sales opportunity data</p>
 
 <div class="quarto-title-authors">
-<div class="quarto-title-author">
-<div class="quarto-title-author-name">
-Strategic Analysis Group 
-</div>
-</div>
 </div>
 
 </section>
 <section id="executive-summary" class="slide level2">
 <h2>Executive Summary</h2>
 <ul>
-<li>This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies (i.e.&nbsp;CRM input errors, lack of prioritization, and inaccurate forecasting) that drive a structurally low 22.7% conversion rate.</li>
-<li>We propose two <strong>static / at-creation</strong> models: a win/loss classifier (<strong>AUROC 73.6%</strong>) for early opportunity prioritization, and a regression model for deal sizing with <strong>63.0% MdAPE</strong> on held-out test data.</li>
+<li>This analysis examines an auto-parts sales opportunity pipeline, identifying structural inefficiencies that results in a low 22.7% conversion rate.</li>
+<li>We propose two models: a win/loss classifier (<strong>AUROC 73.6%</strong>) for early opportunity prioritization, and a regression model for deal sizing with <strong>63.0% Median APE</strong> on held-out test data.</li>
 <li>We show that focusing on the <strong>top 20% of most likely opportunities lifts win rates from the 22.7% baseline to 51.7%</strong>; while focusing on the <strong>top 25% expected-value ranked opportunities captures 55.6% of total won revenue</strong>.</li>
 <li>We recommend embedding scores in the CRM at opportunity creation, piloting via A/B test, and setting clear thresholds to operationalize prioritization in sales workflows.</li>
-<li>We also simulate strategic levers under the static setup and find only modest upside, which reinforces that better process-history data is needed before using the models for bigger operating decisions.</li>
+<li>We also simulate strategic levers and find only modest upside, which reinforces that better process-history data is needed before using the models for bigger operating decisions.</li>
 </ul>
+</section>
+<section id="our-team" class="slide level2">
+<h2>Our team</h2>
+<div class="columns">
+<div class="column" style="text-align:center;">
+<p><img data-src="assets/our_team.png" style="width:100.0%"></p>
+</div><div class="column" style="width:44%;">
+<ul>
+<li>Business Development: Defining where to focus and how to compete</li>
+<li>Sales/Marketing: Operationalizing via CRM workflow, and insight validation</li>
+<li>Analytics: Insights from data exploration on value, win rates, and drivers</li>
+<li>Data Science: Modelling, ranking, and simulation to support decisions</li>
+<li>Strategy: Implications for strategy, decisions, and next steps</li>
+</ul>
+</div></div>
 </section>
 <section id="agenda" class="slide level2 scrollable">
 <h2>Agenda</h2>
@@ -191,7 +200,7 @@ Strategic Analysis Group
 <p><img data-src="assets/eda_amount_win_rate.png" style="width:94.0%"></p>
 </div><div class="column" style="width:44%;">
 <ul>
-<li>Low efficiency: only 22.7% conversion, indicating misallocated effort</li>
+<li><strong>Low efficiency</strong>: only 22.7% conversion, indicating misallocated effort. This is also unbalanced.</li>
 <li>Skewed deal mix: $94K avg vs $50K median → long tail of large deals</li>
 <li>Value concentration: bigger deals win more → focus should shift</li>
 <li>Clear opportunity: prioritize by win probability and deal size, ideally both</li>
@@ -215,11 +224,12 @@ Strategic Analysis Group
 <ul>
 <li><strong>Scale</strong>: 78,025 sales opportunities and <strong>19 variables</strong> like:
 <ul>
-<li>at-start information: client size, opportunity type, product category, region, etc.</li>
-<li>sales process details: elapsed time, stage changes, stage ratios, etc.</li>
+<li>at-start information: client-wise (size, past revenue) and deal-wise (product type, route, region, competitor).</li>
+<li>sales process details: elapsed time, stage changes, days per stage, stage ratios, etc.</li>
 <li>targets like amount and win/loss status.</li>
 </ul></li>
 <li>Validation removed duplicates and zero-amount opportunities prior to modelling; remaining data issues were intentionally retained.</li>
+<li>IDs and potential leakage variables like Client Size Deal (categorical) were not considered at all.</li>
 <li>For the modelling experiments shown here, the sample used <strong>75,819 eligible rows</strong> out of <strong>78,025 total rows</strong> with valid targets.</li>
 </ul>
 </div><div class="column" style="width:48%;">
@@ -254,7 +264,10 @@ Strategic Analysis Group
 <ul>
 <li><strong>(Re)Acquisition</strong> (no activity in 2 years): 69,208 opportunities, 17.3% win rate</li>
 <li><strong>Engagement / upselling</strong>: 8,817 opportunities, 63.9% win rate</li>
-<li>A practical first split: separates low-history acquisition from higher-propensity expansion.</li>
+<li>A practical first split for segmenting sales efforts and tailoring playbooks, with different targeting, messaging, and resource allocation.
+<ul>
+<li>Also a good example of 80-20 rule in effect.</li>
+</ul></li>
 </ul>
 </div><div class="column" style="width:58%;">
 <h6 id="opportunity-counts-and-win-rates-by-funnel-stage">Opportunity counts and win rates by funnel stage:</h6>
@@ -275,6 +288,7 @@ Strategic Analysis Group
 <li>Region is not a strong driver of conversion or deal size</li>
 <li>Type and subtype drive meaningful variation in both outcomes</li>
 <li>Prioritization should be product-driven, not geography-driven</li>
+<li>What other variables are driving those numbers? Is there an influence of marketing campaigns or/and specific salesmen capabilities?</li>
 </ul>
 </div></div>
 
@@ -321,11 +335,8 @@ Strategic Analysis Group
 <li>That version is kept in the <strong>annex as a reference benchmark</strong>.</li>
 </ul>
 </div></div>
-<p><img data-src="assets/process22.png"></p>
 
-<aside><div>
-<p>Both approaches could use richer covariates, especially prior outcomes and process history per client.</p>
-</div></aside></section>
+<img data-src="assets/process22.png" class="r-stretch"></section>
 <section id="model-performance-was-tested-on-a-realistic-held-out-sample" class="slide level2">
 <h2>Model performance was tested on a realistic held-out sample</h2>
 <div class="columns">
@@ -337,7 +348,11 @@ Strategic Analysis Group
 </ul></li>
 <li>Stratified on win/loss and amount, keeping outcome balance and deal mix stable</li>
 <li>5-fold CV on train, final evaluation on hold-out</li>
-<li>Different preprocessing for X and y depending on model, same split for fair evaluation</li>
+<li>Same split for fair evaluation</li>
+<li>Preprocessing included imputation, encoding (OHE), and scaling (Standard) and supervised binning.
+<ul>
+<li>No feature selection or engineering beyond the original <strong>at-creation variables</strong>.</li>
+</ul></li>
 </ul>
 </div><div class="column" style="width:46%;">
 <h6 id="set-distribution-treemap">Set distribution treemap:</h6>
@@ -354,7 +369,6 @@ Strategic Analysis Group
 <ul>
 <li>Therefore we focused on ranking metrics such as ROC AUC and PR AUC.</li>
 </ul></li>
-<li>We used only <strong>at-creation variables</strong>, excluding process-timing fields and the amount target.</li>
 <li>Selected final classifier: <strong>Calibrated Balanced Random Forest over the classic preprocessed feature set</strong> (<code>random_forest_classifier_balanced_calibrated</code>).</li>
 <li>This model has <strong>moderate but usable</strong> performance for early triage (<strong>AUROC 73.6%, Accuracy 81.0% @ 54.5% threshold</strong>) versus the baselines (<strong>AUROC 50.0%, Accuracy 77.3%</strong> for the always-false classifier).</li>
 </ul>
@@ -471,9 +485,8 @@ Strategic Analysis Group
 <li>Target: <strong>Opportunity Amount USD</strong>.</li>
 <li>Business use: <strong>sizing and directional forecasting</strong>.
 <ul>
-<li>Therefore we focused on error metrics such as MAE and especially MAPE since it is scale-invariant and better captures the relative error across the wide deal-size distribution.</li>
+<li>Therefore we focused on error metrics such as MAE (Mean Absolute Error) and especially Median Absolute Percentage Error (MdAPE) since it is scale-invariant and better captures the relative error across the wide deal-size distribution.</li>
 </ul></li>
-<li>We used only <strong>at-creation variables</strong>, excluding process-timing fields and the win/loss target.</li>
 <li>Selected final regression model: <strong>Yeo-Johnson transformed XGBoost regressor</strong> (<code>xgboost_yeojohnson</code>), selected by lowest CV Median APE.</li>
 <li>The model beats simple baselines on MAE and Median APE, <strong>but with R² ≈ 0.04, MAE ≈ 66.7k USD, and Median APE ≈ 63%</strong>, deal-level precision remains weak, so the best use case is directional sizing and ranking rather than exact deal-level forecasts.</li>
 </ul>
@@ -632,16 +645,16 @@ Strategic Analysis Group
 </div>
 </div><div class="column" style="width:42%;">
 <ul>
-<li><strong>Lever 1, Focus the team:</strong> Under the static ranking with a stronger focus-gain assumption (<strong>λ_max = 2.0×</strong>), the upside becomes more visible. Best simulated point is <strong>top ~56%</strong> of the ranked pipeline, reaching <strong>$436M</strong> in revenue, or about <strong>+$51M vs.&nbsp;baseline</strong>.</li>
-<li><strong>Lever 2, Optimize salesforce size:</strong> With a richer contribution formula and a more realistic comp structure, the headcount signal is still modest but more realistic. Best simulated point is <strong>221 reps</strong>, retaining <strong>99.7%</strong> of revenue and improving contribution margin by <strong>~+$1.2M</strong> vs.&nbsp;baseline.
+<li><strong>Lever 1, Focus the team</strong>: Simulations show that focusing on a smaller share of opportunities (top <strong>~56%</strong>) can actually increase revenue, reaching $436M (+$51M vs.&nbsp;baseline).</li>
+<li><strong>Lever 2, Optimize salesforce size</strong>: Slightly reducing to <strong>~221 reps</strong> maintains almost all revenue (99.7%) while improving profitability (~+$1.2M).
 <ul>
-<li>Another option is segmenting the salesforce, with a specialized team focused on high-value opportunities/accounts and another team managing the rest.</li>
+<li><strong>Option to split teams</strong>: one focused on high-value opportunities, another covering the rest.</li>
 </ul></li>
 </ul>
 </div></div>
 
 <aside><div>
-<p>Held-out predictions; Lever 1 uses a decaying focus gain (<strong>2.0×→1.0×</strong>), while Lever 2 uses a practical contribution formula with base+overhead rep cost, commission, acquisition, and serving costs.</p>
+<p>Held-out predictions; Lever 1 uses a decaying focus gain (<strong>2.0×→1.0×</strong>), while Lever 2 uses a practical gross-profit-after-selling-costs formula with base+overhead rep cost, commission, acquisition, and serving costs.</p>
 </div></aside></section>
 <section id="these-simulations-show-business-potential-not-final-operating-estimates" class="slide level2">
 <h2>These simulations show business potential, not final operating estimates</h2>
@@ -666,30 +679,15 @@ Strategic Analysis Group
 <section id="key-takeaways-for-commercial-decision-making" class="slide level2">
 <h2>Key takeaways for commercial decision-making</h2>
 <ul>
-<li>Prioritization is the highest-impact, low-effort lever</li>
-<li>Win/loss model (moderate scoring performance, AUROC 73.6%) still improves focus early in the process
+<li>Prioritization is the highest-impact, low-effort lever
 <ul>
-<li>Top 20% opportunities go from <strong>~22.7% win rate (baseline) to ~51.7%</strong></li>
+<li>Propensity: Top 20% opportunities go from <strong>~22.7% win rate (baseline) to ~51.7%</strong></li>
+<li>Revenues: ~38% comes from top 10% opportunities, ~56% comes from top 25% opportunities</li>
 </ul></li>
-<li>Use the amount model directionally, not for forecasting
-<ul>
-<li>63.0% MdAPE per deal and ~40% under-forecast at portfolio level</li>
-</ul></li>
-<li>Expected value is the strongest prioritization approach
-<ul>
-<li>Outperforms individual models for value capture</li>
-</ul></li>
-<li>Revenues are still concentrated <strong>(~38% top 10% opp., ~56% top 25% opp.)</strong> and should be prioritized accordingly</li>
 <li>Implications for commercial strategy:
 <ul>
 <li>Focus efforts on the best opportunities first</li>
 <li>Treat bigger strategic levers cautiously until richer process-history data is available</li>
-</ul></li>
-<li>Recommendations for implementing model-driven sales:
-<ul>
-<li>Always embed through CRM.</li>
-<li>[1] Pilot static prioritization first, then [2] add the amount model for sizing and ranking and finally, [3] combine into expected-value prioritization to guide focus and resource allocation.</li>
-<li><strong>(Optional but recommended)</strong> Keep an experimental mindset and run A/B tests continuously to validate the impact of acting on model outputs, and also to collect contrafactual data to improve the models over time.</li>
 </ul></li>
 </ul>
 </section>
@@ -703,9 +701,36 @@ Strategic Analysis Group
 </section>
 
 <section>
-<section id="annex" class="title-slide slide level1 center" data-background-color="#0F172A">
-<h1>Annex</h1>
+<section id="annexes" class="title-slide slide level1 center" data-background-color="#0F172A">
+<h1>Annexes</h1>
 
+</section>
+<section id="annex-team-decisions" class="slide level2">
+<h2>Annex: Team decisions</h2>
+<div class="columns">
+<div class="column">
+<p><strong>Business Development</strong><br>
+- Non-linear pipeline<br>
+- Value concentration<br>
+- 2 use cases<br>
+- Revenue-based outputs<br>
+- Capacity-aware prioritization</p>
+<p><strong>Marketing / Sales</strong><br>
+- Focus / Maintain / Deprioritize<br>
+- Top 20–30% accounts<br>
+- CRM prioritization<br>
+- Rep-aligned thresholds</p>
+</div><div class="column">
+<p><strong>Business Analytics</strong><br>
+- Win rate &amp; value skew<br>
+- Key drivers identified<br>
+- Data limitations flagged</p>
+<p><strong>Data Science</strong><br>
+- BRF + XGBoost<br>
+- Ranking model<br>
+- 58.1% threshold<br>
+- Business-driven evaluation</p>
+</div></div>
 </section>
 <section id="annex-static-classification-cv-leaderboard" class="slide level2">
 <h2>Annex: static classification CV leaderboard</h2>
@@ -1058,9 +1083,9 @@ Strategic Analysis Group
 <p><img data-src="assets/annex_calibration_comparison_static.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>This chart shows the <strong>selected static classifier itself</strong> on the held-out set: <code>random_forest_classifier_balanced_calibrated</code>.</li>
-<li>It compares the model’s mean predicted win probability to the observed win rate across quantile bins.</li>
-<li>The closer the curve sits to the 45-degree reference, the more usable the probabilities are for thresholding and expected-value calculations.</li>
+<li>This chart shows the <strong>selected static classifier</strong> on the held-out set: the calibrated <code>random_forest_classifier_balanced_calibrated</code> versus its uncalibrated base <code>random_forest_classifier_balanced</code>.</li>
+<li>It compares each model’s mean predicted win probability to the observed win rate across quantile bins.</li>
+<li>The closer a curve sits to the 45-degree reference, the more usable those probabilities are for thresholding and expected-value calculations; calibration should mainly improve that probability quality rather than ranking power.</li>
 </ul>
 </div></div>
 </section>
@@ -1242,11 +1267,11 @@ Strategic Analysis Group
 </ul>
 </div></div>
 </section>
-<section id="annex-strategic-lever-2-practical-contribution-formula" class="slide level2">
-<h2>Annex: strategic lever 2 — practical contribution formula</h2>
+<section id="annex-strategic-lever-2-practical-gross-profit-after-selling-costs-formula" class="slide level2">
+<h2>Annex: strategic lever 2 — practical gross-profit-after-selling-costs formula</h2>
 <div class="smaller">
-<p>We replace the old <code>revenue − rep cost</code> shortcut with a more realistic contribution measure:</p>
-<p><code>Contribution = RealizedRevenue × margin_pct − SalesEffortCost − CommissionCost − AcquisitionCost − ServingCost</code></p>
+<p>We replace the old <code>revenue − rep cost</code> shortcut with a more realistic gross-profit-after-selling-costs measure:</p>
+<p><code>GrossProfitAfterSellingCosts = RealizedRevenue × margin_pct − SalesEffortCost − CommissionCost − AcquisitionCost − ServingCost</code></p>
 <ul>
 <li><strong>Realized revenue</strong>: <code>amount_i</code> if won, else <code>0</code></li>
 <li><strong>Margin %</strong>: product-group proxy used as a COGS fallback
@@ -1261,7 +1286,7 @@ Strategic Analysis Group
 </ul></li>
 <li><strong>Serving cost</strong>: <code>8%</code> of realized won amount</li>
 </ul>
-<p>Why this matters: it keeps the earlier sales-effort framing, but separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns margin.</p>
+<p>Why this matters: it keeps the earlier sales-effort framing, but separates fixed sales coverage from variable selling cost more cleanly, so the staffing curve is closer to how a B2B auto-parts sales team actually earns gross profit after selling costs.</p>
 </div>
 </section>
 <section id="annex-strategic-lever-2-reduce-the-salesforce-and-let-the-model-pick-the-best-opportunities" class="slide level2">
@@ -1271,27 +1296,27 @@ Strategic Analysis Group
 <p><img data-src="assets/sim_salesforce_reduction_main_static.png" style="width:100.0%"></p>
 </div><div class="column" style="width:45%;">
 <ul>
-<li>Baseline: <strong>228 reps</strong>, <strong>$385M</strong> realized revenue, and about <strong>$121M</strong> contribution after margin, base+overhead, commission, acquisition, and serving costs.</li>
+<li>Baseline: <strong>228 reps</strong>, <strong>$385M</strong> realized revenue, and about <strong>$121M</strong> gross profit after selling costs, after base+overhead, commission, acquisition, and serving costs.</li>
 <li>Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.</li>
-<li><strong>Optimal headcount: 221 reps</strong> → <strong>$384M</strong> revenue retained (99.7%) and <strong>+$1.2M</strong> contribution vs.&nbsp;baseline.</li>
-<li>Last individually positive rep batch is around <strong>rep #221</strong> — beyond that, incremental contribution no longer covers incremental operating cost.</li>
+<li><strong>Optimal headcount: 221 reps</strong> → <strong>$384M</strong> revenue retained (99.7%) and <strong>+$1.2M</strong> gross profit after selling costs vs.&nbsp;baseline.</li>
+<li>Last individually positive rep batch is around <strong>rep #221</strong> — beyond that, incremental gross profit after selling costs no longer covers incremental operating cost.</li>
 </ul>
 </div></div>
 
 <aside><div>
-<p>Headcount model assumes 100 opps/rep/period. Contribution uses product-margin proxies, <strong>$135K base+overhead per rep</strong>, <strong>7% commission on realized revenue</strong>, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.</p>
+<p>Headcount model assumes 100 opps/rep/period. Gross profit after selling costs uses product-margin proxies, <strong>$135K base+overhead per rep</strong>, <strong>7% commission on realized revenue</strong>, route-based acquisition-cost proxies, and an 8% serving-cost proxy. Simulation uses held-out test-set predictions.</p>
 </div></aside></section>
-<section id="annex-salesforce-reduction-marginal-contribution-per-rep-batch" class="slide level2">
-<h2>Annex: salesforce reduction — marginal contribution per rep batch</h2>
+<section id="annex-salesforce-reduction-marginal-gross-profit-after-selling-costs-per-rep-batch" class="slide level2">
+<h2>Annex: salesforce reduction — marginal gross profit after selling costs per rep batch</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <p><img data-src="assets/sim_salesforce_reduction_marginal_static.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>Each bar shows the <strong>marginal contribution</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
+<li>Each bar shows the <strong>marginal gross profit after selling costs</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
 <li>The comparison line represents the <strong>incremental operating cost</strong> of the same batch, not a flat rep-cost shortcut.</li>
-<li><strong>Blue bars</strong> are ROI-positive: the batch adds more contribution than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves contribution margin.</li>
-<li>Under the static ranking, the crossover is still late in the curve, which is why the contribution upside from resizing remains modest.</li>
+<li><strong>Blue bars</strong> are ROI-positive: the batch adds more gross profit after selling costs than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves gross profit after selling costs.</li>
+<li>Under the static ranking, the crossover is still late in the curve, which is why the gross-profit-after-selling-costs upside from resizing remains modest.</li>
 </ul>
 </div></div>
 </section>
@@ -1380,6 +1405,21 @@ Strategic Analysis Group
 </ul>
 </div>
 </section>
+<section id="annex-how-feature-importance-is-calculated-for-tree-models" class="slide level2">
+<h2>Annex: how feature importance is calculated for tree models</h2>
+<div class="smaller">
+<h3 id="random-forest-sklearn">Random Forest (sklearn)</h3>
+<ul>
+<li>Uses <strong>mean decrease in impurity</strong> style importance.</li>
+<li>Each split gives credit to the feature that reduced impurity the most at that node.</li>
+<li>The forest-level importance is the <strong>average impurity reduction across all trees</strong>, then normalized so importances sum to 100%.</li>
+</ul>
+<h3 id="xgboost">XGBoost</h3>
+<ul>
+<li><strong>Gain</strong> <em>(default, usually the most useful)</em>: average reduction in prediction error when the feature is used in splits.</li>
+</ul>
+</div>
+</section>
 <section id="annex-how-to-read-iv-charts-classification-win-loss" class="slide level2">
 <h2>Annex: how to read IV charts — classification / win-loss</h2>
 <div class="smaller">
@@ -1420,8 +1460,8 @@ Strategic Analysis Group
 <ul>
 <li><strong>Colors</strong> add direction, because IV itself is only a strength score:
 <ul>
-<li><strong>green</strong> = increasing relationship</li>
-<li><strong>red</strong> = decreasing relationship</li>
+<li><strong>green</strong> = direct relationship</li>
+<li><strong>red</strong> = inverse relationship</li>
 <li><strong>gray</strong> = categorical or unclear direction</li>
 </ul></li>
 <li><strong>Asterisk (<code>*</code>)</strong> = strictly monotonic relationship across bins.</li>
@@ -1444,6 +1484,50 @@ Strategic Analysis Group
 <li>This is why regression IV values can look numerically much larger: they are on a <strong>different scale</strong>, not evidence of impossible predictive power.</li>
 </ul>
 </div>
+</section>
+<section id="annex-how-iv-is-calculated-regression" class="slide level2 scrollable">
+<h2>Annex: How IV is calculated (Regression)</h2>
+<ol type="1">
+<li><p>Bin the variable into groups (i)</p></li>
+<li><p>Compute mean target per bin:</p></li>
+</ol>
+<p><span class="math display">\[
+\mu_i = \text{mean}(y \mid \text{bin } i)
+\]</span></p>
+<ol start="3" type="1">
+<li>Compare to overall mean:</li>
+</ol>
+<p><span class="math display">\[
+IV = \sum_i w_i \cdot \left| \mu_i - \mu \right|
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(w_i = \frac{n_i}{N}\)</span> is the proportion of observations in bin <span class="math inline">\(i\)</span></li>
+<li><span class="math inline">\(\mu\)</span> is the global mean of the target</li>
+</ul>
+</section>
+<section id="annex-how-iv-is-calculated-classification" class="slide level2 scrollable">
+<h2>Annex: How IV is calculated (classification)</h2>
+<ol type="1">
+<li><p>Bin the variable into groups (i)</p></li>
+<li><p>Compute distributions:</p></li>
+</ol>
+<p><span class="math display">\[
+\text{DistGood}_i = \frac{\text{Good}_i}{\text{Total Good}}, \quad
+\text{DistBad}_i = \frac{\text{Bad}_i}{\text{Total Bad}}
+\]</span></p>
+<ol start="3" type="1">
+<li>Weight of Evidence:</li>
+</ol>
+<p><span class="math display">\[
+WoE_i = \ln\left(\frac{\text{DistGood}_i}{\text{DistBad}_i}\right)
+\]</span></p>
+<ol start="4" type="1">
+<li>Information Value:</li>
+</ol>
+<p><span class="math display">\[
+IV = \sum_i (\text{DistGood}_i - \text{DistBad}_i) \cdot WoE_i
+\]</span></p>
 </section>
 <section id="annex-original-text-version-of-the-modelling-use-cases-slide" class="slide level2">
 <h2>Annex: original text version of the modelling use-cases slide</h2>
@@ -2040,26 +2124,26 @@ Strategic Analysis Group
 <p><img data-src="assets/sim_salesforce_reduction_main.png" style="width:100.0%"></p>
 </div><div class="column" style="width:45%;">
 <ul>
-<li>Baseline: <strong>228 reps</strong>, <strong>$385M</strong> realized revenue, and about <strong>$121M</strong> contribution after margin, base+overhead, commission, acquisition, and serving costs.</li>
+<li>Baseline: <strong>228 reps</strong>, <strong>$385M</strong> realized revenue, and about <strong>$121M</strong> gross profit after selling costs, after base+overhead, commission, acquisition, and serving costs.</li>
 <li>Model ranks all opportunities by EV; each rep cut drops the lowest-ranked batch they covered.</li>
-<li><strong>Optimal headcount: 100 reps</strong> → <strong>$361M</strong> revenue retained (93.8%) and <strong>+$29.5M</strong> contribution vs.&nbsp;baseline.</li>
-<li>Last individually positive rep batch is around <strong>rep #82</strong> — after that point, incremental contribution no longer covers incremental operating cost.</li>
+<li><strong>Optimal headcount: 100 reps</strong> → <strong>$361M</strong> revenue retained (93.8%) and <strong>+$29.5M</strong> gross profit after selling costs vs.&nbsp;baseline.</li>
+<li>Last individually positive rep batch is around <strong>rep #82</strong> — after that point, incremental gross profit after selling costs no longer covers incremental operating cost.</li>
 </ul>
 </div></div>
 
 <aside><div>
-<p>Same contribution formula as the static version, but applied to the stronger dynamic ranking. Simulation uses held-out test-set predictions.</p>
+<p>Same gross-profit-after-selling-costs formula as the static version, but applied to the stronger dynamic ranking. Simulation uses held-out test-set predictions.</p>
 </div></aside></section>
-<section id="annex-salesforce-reduction-marginal-contribution-per-rep-batch-1" class="slide level2">
-<h2>Annex: salesforce reduction — marginal contribution per rep batch</h2>
+<section id="annex-salesforce-reduction-marginal-gross-profit-after-selling-costs-per-rep-batch-1" class="slide level2">
+<h2>Annex: salesforce reduction — marginal gross profit after selling costs per rep batch</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
 <p><img data-src="assets/sim_salesforce_reduction_marginal.png" style="width:100.0%"></p>
 </div><div class="column" style="width:42%;">
 <ul>
-<li>Each bar shows the <strong>marginal contribution</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
+<li>Each bar shows the <strong>marginal gross profit after selling costs</strong> contributed by a batch of ~12 reps (one 100-opp increment), sorted from highest- to lowest-value batch.</li>
 <li>The comparison line represents the <strong>incremental operating cost</strong> of the same batch.</li>
-<li><strong>Blue bars</strong> are ROI-positive: the batch adds more contribution than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves contribution margin.</li>
+<li><strong>Blue bars</strong> are ROI-positive: the batch adds more gross profit after selling costs than cost. <strong>Red bars</strong> are ROI-negative: cutting those reps improves gross profit after selling costs.</li>
 <li>With the stronger dynamic ranking, the crossover happens much earlier, around <strong>rep #82</strong>, which is why the resized team becomes much smaller under this richer formula.</li>
 </ul>
 </div></div>

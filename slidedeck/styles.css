@@ -35,15 +35,15 @@
 }
 
 .reveal ul {
-    list-style: none;
-    padding-left: 0;
+    list-style: disc;
+    padding-left: 1.2em;
     margin-left: 0;
 }
 
 .reveal ul li {
     margin-bottom: 0.65em;
-    padding-left: 1.6em;
-    position: relative;
+    padding-left: 0;
+    position: static;
     font-size: 1.02em;
     line-height: 1.35;
     color: #334155;
@@ -52,6 +52,7 @@
 
 .reveal ul li ul {
     margin-top: 0.5em;
+    list-style: circle;
 }
 
 .reveal ul li ul li {
@@ -74,19 +75,15 @@
     color: #cbd5e1;
 }
 
-.reveal ul li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
+.reveal ul li::marker {
     color: #2563eb;
-    font-weight: 800;
 }
 
-.reveal section[data-background-color^="#0F172A"] ul li::before,
-.reveal section[data-background-color^="#1E293B"] ul li::before,
-.reveal section[data-background-color^="#0f172a"] ul li::before,
-.reveal section[data-background-color^="#1e293b"] ul li::before,
-.reveal section[data-background-image] ul li::before {
+.reveal section[data-background-color^="#0F172A"] ul li::marker,
+.reveal section[data-background-color^="#1E293B"] ul li::marker,
+.reveal section[data-background-color^="#0f172a"] ul li::marker,
+.reveal section[data-background-color^="#1e293b"] ul li::marker,
+.reveal section[data-background-image] ul li::marker {
     color: #60a5fa;
 }
 

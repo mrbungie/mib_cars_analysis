@@ -69,7 +69,7 @@ client_plot <- ggplot(client_df, aes(x = segment)) +
     labels = comma,
     sec.axis = sec_axis(~ . / client_scale, name = "Observed win rate", labels = percent_format(accuracy = 1))
   ) +
-  labs(x = NULL, title = NULL, subtitle = NULL) +
+  labs(x = "Client size bin", title = NULL, subtitle = NULL) +
   theme_slide +
   theme(
     axis.text.x = element_text(angle = 25, hjust = 1),
